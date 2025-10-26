@@ -9,6 +9,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { biometricAuth } from '../../src/utils/biometricAuth';
+import { SecurityUtils } from '../../src/utils/securityUtils';
 
 export default function AddMoneyScreen() {
     const router = useRouter();
@@ -23,7 +25,7 @@ export default function AddMoneyScreen() {
         { id: 'crypto', name: 'Crypto Wallet', icon: 'currency-bitcoin' },
     ];
 
-    const handleAddMoney = () => {
+    const handleAddMoney = async () => {
         if (!amount.trim()) {
             Alert.alert('Error', 'Please enter an amount');
             return;
@@ -35,23 +37,41 @@ export default function AddMoneyScreen() {
             return;
         }
 
-        Alert.alert(
-            'Confirm Payment',
-            `Add $${amount} using ${paymentMethods.find(m => m.id === selectedMethod)?.name}?`,
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Add Money',
-                    onPress: () => {
-                        console.log('Adding money:', {
-                            amount,
-                            method: selectedMethod,
-                        });
-                        router.back();
+        if (!SecurityUtils.isValidAmount(numAmount)) {
+            Alert.alert('Error', 'Amount exceeds maximum limit');
+            return;
+        }
+
+        try {
+            // Authenticate with biometrics for sensitive operations
+            const authResult = await biometricAuth.authenticateForSensitiveOperation(
+                `add ${amount} USD to wallet`
+            );
+
+            if (!authResult.success) {
+                Alert.alert('Authentication Required', 'Biometric authentication is required for adding money');
+                return;
+            }
+
+            Alert.alert(
+                'Confirm Payment',
+                `Add $${amount} using ${paymentMethods.find(m => m.id === selectedMethod)?.name}?`,
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Add Money',
+                        onPress: async () => {
+                            // Simulate API call
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            Alert.alert('Success', 'Money added successfully!');
+                            router.back();
+                        },
                     },
-                },
-            ]
-        );
+                ]
+            );
+        } catch (error) {
+            Alert.alert('Error', 'Failed to add money to wallet');
+        }
     };
 
     return (

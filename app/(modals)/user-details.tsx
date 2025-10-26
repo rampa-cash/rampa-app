@@ -8,11 +8,11 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useAuthStore } from '../../src/store/authStore';
+import { useAuth } from '../../src/hooks/useAuth';
 
 export default function UserDetailsScreen() {
     const router = useRouter();
-    const { user, logout } = useAuthStore();
+    const { user, logout } = useAuth();
 
     const handleLogout = () => {
         logout();

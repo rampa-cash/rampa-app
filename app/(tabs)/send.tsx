@@ -8,13 +8,15 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { transactionService } from '../../src/services/TransactionService';
+import { SecurityUtils } from '../../src/utils/securityUtils';
 
 export default function SendScreen() {
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('');
     const [currency, setCurrency] = useState<'SOL' | 'USDC' | 'EURC'>('USDC');
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!recipient.trim() || !amount.trim()) {
             Alert.alert('Error', 'Please fill in all fields');
             return;
@@ -26,6 +28,11 @@ export default function SendScreen() {
             return;
         }
 
+        if (!SecurityUtils.isValidSolanaAddress(recipient)) {
+            Alert.alert('Error', 'Please enter a valid Solana address');
+            return;
+        }
+
         Alert.alert(
             'Confirm Transaction',
             `Send ${amount} ${currency} to ${recipient}?`,
@@ -33,7 +40,25 @@ export default function SendScreen() {
                 { text: 'Cancel', style: 'cancel' },
                 {
                     text: 'Send',
-                    onPress: () => console.log('Transaction confirmed'),
+                    onPress: async () => {
+                        try {
+                            const result = await transactionService.createTransaction({
+                                recipientAddress: recipient.trim(),
+                                amount: numAmount,
+                                currency,
+                            });
+
+                            if (result.success) {
+                                Alert.alert('Success', 'Transaction created successfully!');
+                                setRecipient('');
+                                setAmount('');
+                            } else {
+                                Alert.alert('Error', result.error || 'Transaction failed');
+                            }
+                        } catch (error) {
+                            Alert.alert('Error', 'Failed to send transaction');
+                        }
+                    },
                 },
             ]
         );

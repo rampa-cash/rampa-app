@@ -9,12 +9,12 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useAuth } from '../../src/hooks/useAuth';
 import { apiClient } from '../../src/lib/apiClient';
-import { useAuthStore } from '../../src/store/authStore';
 
 export default function HomeScreen() {
     const router = useRouter();
-    const { user } = useAuthStore();
+    const { user } = useAuth();
 
     // Fetch transactions
     const { data: transactions, isLoading: transactionsLoading } = useQuery({

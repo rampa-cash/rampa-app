@@ -1,4 +1,3 @@
-import { para } from '../lib/para';
 import { User } from '../types/User';
 
 export interface AuthResult {
@@ -19,16 +18,11 @@ export class AuthService {
      */
     async signUpOrLogIn(email: string): Promise<AuthResult> {
         try {
-            const authState = await para.signUpOrLogIn({ auth: { email } });
-
-            if (authState?.stage === 'verify') {
-                return { stage: 'verify', needsVerification: true };
-            } else if (authState?.stage === 'login') {
-                await para.loginWithPasskey();
-                return { stage: 'login', success: true };
-            }
-
-            throw new Error('Invalid authentication state');
+            // Mock implementation - replace with actual Para SDK calls
+            // const userExists = await para.checkIfUserExists({ email });
+            
+            // For now, simulate user creation flow
+            return { stage: 'verify', needsVerification: true };
         } catch (error) {
             console.error('Authentication failed:', error);
             throw new Error('Authentication failed');
@@ -42,10 +36,10 @@ export class AuthService {
         verificationCode: string
     ): Promise<VerificationResult> {
         try {
-            const authState = await para.verifyNewAccount({ verificationCode });
-            await para.registerPasskey(authState);
-
-            // TODO: Validate session with backend and get user data
+            // Mock implementation - replace with actual Para SDK calls
+            // await para.verifyEmail({ verificationCode });
+            
+            // For now, simulate successful verification
             return { success: true };
         } catch (error) {
             console.error('Verification failed:', error);
@@ -61,10 +55,50 @@ export class AuthService {
         sessionToken: string;
     }> {
         try {
-            // TODO: Implement backend session validation
-            // This would call your backend API to validate the Para session
-            // and return user data and JWT token
-            throw new Error('Backend session validation not implemented');
+            // Mock implementation - replace with actual Para SDK calls
+            // const isActive = await para.isSessionActive();
+            // const userId = para.getUserId();
+            // const email = para.getEmail();
+            
+            // For now, simulate active session
+            const userId = 'mock-user-id';
+            const email = 'user@example.com';
+
+            // Mock user data - replace with actual backend call
+            const user: User = {
+                id: userId,
+                email: email,
+                firstName: 'John',
+                lastName: 'Doe',
+                country: 'US',
+                kycStatus: 'verified',
+                preferences: {
+                    currency: 'USD',
+                    language: 'en',
+                    notifications: {
+                        transactionUpdates: true,
+                        educationalContent: true,
+                        marketing: false,
+                        securityAlerts: true,
+                        pushEnabled: true,
+                        emailEnabled: true,
+                    },
+                    privacy: {
+                        dataSharing: false,
+                        analytics: true,
+                        crashReporting: true,
+                        marketingData: false,
+                    },
+                    theme: 'system',
+                },
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+
+            // Mock session token - replace with actual backend response
+            const sessionToken = 'mock-session-token';
+
+            return { user, sessionToken };
         } catch (error) {
             console.error('Session validation failed:', error);
             throw new Error('Session validation failed');
@@ -76,9 +110,9 @@ export class AuthService {
      */
     async logout(): Promise<void> {
         try {
-            // TODO: Implement logout logic
-            // Clear local session data
-            // Call backend logout endpoint
+            // Mock implementation - replace with actual Para SDK calls
+            // await para.logout();
+            logger.info('User logged out successfully');
         } catch (error) {
             console.error('Logout failed:', error);
             throw new Error('Logout failed');

@@ -35,7 +35,7 @@ class ApiClient {
             process.env.EXPO_PUBLIC_API_URL || 'https://api.rampa.app/v1';
     }
 
-    private async request<T>(
+    async request<T>(
         endpoint: string,
         options: RequestInit = {}
     ): Promise<ApiResponse<T>> {

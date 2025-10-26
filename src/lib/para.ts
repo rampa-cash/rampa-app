@@ -1,26 +1,15 @@
-// Temporarily commented out Para SDK for development
-// import { ParaMobile } from '@getpara/react-native-wallet';
+import { ParaMobile } from '@getpara/react-native-wallet';
+import { Environment } from '@getpara/web-sdk';
 
-// Mock Para SDK for development
-export const para = {
-    init: async () => {
-        console.log('Para SDK mock initialized');
-    },
-    signUpOrLogIn: async (params: any) => {
-        console.log('Para SDK mock signUpOrLogIn:', params);
-        return { stage: 'login', success: true };
-    },
-    verifyNewAccount: async (params: any) => {
-        console.log('Para SDK mock verifyNewAccount:', params);
-        return { success: true };
-    },
-    loginWithPasskey: async () => {
-        console.log('Para SDK mock loginWithPasskey');
-    },
-    registerPasskey: async (params: any) => {
-        console.log('Para SDK mock registerPasskey:', params);
-    },
-};
+// Initialize Para SDK with API key from environment
+export const para = new ParaMobile(
+    Environment.BETA, // Use BETA environment for development
+    process.env.EXPO_PUBLIC_PARA_API_KEY!,
+    undefined,
+    {
+        disableWorkers: true,
+    }
+);
 
 // Initialize Para SDK
 export const initializePara = async (): Promise<void> => {
