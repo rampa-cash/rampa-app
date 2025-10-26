@@ -31,10 +31,16 @@ export default function LoginScreen() {
             // If we get here, login was successful
             router.replace('/(tabs)/home' as any);
         } catch (error) {
-            if (error instanceof Error && error.message === 'Account verification required') {
+            if (
+                error instanceof Error &&
+                error.message === 'Account verification required'
+            ) {
                 setIsVerificationMode(true);
             } else {
-                Alert.alert('Login Failed', error instanceof Error ? error.message : 'An error occurred');
+                Alert.alert(
+                    'Login Failed',
+                    error instanceof Error ? error.message : 'An error occurred'
+                );
             }
         }
     };
@@ -51,7 +57,10 @@ export default function LoginScreen() {
             // If we get here, verification was successful
             router.replace('/(tabs)/home' as any);
         } catch (error) {
-            Alert.alert('Verification Failed', error instanceof Error ? error.message : 'An error occurred');
+            Alert.alert(
+                'Verification Failed',
+                error instanceof Error ? error.message : 'An error occurred'
+            );
         }
     };
 
@@ -62,17 +71,16 @@ export default function LoginScreen() {
     };
 
     return (
-        <KeyboardAvoidingView 
-            style={styles.container} 
+        <KeyboardAvoidingView
+            style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <View style={styles.content}>
                 <Text style={styles.title}>Welcome to Rampa</Text>
                 <Text style={styles.subtitle}>
-                    {isVerificationMode 
+                    {isVerificationMode
                         ? 'Enter the verification code sent to your email'
-                        : 'Your secure remittance platform'
-                    }
+                        : 'Your secure remittance platform'}
                 </Text>
 
                 {!isVerificationMode ? (
@@ -87,13 +95,14 @@ export default function LoginScreen() {
                             autoCorrect={false}
                             editable={!isLoading}
                         />
-                        
-                        {error && (
-                            <Text style={styles.errorText}>{error}</Text>
-                        )}
+
+                        {error && <Text style={styles.errorText}>{error}</Text>}
 
                         <TouchableOpacity
-                            style={[styles.button, isLoading && styles.buttonDisabled]}
+                            style={[
+                                styles.button,
+                                isLoading && styles.buttonDisabled,
+                            ]}
                             onPress={handleLogin}
                             disabled={isLoading}
                         >
@@ -112,13 +121,14 @@ export default function LoginScreen() {
                             keyboardType="number-pad"
                             editable={!isLoading}
                         />
-                        
-                        {error && (
-                            <Text style={styles.errorText}>{error}</Text>
-                        )}
+
+                        {error && <Text style={styles.errorText}>{error}</Text>}
 
                         <TouchableOpacity
-                            style={[styles.button, isLoading && styles.buttonDisabled]}
+                            style={[
+                                styles.button,
+                                isLoading && styles.buttonDisabled,
+                            ]}
                             onPress={handleVerification}
                             disabled={isLoading}
                         >
@@ -132,14 +142,17 @@ export default function LoginScreen() {
                             onPress={handleBackToLogin}
                             disabled={isLoading}
                         >
-                            <Text style={styles.backButtonText}>Back to Login</Text>
+                            <Text style={styles.backButtonText}>
+                                Back to Login
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 )}
 
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>
-                        By continuing, you agree to our Terms of Service and Privacy Policy
+                        By continuing, you agree to our Terms of Service and
+                        Privacy Policy
                     </Text>
                 </View>
             </View>

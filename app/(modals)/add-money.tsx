@@ -44,12 +44,16 @@ export default function AddMoneyScreen() {
 
         try {
             // Authenticate with biometrics for sensitive operations
-            const authResult = await biometricAuth.authenticateForSensitiveOperation(
-                `add ${amount} USD to wallet`
-            );
+            const authResult =
+                await biometricAuth.authenticateForSensitiveOperation(
+                    `add ${amount} USD to wallet`
+                );
 
             if (!authResult.success) {
-                Alert.alert('Authentication Required', 'Biometric authentication is required for adding money');
+                Alert.alert(
+                    'Authentication Required',
+                    'Biometric authentication is required for adding money'
+                );
                 return;
             }
 
@@ -62,7 +66,9 @@ export default function AddMoneyScreen() {
                         text: 'Add Money',
                         onPress: async () => {
                             // Simulate API call
-                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            await new Promise(resolve =>
+                                setTimeout(resolve, 2000)
+                            );
                             Alert.alert('Success', 'Money added successfully!');
                             router.back();
                         },

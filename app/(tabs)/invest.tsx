@@ -15,18 +15,23 @@ import { investmentService } from '../../src/services/InvestmentService';
 import { InvestmentOption } from '../../src/types/Investment';
 
 export default function InvestScreen() {
-    const [selectedFilter, setSelectedFilter] = useState<'all' | 'low' | 'medium' | 'high'>('all');
+    const [selectedFilter, setSelectedFilter] = useState<
+        'all' | 'low' | 'medium' | 'high'
+    >('all');
     const [showInvestmentModal, setShowInvestmentModal] = useState(false);
-    const [selectedOption, setSelectedOption] = useState<InvestmentOption | null>(null);
+    const [selectedOption, setSelectedOption] =
+        useState<InvestmentOption | null>(null);
     const [investmentAmount, setInvestmentAmount] = useState('');
 
     // Fetch investment options
     const { data: investmentOptions, isLoading: optionsLoading } = useQuery({
         queryKey: ['investment-options', selectedFilter],
-        queryFn: () => investmentService.getInvestmentOptions({
-            riskLevel: selectedFilter === 'all' ? undefined : selectedFilter,
-            limit: 20,
-        }),
+        queryFn: () =>
+            investmentService.getInvestmentOptions({
+                riskLevel:
+                    selectedFilter === 'all' ? undefined : selectedFilter,
+                limit: 20,
+            }),
     });
 
     // Fetch user investments
@@ -43,7 +48,10 @@ export default function InvestScreen() {
 
     const handleInvest = async () => {
         if (!selectedOption || !investmentAmount) {
-            Alert.alert('Error', 'Please select an investment option and enter an amount');
+            Alert.alert(
+                'Error',
+                'Please select an investment option and enter an amount'
+            );
             return;
         }
 
@@ -54,7 +62,10 @@ export default function InvestScreen() {
         }
 
         if (amount < selectedOption.minimumAmount) {
-            Alert.alert('Error', `Minimum investment amount is $${selectedOption.minimumAmount}`);
+            Alert.alert(
+                'Error',
+                `Minimum investment amount is $${selectedOption.minimumAmount}`
+            );
             return;
         }
 
@@ -71,7 +82,10 @@ export default function InvestScreen() {
                 setSelectedOption(null);
                 setInvestmentAmount('');
             } else {
-                Alert.alert('Error', result.error || 'Failed to create investment');
+                Alert.alert(
+                    'Error',
+                    result.error || 'Failed to create investment'
+                );
             }
         } catch (error) {
             Alert.alert('Error', 'Failed to create investment');
@@ -80,29 +94,42 @@ export default function InvestScreen() {
 
     const getRiskColor = (riskLevel: string) => {
         switch (riskLevel) {
-            case 'low': return '#4CAF50';
-            case 'medium': return '#FF9800';
-            case 'high': return '#F44336';
-            default: return '#666';
+            case 'low':
+                return '#4CAF50';
+            case 'medium':
+                return '#FF9800';
+            case 'high':
+                return '#F44336';
+            default:
+                return '#666';
         }
     };
 
     const getTypeIcon = (type: string) => {
         switch (type) {
-            case 'stocks': return 'trending-up';
-            case 'bonds': return 'account-balance';
-            case 'etf': return 'pie-chart';
-            case 'crypto': return 'currency-bitcoin';
-            case 'real_estate': return 'home';
-            case 'commodities': return 'inventory';
-            default: return 'trending-up';
+            case 'stocks':
+                return 'trending-up';
+            case 'bonds':
+                return 'account-balance';
+            case 'etf':
+                return 'pie-chart';
+            case 'crypto':
+                return 'currency-bitcoin';
+            case 'real_estate':
+                return 'home';
+            case 'commodities':
+                return 'inventory';
+            default:
+                return 'trending-up';
         }
     };
 
     if (optionsLoading || investmentsLoading) {
         return (
             <View style={styles.container}>
-                <Text style={styles.loadingText}>Loading investment options...</Text>
+                <Text style={styles.loadingText}>
+                    Loading investment options...
+                </Text>
             </View>
         );
     }
@@ -121,16 +148,28 @@ export default function InvestScreen() {
                     <View style={styles.statsGrid}>
                         <View style={styles.statItem}>
                             <Text style={styles.statValue}>
-                                ${investmentStats.stats.totalValue.toLocaleString()}
+                                $
+                                {investmentStats.stats.totalValue.toLocaleString()}
                             </Text>
                             <Text style={styles.statLabel}>Total Value</Text>
                         </View>
                         <View style={styles.statItem}>
-                            <Text style={[
-                                styles.statValue,
-                                { color: investmentStats.stats.totalReturn >= 0 ? '#4CAF50' : '#F44336' }
-                            ]}>
-                                {investmentStats.stats.totalReturnPercentage.toFixed(2)}%
+                            <Text
+                                style={[
+                                    styles.statValue,
+                                    {
+                                        color:
+                                            investmentStats.stats.totalReturn >=
+                                            0
+                                                ? '#4CAF50'
+                                                : '#F44336',
+                                    },
+                                ]}
+                            >
+                                {investmentStats.stats.totalReturnPercentage.toFixed(
+                                    2
+                                )}
+                                %
                             </Text>
                             <Text style={styles.statLabel}>Total Return</Text>
                         </View>
@@ -153,14 +192,18 @@ export default function InvestScreen() {
                             key={risk}
                             style={[
                                 styles.filterButton,
-                                selectedFilter === risk && styles.filterButtonActive,
+                                selectedFilter === risk &&
+                                    styles.filterButtonActive,
                             ]}
                             onPress={() => setSelectedFilter(risk)}
                         >
-                            <Text style={[
-                                styles.filterButtonText,
-                                selectedFilter === risk && styles.filterButtonTextActive,
-                            ]}>
+                            <Text
+                                style={[
+                                    styles.filterButtonText,
+                                    selectedFilter === risk &&
+                                        styles.filterButtonTextActive,
+                                ]}
+                            >
                                 {risk.charAt(0).toUpperCase() + risk.slice(1)}
                             </Text>
                         </TouchableOpacity>
@@ -188,33 +231,55 @@ export default function InvestScreen() {
                                         size={24}
                                         color="#007AFF"
                                     />
-                                    <Text style={styles.optionName}>{option.name}</Text>
+                                    <Text style={styles.optionName}>
+                                        {option.name}
+                                    </Text>
                                 </View>
-                                <View style={[
-                                    styles.riskBadge,
-                                    { backgroundColor: getRiskColor(option.riskLevel) }
-                                ]}>
+                                <View
+                                    style={[
+                                        styles.riskBadge,
+                                        {
+                                            backgroundColor: getRiskColor(
+                                                option.riskLevel
+                                            ),
+                                        },
+                                    ]}
+                                >
                                     <Text style={styles.riskText}>
                                         {option.riskLevel.toUpperCase()}
                                     </Text>
                                 </View>
                             </View>
-                            <Text style={styles.optionDescription}>{option.description}</Text>
+                            <Text style={styles.optionDescription}>
+                                {option.description}
+                            </Text>
                             <View style={styles.optionDetails}>
                                 <View style={styles.optionDetail}>
-                                    <MaterialIcons name="trending-up" size={16} color="#4CAF50" />
+                                    <MaterialIcons
+                                        name="trending-up"
+                                        size={16}
+                                        color="#4CAF50"
+                                    />
                                     <Text style={styles.optionDetailText}>
                                         {option.expectedReturn}% expected return
                                     </Text>
                                 </View>
                                 <View style={styles.optionDetail}>
-                                    <MaterialIcons name="attach-money" size={16} color="#666" />
+                                    <MaterialIcons
+                                        name="attach-money"
+                                        size={16}
+                                        color="#666"
+                                    />
                                     <Text style={styles.optionDetailText}>
                                         Min: ${option.minimumAmount}
                                     </Text>
                                 </View>
                                 <View style={styles.optionDetail}>
-                                    <MaterialIcons name="schedule" size={16} color="#666" />
+                                    <MaterialIcons
+                                        name="schedule"
+                                        size={16}
+                                        color="#666"
+                                    />
                                     <Text style={styles.optionDetailText}>
                                         {option.liquidity} liquidity
                                     </Text>
@@ -223,7 +288,9 @@ export default function InvestScreen() {
                         </TouchableOpacity>
                     ))
                 ) : (
-                    <Text style={styles.emptyText}>No investment options available</Text>
+                    <Text style={styles.emptyText}>
+                        No investment options available
+                    </Text>
                 )}
             </View>
 
@@ -237,19 +304,31 @@ export default function InvestScreen() {
                                 <Text style={styles.investmentName}>
                                     {investment.investmentOption.name}
                                 </Text>
-                                <Text style={[
-                                    styles.investmentReturn,
-                                    { color: investment.totalReturn >= 0 ? '#4CAF50' : '#F44336' }
-                                ]}>
-                                    {investment.totalReturnPercentage.toFixed(2)}%
+                                <Text
+                                    style={[
+                                        styles.investmentReturn,
+                                        {
+                                            color:
+                                                investment.totalReturn >= 0
+                                                    ? '#4CAF50'
+                                                    : '#F44336',
+                                        },
+                                    ]}
+                                >
+                                    {investment.totalReturnPercentage.toFixed(
+                                        2
+                                    )}
+                                    %
                                 </Text>
                             </View>
                             <View style={styles.investmentDetails}>
                                 <Text style={styles.investmentAmount}>
-                                    Invested: ${investment.amount.toLocaleString()}
+                                    Invested: $
+                                    {investment.amount.toLocaleString()}
                                 </Text>
                                 <Text style={styles.investmentValue}>
-                                    Current: ${investment.currentValue.toLocaleString()}
+                                    Current: $
+                                    {investment.currentValue.toLocaleString()}
                                 </Text>
                             </View>
                         </View>
@@ -269,7 +348,11 @@ export default function InvestScreen() {
                             onPress={() => setShowInvestmentModal(false)}
                             style={styles.closeButton}
                         >
-                            <MaterialIcons name="close" size={24} color="#333" />
+                            <MaterialIcons
+                                name="close"
+                                size={24}
+                                color="#333"
+                            />
                         </TouchableOpacity>
                         <Text style={styles.modalTitle}>Invest</Text>
                         <View style={styles.placeholder} />
@@ -286,10 +369,12 @@ export default function InvestScreen() {
                                 </Text>
                                 <View style={styles.selectedOptionDetails}>
                                     <Text style={styles.selectedOptionDetail}>
-                                        Expected Return: {selectedOption.expectedReturn}%
+                                        Expected Return:{' '}
+                                        {selectedOption.expectedReturn}%
                                     </Text>
                                     <Text style={styles.selectedOptionDetail}>
-                                        Risk Level: {selectedOption.riskLevel.toUpperCase()}
+                                        Risk Level:{' '}
+                                        {selectedOption.riskLevel.toUpperCase()}
                                     </Text>
                                     <Text style={styles.selectedOptionDetail}>
                                         Minimum: ${selectedOption.minimumAmount}
@@ -298,7 +383,9 @@ export default function InvestScreen() {
                             </View>
 
                             <View style={styles.amountSection}>
-                                <Text style={styles.amountLabel}>Investment Amount (USD)</Text>
+                                <Text style={styles.amountLabel}>
+                                    Investment Amount (USD)
+                                </Text>
                                 <TextInput
                                     style={styles.amountInput}
                                     placeholder="Enter amount"
@@ -313,7 +400,9 @@ export default function InvestScreen() {
                                 style={styles.investButton}
                                 onPress={handleInvest}
                             >
-                                <Text style={styles.investButtonText}>Invest Now</Text>
+                                <Text style={styles.investButtonText}>
+                                    Invest Now
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     )}

@@ -1,6 +1,6 @@
 /**
  * Security Utilities
- * 
+ *
  * Provides encryption, validation, and security utilities for the app
  * All sensitive operations are handled securely
  */
@@ -12,7 +12,8 @@ export class SecurityUtils {
      * Generate a secure random string
      */
     static generateSecureRandom(length: number = 32): string {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const chars =
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
         for (let i = 0; i < length; i++) {
             result += chars.charAt(Math.floor(Math.random() * chars.length));

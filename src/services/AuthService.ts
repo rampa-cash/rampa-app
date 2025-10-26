@@ -20,7 +20,7 @@ export class AuthService {
         try {
             // Mock implementation - replace with actual Para SDK calls
             // const userExists = await para.checkIfUserExists({ email });
-            
+
             // For now, simulate user creation flow
             return { stage: 'verify', needsVerification: true };
         } catch (error) {
@@ -38,7 +38,7 @@ export class AuthService {
         try {
             // Mock implementation - replace with actual Para SDK calls
             // await para.verifyEmail({ verificationCode });
-            
+
             // For now, simulate successful verification
             return { success: true };
         } catch (error) {
@@ -59,7 +59,7 @@ export class AuthService {
             // const isActive = await para.isSessionActive();
             // const userId = para.getUserId();
             // const email = para.getEmail();
-            
+
             // For now, simulate active session
             const userId = 'mock-user-id';
             const email = 'user@example.com';

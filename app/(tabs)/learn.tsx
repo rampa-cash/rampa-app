@@ -13,21 +13,28 @@ import {
 } from 'react-native';
 import { apiClient } from '../../src/lib/apiClient';
 import { learningService } from '../../src/services/LearningService';
-import { EducationalContent, LearningProgress } from '../../src/types/EducationalContent';
+import {
+    EducationalContent,
+    LearningProgress,
+} from '../../src/types/EducationalContent';
 
 export default function LearnScreen() {
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(
+        null
+    );
     const [searchQuery, setSearchQuery] = useState('');
     const [showContentModal, setShowContentModal] = useState(false);
-    const [selectedContent, setSelectedContent] = useState<EducationalContent | null>(null);
+    const [selectedContent, setSelectedContent] =
+        useState<EducationalContent | null>(null);
 
     // Fetch educational content
     const { data: content, isLoading } = useQuery({
         queryKey: ['educational-content', selectedCategory],
-        queryFn: () => apiClient.getEducationalContent({ 
-            category: selectedCategory || undefined,
-            limit: 20 
-        }),
+        queryFn: () =>
+            apiClient.getEducationalContent({
+                category: selectedCategory || undefined,
+                limit: 20,
+            }),
     });
 
     // Fetch learning progress
@@ -69,12 +76,17 @@ export default function LearnScreen() {
 
     const handleStartLearning = async (content: EducationalContent) => {
         try {
-            const result = await learningService.startLearningModule(content.id);
+            const result = await learningService.startLearningModule(
+                content.id
+            );
             if (result.success) {
                 setSelectedContent(content);
                 setShowContentModal(true);
             } else {
-                Alert.alert('Error', result.error || 'Failed to start learning module');
+                Alert.alert(
+                    'Error',
+                    result.error || 'Failed to start learning module'
+                );
             }
         } catch (error) {
             Alert.alert('Error', 'Failed to start learning module');
@@ -83,20 +95,26 @@ export default function LearnScreen() {
 
     const handleCompleteLearning = async (contentId: string) => {
         try {
-            const result = await learningService.completeLearningModule(contentId);
+            const result =
+                await learningService.completeLearningModule(contentId);
             if (result.success) {
                 Alert.alert('Success', 'Module completed! You earned points!');
                 setShowContentModal(false);
                 setSelectedContent(null);
             } else {
-                Alert.alert('Error', result.error || 'Failed to complete module');
+                Alert.alert(
+                    'Error',
+                    result.error || 'Failed to complete module'
+                );
             }
         } catch (error) {
             Alert.alert('Error', 'Failed to complete module');
         }
     };
 
-    const getProgressForContent = (moduleId: string): LearningProgress | undefined => {
+    const getProgressForContent = (
+        moduleId: string
+    ): LearningProgress | undefined => {
         return progress?.data?.find(p => p.moduleId === moduleId);
     };
 
@@ -134,9 +152,12 @@ export default function LearnScreen() {
                     <View style={styles.statsGrid}>
                         <View style={styles.statItem}>
                             <Text style={styles.statValue}>
-                                {stats.stats.completedModules}/{stats.stats.totalModules}
+                                {stats.stats.completedModules}/
+                                {stats.stats.totalModules}
                             </Text>
-                            <Text style={styles.statLabel}>Modules Completed</Text>
+                            <Text style={styles.statLabel}>
+                                Modules Completed
+                            </Text>
                         </View>
                         <View style={styles.statItem}>
                             <Text style={styles.statValue}>
@@ -148,7 +169,9 @@ export default function LearnScreen() {
                             <Text style={styles.statValue}>
                                 {stats.stats.currentStreak} days
                             </Text>
-                            <Text style={styles.statLabel}>Learning Streak</Text>
+                            <Text style={styles.statLabel}>
+                                Learning Streak
+                            </Text>
                         </View>
                     </View>
                 </View>
@@ -175,15 +198,23 @@ export default function LearnScreen() {
                     <TouchableOpacity
                         style={[
                             styles.categoryCard,
-                            selectedCategory === null && styles.categoryCardActive
+                            selectedCategory === null &&
+                                styles.categoryCardActive,
                         ]}
                         onPress={() => setSelectedCategory(null)}
                     >
-                        <MaterialIcons name="all-inclusive" size={32} color="#007AFF" />
-                        <Text style={[
-                            styles.categoryName,
-                            selectedCategory === null && styles.categoryNameActive
-                        ]}>
+                        <MaterialIcons
+                            name="all-inclusive"
+                            size={32}
+                            color="#007AFF"
+                        />
+                        <Text
+                            style={[
+                                styles.categoryName,
+                                selectedCategory === null &&
+                                    styles.categoryNameActive,
+                            ]}
+                        >
                             All
                         </Text>
                     </TouchableOpacity>
@@ -192,7 +223,8 @@ export default function LearnScreen() {
                             key={category.id}
                             style={[
                                 styles.categoryCard,
-                                selectedCategory === category.id && styles.categoryCardActive
+                                selectedCategory === category.id &&
+                                    styles.categoryCardActive,
                             ]}
                             onPress={() => setSelectedCategory(category.id)}
                         >
@@ -201,10 +233,13 @@ export default function LearnScreen() {
                                 size={32}
                                 color="#007AFF"
                             />
-                            <Text style={[
-                                styles.categoryName,
-                                selectedCategory === category.id && styles.categoryNameActive
-                            ]}>
+                            <Text
+                                style={[
+                                    styles.categoryName,
+                                    selectedCategory === category.id &&
+                                        styles.categoryNameActive,
+                                ]}
+                            >
                                 {category.name}
                             </Text>
                         </TouchableOpacity>
@@ -217,9 +252,10 @@ export default function LearnScreen() {
                 <Text style={styles.sectionTitle}>Learning Content</Text>
                 {content?.data?.length ? (
                     content.data.map(item => {
-                        const progressPercentage = getProgressForContent(item.id)?.progress || 0;
+                        const progressPercentage =
+                            getProgressForContent(item.id)?.progress || 0;
                         const isCompleted = isContentCompleted(item.id);
-                        
+
                         return (
                             <TouchableOpacity
                                 key={item.id}
@@ -251,8 +287,16 @@ export default function LearnScreen() {
                                         </View>
                                         {isCompleted && (
                                             <View style={styles.completedBadge}>
-                                                <MaterialIcons name="check-circle" size={16} color="#4CAF50" />
-                                                <Text style={styles.completedText}>Completed</Text>
+                                                <MaterialIcons
+                                                    name="check-circle"
+                                                    size={16}
+                                                    color="#4CAF50"
+                                                />
+                                                <Text
+                                                    style={styles.completedText}
+                                                >
+                                                    Completed
+                                                </Text>
                                             </View>
                                         )}
                                     </View>
@@ -260,16 +304,18 @@ export default function LearnScreen() {
                                 <Text style={styles.contentDescription}>
                                     {item.description}
                                 </Text>
-                                
+
                                 {/* Progress Bar */}
                                 {progressPercentage > 0 && !isCompleted && (
                                     <View style={styles.progressContainer}>
                                         <View style={styles.progressBar}>
-                                            <View 
+                                            <View
                                                 style={[
-                                                    styles.progressFill, 
-                                                    { width: `${progressPercentage}%` }
-                                                ]} 
+                                                    styles.progressFill,
+                                                    {
+                                                        width: `${progressPercentage}%`,
+                                                    },
+                                                ]}
                                             />
                                         </View>
                                         <Text style={styles.progressText}>
@@ -330,7 +376,11 @@ export default function LearnScreen() {
                             onPress={() => setShowContentModal(false)}
                             style={styles.closeButton}
                         >
-                            <MaterialIcons name="close" size={24} color="#333" />
+                            <MaterialIcons
+                                name="close"
+                                size={24}
+                                color="#333"
+                            />
                         </TouchableOpacity>
                         <Text style={styles.modalTitle}>Learning Module</Text>
                         <View style={styles.placeholder} />
@@ -349,7 +399,8 @@ export default function LearnScreen() {
                                             {
                                                 backgroundColor:
                                                     difficultyColors[
-                                                        selectedContent.difficulty
+                                                        selectedContent
+                                                            .difficulty
                                                     ],
                                             },
                                         ]}
@@ -358,31 +409,47 @@ export default function LearnScreen() {
                                             {selectedContent.difficulty
                                                 .charAt(0)
                                                 .toUpperCase() +
-                                                selectedContent.difficulty.slice(1)}
+                                                selectedContent.difficulty.slice(
+                                                    1
+                                                )}
                                         </Text>
                                     </View>
                                 </View>
                             </View>
-                            
+
                             <Text style={styles.modalContentDescription}>
                                 {selectedContent.description}
                             </Text>
 
                             <View style={styles.contentDetails}>
                                 <View style={styles.contentDetail}>
-                                    <MaterialIcons name="schedule" size={20} color="#666" />
+                                    <MaterialIcons
+                                        name="schedule"
+                                        size={20}
+                                        color="#666"
+                                    />
                                     <Text style={styles.contentDetailText}>
-                                        Estimated time: {selectedContent.duration} minutes
+                                        Estimated time:{' '}
+                                        {selectedContent.duration} minutes
                                     </Text>
                                 </View>
                                 <View style={styles.contentDetail}>
-                                    <MaterialIcons name="star" size={20} color="#FFD700" />
+                                    <MaterialIcons
+                                        name="star"
+                                        size={20}
+                                        color="#FFD700"
+                                    />
                                     <Text style={styles.contentDetailText}>
-                                        Reward: {selectedContent.rewardAmount} BONK
+                                        Reward: {selectedContent.rewardAmount}{' '}
+                                        BONK
                                     </Text>
                                 </View>
                                 <View style={styles.contentDetail}>
-                                    <MaterialIcons name="school" size={20} color="#666" />
+                                    <MaterialIcons
+                                        name="school"
+                                        size={20}
+                                        color="#666"
+                                    />
                                     <Text style={styles.contentDetailText}>
                                         Category: {selectedContent.category}
                                     </Text>
@@ -397,10 +464,18 @@ export default function LearnScreen() {
 
                             <TouchableOpacity
                                 style={styles.completeButton}
-                                onPress={() => handleCompleteLearning(selectedContent.id)}
+                                onPress={() =>
+                                    handleCompleteLearning(selectedContent.id)
+                                }
                             >
-                                <MaterialIcons name="check-circle" size={20} color="#fff" />
-                                <Text style={styles.completeButtonText}>Mark as Complete</Text>
+                                <MaterialIcons
+                                    name="check-circle"
+                                    size={20}
+                                    color="#fff"
+                                />
+                                <Text style={styles.completeButtonText}>
+                                    Mark as Complete
+                                </Text>
                             </TouchableOpacity>
                         </ScrollView>
                     )}

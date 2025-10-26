@@ -31,7 +31,9 @@ export class ContactService {
         try {
             logger.info('Fetching contact by ID', { id });
 
-            const response = await apiClient.request<Contact>(`/contacts/${id}`);
+            const response = await apiClient.request<Contact>(
+                `/contacts/${id}`
+            );
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch contact by ID', { error, id });
@@ -58,7 +60,10 @@ export class ContactService {
             logger.error('Failed to add contact', { error, contact });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to add contact',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to add contact',
             };
         }
     }
@@ -83,7 +88,10 @@ export class ContactService {
             logger.error('Failed to update contact', { error, id, updates });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to update contact',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to update contact',
             };
         }
     }
@@ -91,7 +99,9 @@ export class ContactService {
     /**
      * Delete contact
      */
-    async deleteContact(id: string): Promise<{ success: boolean; error?: string }> {
+    async deleteContact(
+        id: string
+    ): Promise<{ success: boolean; error?: string }> {
         try {
             logger.info('Deleting contact', { id });
 
@@ -102,7 +112,10 @@ export class ContactService {
             logger.error('Failed to delete contact', { error, id });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to delete contact',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to delete contact',
             };
         }
     }
@@ -128,7 +141,9 @@ export class ContactService {
     /**
      * Verify contact
      */
-    async verifyContact(id: string): Promise<{ success: boolean; error?: string }> {
+    async verifyContact(
+        id: string
+    ): Promise<{ success: boolean; error?: string }> {
         try {
             logger.info('Verifying contact', { id });
 
@@ -141,7 +156,10 @@ export class ContactService {
             logger.error('Failed to verify contact', { error, id });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to verify contact',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to verify contact',
             };
         }
     }
@@ -157,10 +175,12 @@ export class ContactService {
                 method: 'PUT',
             });
         } catch (error) {
-            logger.error('Failed to mark contact as recently used', { error, id });
+            logger.error('Failed to mark contact as recently used', {
+                error,
+                id,
+            });
         }
     }
 }
 
 export const contactService = new ContactService();
-

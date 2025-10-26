@@ -18,14 +18,17 @@ export class OffRampService {
     /**
      * Initiate off-ramp transaction (crypto to fiat)
      */
-    async initiateOffRamp(request: OffRampInitiateRequest): Promise<OffRampResponse> {
+    async initiateOffRamp(
+        request: OffRampInitiateRequest
+    ): Promise<OffRampResponse> {
         try {
             logger.info('Initiating off-ramp transaction', { request });
 
             // Authenticate with biometrics for sensitive operations
-            const authResult = await biometricAuth.authenticateForSensitiveOperation(
-                `Withdraw ${request.tokenAmount} ${request.tokenType} to bank account`
-            );
+            const authResult =
+                await biometricAuth.authenticateForSensitiveOperation(
+                    `Withdraw ${request.tokenAmount} ${request.tokenType} to bank account`
+                );
 
             if (!authResult.success) {
                 return {
@@ -34,20 +37,29 @@ export class OffRampService {
                 };
             }
 
-            const response = await apiClient.request<OffRampTransaction>('/offramp/initiate', {
-                method: 'POST',
-                body: JSON.stringify(request),
-            });
+            const response = await apiClient.request<OffRampTransaction>(
+                '/offramp/initiate',
+                {
+                    method: 'POST',
+                    body: JSON.stringify(request),
+                }
+            );
 
             return {
                 success: true,
                 transaction: response.data,
             };
         } catch (error) {
-            logger.error('Failed to initiate off-ramp transaction', { error, request });
+            logger.error('Failed to initiate off-ramp transaction', {
+                error,
+                request,
+            });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to initiate off-ramp transaction',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to initiate off-ramp transaction',
             };
         }
     }
@@ -61,16 +73,28 @@ export class OffRampService {
         currency: string
     ): Promise<OffRampEstimate | null> {
         try {
-            logger.info('Getting off-ramp estimate', { tokenAmount, tokenType, currency });
-
-            const response = await apiClient.request<OffRampEstimate>('/offramp/estimate', {
-                method: 'POST',
-                body: JSON.stringify({ tokenAmount, tokenType, currency }),
+            logger.info('Getting off-ramp estimate', {
+                tokenAmount,
+                tokenType,
+                currency,
             });
+
+            const response = await apiClient.request<OffRampEstimate>(
+                '/offramp/estimate',
+                {
+                    method: 'POST',
+                    body: JSON.stringify({ tokenAmount, tokenType, currency }),
+                }
+            );
 
             return response.data;
         } catch (error) {
-            logger.error('Failed to get off-ramp estimate', { error, tokenAmount, tokenType, currency });
+            logger.error('Failed to get off-ramp estimate', {
+                error,
+                tokenAmount,
+                tokenType,
+                currency,
+            });
             return null;
         }
     }
@@ -78,9 +102,13 @@ export class OffRampService {
     /**
      * Get off-ramp transaction status
      */
-    async getOffRampStatus(transactionId: string): Promise<OffRampTransaction | null> {
+    async getOffRampStatus(
+        transactionId: string
+    ): Promise<OffRampTransaction | null> {
         try {
-            logger.info('Getting off-ramp transaction status', { transactionId });
+            logger.info('Getting off-ramp transaction status', {
+                transactionId,
+            });
 
             const response = await apiClient.request<OffRampTransaction>(
                 `/offramp/${transactionId}`
@@ -88,7 +116,10 @@ export class OffRampService {
 
             return response.data;
         } catch (error) {
-            logger.error('Failed to get off-ramp transaction status', { error, transactionId });
+            logger.error('Failed to get off-ramp transaction status', {
+                error,
+                transactionId,
+            });
             return null;
         }
     }
@@ -96,7 +127,9 @@ export class OffRampService {
     /**
      * Cancel off-ramp transaction
      */
-    async cancelOffRamp(transactionId: string): Promise<{ success: boolean; error?: string }> {
+    async cancelOffRamp(
+        transactionId: string
+    ): Promise<{ success: boolean; error?: string }> {
         try {
             logger.info('Cancelling off-ramp transaction', { transactionId });
 
@@ -106,10 +139,16 @@ export class OffRampService {
 
             return { success: true };
         } catch (error) {
-            logger.error('Failed to cancel off-ramp transaction', { error, transactionId });
+            logger.error('Failed to cancel off-ramp transaction', {
+                error,
+                transactionId,
+            });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to cancel off-ramp transaction',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to cancel off-ramp transaction',
             };
         }
     }
@@ -126,17 +165,24 @@ export class OffRampService {
             logger.info('Getting off-ramp transaction history', { params });
 
             const queryParams = new URLSearchParams();
-            if (params?.limit) queryParams.append('limit', params.limit.toString());
-            if (params?.offset) queryParams.append('offset', params.offset.toString());
+            if (params?.limit)
+                queryParams.append('limit', params.limit.toString());
+            if (params?.offset)
+                queryParams.append('offset', params.offset.toString());
             if (params?.status) queryParams.append('status', params.status);
 
             const query = queryParams.toString();
-            const endpoint = query ? `/offramp/history?${query}` : '/offramp/history';
+            const endpoint = query
+                ? `/offramp/history?${query}`
+                : '/offramp/history';
 
-            const response = await apiClient.request<OffRampTransaction[]>(endpoint);
+            const response =
+                await apiClient.request<OffRampTransaction[]>(endpoint);
             return response.data;
         } catch (error) {
-            logger.error('Failed to get off-ramp transaction history', { error });
+            logger.error('Failed to get off-ramp transaction history', {
+                error,
+            });
             throw new Error('Failed to get off-ramp transaction history');
         }
     }
@@ -144,14 +190,23 @@ export class OffRampService {
     /**
      * Add bank account for off-ramp withdrawals
      */
-    async addBankAccount(bankDetails: BankAccount): Promise<{ success: boolean; bankAccount?: BankAccount; error?: string }> {
+    async addBankAccount(
+        bankDetails: BankAccount
+    ): Promise<{
+        success: boolean;
+        bankAccount?: BankAccount;
+        error?: string;
+    }> {
         try {
             logger.info('Adding bank account', { bankDetails });
 
-            const response = await apiClient.request<BankAccount>('/offramp/bank-accounts', {
-                method: 'POST',
-                body: JSON.stringify(bankDetails),
-            });
+            const response = await apiClient.request<BankAccount>(
+                '/offramp/bank-accounts',
+                {
+                    method: 'POST',
+                    body: JSON.stringify(bankDetails),
+                }
+            );
 
             return {
                 success: true,
@@ -161,7 +216,10 @@ export class OffRampService {
             logger.error('Failed to add bank account', { error, bankDetails });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to add bank account',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to add bank account',
             };
         }
     }
@@ -173,7 +231,9 @@ export class OffRampService {
         try {
             logger.info('Getting user bank accounts');
 
-            const response = await apiClient.request<BankAccount[]>('/offramp/bank-accounts');
+            const response = await apiClient.request<BankAccount[]>(
+                '/offramp/bank-accounts'
+            );
             return response.data;
         } catch (error) {
             logger.error('Failed to get bank accounts', { error });
@@ -184,7 +244,9 @@ export class OffRampService {
     /**
      * Delete bank account
      */
-    async deleteBankAccount(accountId: string): Promise<{ success: boolean; error?: string }> {
+    async deleteBankAccount(
+        accountId: string
+    ): Promise<{ success: boolean; error?: string }> {
         try {
             logger.info('Deleting bank account', { accountId });
 
@@ -197,7 +259,10 @@ export class OffRampService {
             logger.error('Failed to delete bank account', { error, accountId });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to delete bank account',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to delete bank account',
             };
         }
     }
@@ -210,7 +275,10 @@ export class OffRampService {
         currency: string
     ): Promise<number> {
         try {
-            logger.info('Getting off-ramp exchange rate', { tokenType, currency });
+            logger.info('Getting off-ramp exchange rate', {
+                tokenType,
+                currency,
+            });
 
             const response = await apiClient.request<{ rate: number }>(
                 `/offramp/exchange-rate?tokenType=${tokenType}&currency=${currency}`
@@ -218,11 +286,14 @@ export class OffRampService {
 
             return response.data.rate;
         } catch (error) {
-            logger.error('Failed to get off-ramp exchange rate', { error, tokenType, currency });
+            logger.error('Failed to get off-ramp exchange rate', {
+                error,
+                tokenType,
+                currency,
+            });
             return 0;
         }
     }
 }
 
 export const offRampService = new OffRampService();
-

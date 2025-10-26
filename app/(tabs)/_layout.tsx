@@ -12,7 +12,8 @@ export default function TabLayout() {
     return (
         <Tabs
             screenOptions={{
-                tabBarActiveTintColor: Colors[colorScheme === 'dark' ? 'dark' : 'light'].tint,
+                tabBarActiveTintColor:
+                    Colors[colorScheme === 'dark' ? 'dark' : 'light'].tint,
                 headerShown: false,
                 tabBarButton: HapticTab,
             }}
@@ -49,7 +50,11 @@ export default function TabLayout() {
                 options={{
                     title: 'Invest',
                     tabBarIcon: ({ color }) => (
-                        <MaterialIcons name="trending-up" size={24} color={color} />
+                        <MaterialIcons
+                            name="trending-up"
+                            size={24}
+                            color={color}
+                        />
                     ),
                 }}
             />

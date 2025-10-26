@@ -42,18 +42,25 @@ export default function SendScreen() {
                     text: 'Send',
                     onPress: async () => {
                         try {
-                            const result = await transactionService.createTransaction({
-                                recipientAddress: recipient.trim(),
-                                amount: numAmount,
-                                currency,
-                            });
+                            const result =
+                                await transactionService.createTransaction({
+                                    recipientAddress: recipient.trim(),
+                                    amount: numAmount,
+                                    currency,
+                                });
 
                             if (result.success) {
-                                Alert.alert('Success', 'Transaction created successfully!');
+                                Alert.alert(
+                                    'Success',
+                                    'Transaction created successfully!'
+                                );
                                 setRecipient('');
                                 setAmount('');
                             } else {
-                                Alert.alert('Error', result.error || 'Transaction failed');
+                                Alert.alert(
+                                    'Error',
+                                    result.error || 'Transaction failed'
+                                );
                             }
                         } catch (error) {
                             Alert.alert('Error', 'Failed to send transaction');

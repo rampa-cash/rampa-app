@@ -1,6 +1,6 @@
 /**
  * Transaction Service
- * 
+ *
  * Handles all transaction-related operations including sending money,
  * receiving money, transaction history, and status updates
  */
@@ -35,7 +35,9 @@ export class TransactionService {
     /**
      * Create a new transaction (send money)
      */
-    async createTransaction(request: CreateTransactionRequest): Promise<TransactionResponse> {
+    async createTransaction(
+        request: CreateTransactionRequest
+    ): Promise<TransactionResponse> {
         try {
             // Validate input
             if (!SecurityUtils.isValidAmount(request.amount)) {
@@ -53,16 +55,21 @@ export class TransactionService {
             logger.info('Creating transaction', {
                 amount: request.amount,
                 currency: request.currency,
-                recipientAddress: SecurityUtils.maskSensitiveData(request.recipientAddress),
+                recipientAddress: SecurityUtils.maskSensitiveData(
+                    request.recipientAddress
+                ),
             });
 
             // Authenticate with biometrics for sensitive operations
-            const authResult = await biometricAuth.authenticateForSensitiveOperation(
-                `send ${request.amount} ${request.currency}`
-            );
+            const authResult =
+                await biometricAuth.authenticateForSensitiveOperation(
+                    `send ${request.amount} ${request.currency}`
+                );
 
             if (!authResult.success) {
-                throw new Error('Biometric authentication required for transactions');
+                throw new Error(
+                    'Biometric authentication required for transactions'
+                );
             }
 
             // Generate transaction ID
@@ -80,10 +87,13 @@ export class TransactionService {
             };
 
             // Call backend API
-            const response = await apiClient.request<Transaction>('/transactions', {
-                method: 'POST',
-                body: JSON.stringify(transactionData),
-            });
+            const response = await apiClient.request<Transaction>(
+                '/transactions',
+                {
+                    method: 'POST',
+                    body: JSON.stringify(transactionData),
+                }
+            );
 
             logger.info('Transaction created successfully', { transactionId });
 
@@ -95,7 +105,10 @@ export class TransactionService {
             logger.error('Failed to create transaction', { error });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Transaction failed',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Transaction failed',
             };
         }
     }
@@ -111,19 +124,23 @@ export class TransactionService {
     }): Promise<TransactionHistoryResponse> {
         try {
             const queryParams = new URLSearchParams();
-            
-            if (params?.page) queryParams.append('page', params.page.toString());
-            if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+            if (params?.page)
+                queryParams.append('page', params.page.toString());
+            if (params?.limit)
+                queryParams.append('limit', params.limit.toString());
             if (params?.status) queryParams.append('status', params.status);
-            if (params?.currency) queryParams.append('currency', params.currency);
+            if (params?.currency)
+                queryParams.append('currency', params.currency);
 
             const endpoint = `/transactions${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-            
-            const response = await apiClient.request<TransactionHistoryResponse>(endpoint, {
-                method: 'GET',
-            });
 
-            logger.info('Transaction history retrieved', { 
+            const response =
+                await apiClient.request<TransactionHistoryResponse>(endpoint, {
+                    method: 'GET',
+                });
+
+            logger.info('Transaction history retrieved', {
                 count: response.data.transactions.length,
                 page: response.data.page,
             });
@@ -138,11 +155,16 @@ export class TransactionService {
     /**
      * Get transaction by ID
      */
-    async getTransactionById(transactionId: string): Promise<Transaction | null> {
+    async getTransactionById(
+        transactionId: string
+    ): Promise<Transaction | null> {
         try {
-            const response = await apiClient.request<Transaction>(`/transactions/${transactionId}`, {
-                method: 'GET',
-            });
+            const response = await apiClient.request<Transaction>(
+                `/transactions/${transactionId}`,
+                {
+                    method: 'GET',
+                }
+            );
 
             logger.info('Transaction retrieved', { transactionId });
             return response.data;
@@ -155,34 +177,48 @@ export class TransactionService {
     /**
      * Cancel a pending transaction
      */
-    async cancelTransaction(transactionId: string): Promise<TransactionResponse> {
+    async cancelTransaction(
+        transactionId: string
+    ): Promise<TransactionResponse> {
         try {
             logger.info('Cancelling transaction', { transactionId });
 
             // Authenticate with biometrics
-            const authResult = await biometricAuth.authenticateForSensitiveOperation(
-                'cancel transaction'
-            );
+            const authResult =
+                await biometricAuth.authenticateForSensitiveOperation(
+                    'cancel transaction'
+                );
 
             if (!authResult.success) {
                 throw new Error('Biometric authentication required');
             }
 
-            const response = await apiClient.request<Transaction>(`/transactions/${transactionId}/cancel`, {
-                method: 'POST',
-            });
+            const response = await apiClient.request<Transaction>(
+                `/transactions/${transactionId}/cancel`,
+                {
+                    method: 'POST',
+                }
+            );
 
-            logger.info('Transaction cancelled successfully', { transactionId });
+            logger.info('Transaction cancelled successfully', {
+                transactionId,
+            });
 
             return {
                 success: true,
                 transaction: response.data,
             };
         } catch (error) {
-            logger.error('Failed to cancel transaction', { transactionId, error });
+            logger.error('Failed to cancel transaction', {
+                transactionId,
+                error,
+            });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to cancel transaction',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to cancel transaction',
             };
         }
     }
@@ -206,7 +242,10 @@ export class TransactionService {
 
             return response.data;
         } catch (error) {
-            logger.error('Failed to get transaction status', { transactionId, error });
+            logger.error('Failed to get transaction status', {
+                transactionId,
+                error,
+            });
             throw new Error('Failed to get transaction status');
         }
     }
@@ -234,7 +273,7 @@ export class TransactionService {
                 method: 'GET',
             });
 
-            logger.info('Wallet balance retrieved', { 
+            logger.info('Wallet balance retrieved', {
                 totalValue: response.data.totalValue,
                 currencies: response.data.balances.length,
             });
@@ -249,7 +288,10 @@ export class TransactionService {
     /**
      * Get transaction fees
      */
-    async getTransactionFees(amount: number, currency: string): Promise<{
+    async getTransactionFees(
+        amount: number,
+        currency: string
+    ): Promise<{
         networkFee: number;
         serviceFee: number;
         totalFee: number;

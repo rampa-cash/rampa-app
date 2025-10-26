@@ -1,6 +1,6 @@
 /**
  * Offline Data Synchronization and Network Status Handling
- * 
+ *
  * Provides offline capabilities, data synchronization, and network status monitoring
  * Ensures app functionality even when network is unavailable
  */
@@ -48,7 +48,7 @@ export class OfflineManager {
      * Initialize network status monitoring
      */
     private initializeNetworkMonitoring(): void {
-        NetInfo.addEventListener((state) => {
+        NetInfo.addEventListener(state => {
             const wasOnline = this.isOnline;
             this.isOnline = state.isConnected ?? false;
 
@@ -61,7 +61,7 @@ export class OfflineManager {
             };
 
             // Notify listeners
-            this.networkListeners.forEach((listener) => {
+            this.networkListeners.forEach(listener => {
                 try {
                     listener(networkStatus);
                 } catch (error) {
@@ -84,7 +84,7 @@ export class OfflineManager {
      */
     addNetworkListener(listener: (status: NetworkStatus) => void): () => void {
         this.networkListeners.push(listener);
-        
+
         // Return unsubscribe function
         return () => {
             const index = this.networkListeners.indexOf(listener);
@@ -135,7 +135,11 @@ export class OfflineManager {
         };
 
         this.syncQueue.push(item);
-        logger.info('Item added to sync queue', { itemId: item.id, action, endpoint });
+        logger.info('Item added to sync queue', {
+            itemId: item.id,
+            action,
+            endpoint,
+        });
 
         // Try to sync immediately if online
         if (this.isOnline) {
@@ -149,12 +153,18 @@ export class OfflineManager {
      * Process sync queue when network is available
      */
     private async processSyncQueue(): Promise<void> {
-        if (this.syncInProgress || !this.isOnline || this.syncQueue.length === 0) {
+        if (
+            this.syncInProgress ||
+            !this.isOnline ||
+            this.syncQueue.length === 0
+        ) {
             return;
         }
 
         this.syncInProgress = true;
-        logger.info('Processing sync queue', { queueLength: this.syncQueue.length });
+        logger.info('Processing sync queue', {
+            queueLength: this.syncQueue.length,
+        });
 
         const itemsToProcess = [...this.syncQueue];
         const failedItems: SyncQueueItem[] = [];
@@ -163,17 +173,21 @@ export class OfflineManager {
             try {
                 await this.processSyncItem(item);
                 // Remove successful item from queue
-                this.syncQueue = this.syncQueue.filter((q) => q.id !== item.id);
+                this.syncQueue = this.syncQueue.filter(q => q.id !== item.id);
             } catch (error) {
                 logger.error('Sync item failed', { itemId: item.id, error });
-                
+
                 item.retryCount++;
                 if (item.retryCount < item.maxRetries) {
                     failedItems.push(item);
                 } else {
-                    logger.error('Sync item exceeded max retries', { itemId: item.id });
+                    logger.error('Sync item exceeded max retries', {
+                        itemId: item.id,
+                    });
                     // Remove item that exceeded max retries
-                    this.syncQueue = this.syncQueue.filter((q) => q.id !== item.id);
+                    this.syncQueue = this.syncQueue.filter(
+                        q => q.id !== item.id
+                    );
                 }
             }
         }
@@ -181,7 +195,9 @@ export class OfflineManager {
         this.syncInProgress = false;
 
         if (failedItems.length > 0) {
-            logger.warn('Some sync items failed and will be retried', { failedCount: failedItems.length });
+            logger.warn('Some sync items failed and will be retried', {
+                failedCount: failedItems.length,
+            });
         }
     }
 
@@ -191,11 +207,15 @@ export class OfflineManager {
     private async processSyncItem(item: SyncQueueItem): Promise<void> {
         // This would integrate with your API client
         // For now, simulate API call
-        logger.info('Processing sync item', { itemId: item.id, action: item.action, endpoint: item.endpoint });
-        
+        logger.info('Processing sync item', {
+            itemId: item.id,
+            action: item.action,
+            endpoint: item.endpoint,
+        });
+
         // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         // Simulate occasional failures for testing
         if (Math.random() < 0.1) {
             throw new Error('Simulated network error');
@@ -211,7 +231,9 @@ export class OfflineManager {
         failedItems: number;
     } {
         const totalItems = this.syncQueue.length;
-        const failedItems = this.syncQueue.filter((item) => item.retryCount > 0).length;
+        const failedItems = this.syncQueue.filter(
+            item => item.retryCount > 0
+        ).length;
         const pendingItems = totalItems - failedItems;
 
         return {
@@ -233,19 +255,22 @@ export class OfflineManager {
      * Retry failed sync items
      */
     async retryFailedItems(): Promise<void> {
-        const failedItems = this.syncQueue.filter((item) => item.retryCount > 0);
+        const failedItems = this.syncQueue.filter(item => item.retryCount > 0);
         if (failedItems.length === 0) {
             return;
         }
 
-        logger.info('Retrying failed sync items', { count: failedItems.length });
+        logger.info('Retrying failed sync items', {
+            count: failedItems.length,
+        });
         await this.processSyncQueue();
     }
 }
 
 export class CacheManager {
     private static instance: CacheManager;
-    private cache: Map<string, { data: any; timestamp: number; ttl: number }> = new Map();
+    private cache: Map<string, { data: any; timestamp: number; ttl: number }> =
+        new Map();
     private maxCacheSize = 100;
 
     static getInstance(): CacheManager {

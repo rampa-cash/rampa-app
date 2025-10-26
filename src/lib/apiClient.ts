@@ -175,12 +175,16 @@ class ApiClient {
     }): Promise<ApiResponse<any[]>> {
         const queryParams = new URLSearchParams();
         if (params?.type) queryParams.append('type', params.type);
-        if (params?.riskLevel) queryParams.append('riskLevel', params.riskLevel);
+        if (params?.riskLevel)
+            queryParams.append('riskLevel', params.riskLevel);
         if (params?.limit) queryParams.append('limit', params.limit.toString());
-        if (params?.offset) queryParams.append('offset', params.offset.toString());
+        if (params?.offset)
+            queryParams.append('offset', params.offset.toString());
 
         const query = queryParams.toString();
-        const endpoint = query ? `/investments/options?${query}` : '/investments/options';
+        const endpoint = query
+            ? `/investments/options?${query}`
+            : '/investments/options';
 
         return this.request<any[]>(endpoint);
     }
@@ -204,7 +208,10 @@ class ApiClient {
         return this.request<any>(`/investments/user/${id}`);
     }
 
-    async withdrawFromInvestment(id: string, data: any): Promise<ApiResponse<any>> {
+    async withdrawFromInvestment(
+        id: string,
+        data: any
+    ): Promise<ApiResponse<any>> {
         return this.request<any>(`/investments/user/${id}/withdraw`, {
             method: 'POST',
             body: JSON.stringify(data),
@@ -220,11 +227,14 @@ class ApiClient {
         period?: string;
     }): Promise<ApiResponse<any[]>> {
         const queryParams = new URLSearchParams();
-        if (params?.investmentId) queryParams.append('investmentId', params.investmentId);
+        if (params?.investmentId)
+            queryParams.append('investmentId', params.investmentId);
         if (params?.period) queryParams.append('period', params.period);
 
         const query = queryParams.toString();
-        const endpoint = query ? `/investments/performance?${query}` : '/investments/performance';
+        const endpoint = query
+            ? `/investments/performance?${query}`
+            : '/investments/performance';
 
         return this.request<any[]>(endpoint);
     }

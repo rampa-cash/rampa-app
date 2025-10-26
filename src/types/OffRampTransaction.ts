@@ -70,4 +70,3 @@ export interface BankAccount {
     createdAt: Date;
     updatedAt: Date;
 }
-

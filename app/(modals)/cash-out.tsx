@@ -7,7 +7,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import { offRampService } from '../../src/services/OffRampService';
 import { SecurityUtils } from '../../src/utils/securityUtils';
@@ -15,7 +15,9 @@ import { SecurityUtils } from '../../src/utils/securityUtils';
 export default function CashOutScreen() {
     const router = useRouter();
     const [tokenAmount, setTokenAmount] = useState('');
-    const [selectedToken, setSelectedToken] = useState<'SOL' | 'USDC' | 'EURC'>('USDC');
+    const [selectedToken, setSelectedToken] = useState<'SOL' | 'USDC' | 'EURC'>(
+        'USDC'
+    );
     const [currency, setCurrency] = useState('USD');
     const [bankDetails, setBankDetails] = useState({
         accountNumber: '',
@@ -52,7 +54,11 @@ export default function CashOutScreen() {
             return;
         }
 
-        if (!bankDetails.accountNumber || !bankDetails.accountName || !bankDetails.bankName) {
+        if (
+            !bankDetails.accountNumber ||
+            !bankDetails.accountName ||
+            !bankDetails.bankName
+        ) {
             Alert.alert('Error', 'Please enter all bank account details');
             return;
         }
@@ -68,10 +74,16 @@ export default function CashOutScreen() {
             });
 
             if (result.success) {
-                Alert.alert('Success', 'Off-ramp transaction initiated successfully!');
+                Alert.alert(
+                    'Success',
+                    'Off-ramp transaction initiated successfully!'
+                );
                 router.back();
             } else {
-                Alert.alert('Error', result.error || 'Failed to initiate off-ramp transaction');
+                Alert.alert(
+                    'Error',
+                    result.error || 'Failed to initiate off-ramp transaction'
+                );
             }
         } catch (error) {
             Alert.alert('Error', 'Failed to cash out. Please try again.');

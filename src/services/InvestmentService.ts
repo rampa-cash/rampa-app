@@ -5,7 +5,7 @@ import {
     InvestmentPerformance,
     InvestmentStats,
     UserInvestment,
-    WithdrawInvestmentRequest
+    WithdrawInvestmentRequest,
 } from '../types/Investment';
 import { biometricAuth } from '../utils/biometricAuth';
 import { logger } from '../utils/errorHandler';
@@ -40,17 +40,23 @@ export class InvestmentService {
     }): Promise<InvestmentOption[]> {
         try {
             logger.info('Fetching investment options', { params });
-            
+
             const queryParams = new URLSearchParams();
             if (params?.type) queryParams.append('type', params.type);
-            if (params?.riskLevel) queryParams.append('riskLevel', params.riskLevel);
-            if (params?.limit) queryParams.append('limit', params.limit.toString());
-            if (params?.offset) queryParams.append('offset', params.offset.toString());
+            if (params?.riskLevel)
+                queryParams.append('riskLevel', params.riskLevel);
+            if (params?.limit)
+                queryParams.append('limit', params.limit.toString());
+            if (params?.offset)
+                queryParams.append('offset', params.offset.toString());
 
             const query = queryParams.toString();
-            const endpoint = query ? `/investments/options?${query}` : '/investments/options';
+            const endpoint = query
+                ? `/investments/options?${query}`
+                : '/investments/options';
 
-            const response = await apiClient.request<InvestmentOption[]>(endpoint);
+            const response =
+                await apiClient.request<InvestmentOption[]>(endpoint);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch investment options', { error });
@@ -64,11 +70,16 @@ export class InvestmentService {
     async getInvestmentOptionById(id: string): Promise<InvestmentOption> {
         try {
             logger.info('Fetching investment option by ID', { id });
-            
-            const response = await apiClient.request<InvestmentOption>(`/investments/options/${id}`);
+
+            const response = await apiClient.request<InvestmentOption>(
+                `/investments/options/${id}`
+            );
             return response.data;
         } catch (error) {
-            logger.error('Failed to fetch investment option by ID', { error, id });
+            logger.error('Failed to fetch investment option by ID', {
+                error,
+                id,
+            });
             throw new Error('Failed to fetch investment option');
         }
     }
@@ -76,14 +87,21 @@ export class InvestmentService {
     /**
      * Get investment options by type
      */
-    async getInvestmentOptionsByType(type: string): Promise<InvestmentOption[]> {
+    async getInvestmentOptionsByType(
+        type: string
+    ): Promise<InvestmentOption[]> {
         try {
             logger.info('Fetching investment options by type', { type });
-            
-            const response = await apiClient.request<InvestmentOption[]>(`/investments/options/type/${type}`);
+
+            const response = await apiClient.request<InvestmentOption[]>(
+                `/investments/options/type/${type}`
+            );
             return response.data;
         } catch (error) {
-            logger.error('Failed to fetch investment options by type', { error, type });
+            logger.error('Failed to fetch investment options by type', {
+                error,
+                type,
+            });
             throw new Error('Failed to fetch investment options');
         }
     }
@@ -91,14 +109,23 @@ export class InvestmentService {
     /**
      * Get investment options by risk level
      */
-    async getInvestmentOptionsByRiskLevel(riskLevel: string): Promise<InvestmentOption[]> {
+    async getInvestmentOptionsByRiskLevel(
+        riskLevel: string
+    ): Promise<InvestmentOption[]> {
         try {
-            logger.info('Fetching investment options by risk level', { riskLevel });
-            
-            const response = await apiClient.request<InvestmentOption[]>(`/investments/options/risk/${riskLevel}`);
+            logger.info('Fetching investment options by risk level', {
+                riskLevel,
+            });
+
+            const response = await apiClient.request<InvestmentOption[]>(
+                `/investments/options/risk/${riskLevel}`
+            );
             return response.data;
         } catch (error) {
-            logger.error('Failed to fetch investment options by risk level', { error, riskLevel });
+            logger.error('Failed to fetch investment options by risk level', {
+                error,
+                riskLevel,
+            });
             throw new Error('Failed to fetch investment options');
         }
     }
@@ -106,25 +133,36 @@ export class InvestmentService {
     /**
      * Search investment options
      */
-    async searchInvestmentOptions(query: string, filters?: {
-        type?: string;
-        riskLevel?: string;
-        minAmount?: number;
-        maxAmount?: number;
-    }): Promise<InvestmentOption[]> {
+    async searchInvestmentOptions(
+        query: string,
+        filters?: {
+            type?: string;
+            riskLevel?: string;
+            minAmount?: number;
+            maxAmount?: number;
+        }
+    ): Promise<InvestmentOption[]> {
         try {
             logger.info('Searching investment options', { query, filters });
-            
+
             const params = new URLSearchParams({ q: query });
             if (filters?.type) params.append('type', filters.type);
-            if (filters?.riskLevel) params.append('riskLevel', filters.riskLevel);
-            if (filters?.minAmount) params.append('minAmount', filters.minAmount.toString());
-            if (filters?.maxAmount) params.append('maxAmount', filters.maxAmount.toString());
+            if (filters?.riskLevel)
+                params.append('riskLevel', filters.riskLevel);
+            if (filters?.minAmount)
+                params.append('minAmount', filters.minAmount.toString());
+            if (filters?.maxAmount)
+                params.append('maxAmount', filters.maxAmount.toString());
 
-            const response = await apiClient.request<InvestmentOption[]>(`/investments/options/search?${params.toString()}`);
+            const response = await apiClient.request<InvestmentOption[]>(
+                `/investments/options/search?${params.toString()}`
+            );
             return response.data;
         } catch (error) {
-            logger.error('Failed to search investment options', { error, query });
+            logger.error('Failed to search investment options', {
+                error,
+                query,
+            });
             throw new Error('Failed to search investment options');
         }
     }
@@ -135,8 +173,9 @@ export class InvestmentService {
     async getUserInvestments(): Promise<UserInvestment[]> {
         try {
             logger.info('Fetching user investments');
-            
-            const response = await apiClient.request<UserInvestment[]>('/investments/user');
+
+            const response =
+                await apiClient.request<UserInvestment[]>('/investments/user');
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch user investments', { error });
@@ -147,14 +186,17 @@ export class InvestmentService {
     /**
      * Create new investment
      */
-    async createInvestment(request: CreateInvestmentRequest): Promise<InvestmentResponse> {
+    async createInvestment(
+        request: CreateInvestmentRequest
+    ): Promise<InvestmentResponse> {
         try {
             logger.info('Creating new investment', { request });
-            
+
             // Authenticate with biometrics for sensitive operations
-            const authResult = await biometricAuth.authenticateForSensitiveOperation(
-                `invest ${request.amount} ${request.currency}`
-            );
+            const authResult =
+                await biometricAuth.authenticateForSensitiveOperation(
+                    `invest ${request.amount} ${request.currency}`
+                );
 
             if (!authResult.success) {
                 return {
@@ -163,10 +205,13 @@ export class InvestmentService {
                 };
             }
 
-            const response = await apiClient.request<UserInvestment>('/investments/user/create', {
-                method: 'POST',
-                body: JSON.stringify(request),
-            });
+            const response = await apiClient.request<UserInvestment>(
+                '/investments/user/create',
+                {
+                    method: 'POST',
+                    body: JSON.stringify(request),
+                }
+            );
 
             return {
                 success: true,
@@ -176,7 +221,10 @@ export class InvestmentService {
             logger.error('Failed to create investment', { error, request });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to create investment',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to create investment',
             };
         }
     }
@@ -187,11 +235,16 @@ export class InvestmentService {
     async getUserInvestmentById(id: string): Promise<UserInvestment> {
         try {
             logger.info('Fetching user investment by ID', { id });
-            
-            const response = await apiClient.request<UserInvestment>(`/investments/user/${id}`);
+
+            const response = await apiClient.request<UserInvestment>(
+                `/investments/user/${id}`
+            );
             return response.data;
         } catch (error) {
-            logger.error('Failed to fetch user investment by ID', { error, id });
+            logger.error('Failed to fetch user investment by ID', {
+                error,
+                id,
+            });
             throw new Error('Failed to fetch user investment');
         }
     }
@@ -199,14 +252,18 @@ export class InvestmentService {
     /**
      * Withdraw from investment
      */
-    async withdrawFromInvestment(id: string, request: WithdrawInvestmentRequest): Promise<InvestmentResponse> {
+    async withdrawFromInvestment(
+        id: string,
+        request: WithdrawInvestmentRequest
+    ): Promise<InvestmentResponse> {
         try {
             logger.info('Withdrawing from investment', { id, request });
-            
+
             // Authenticate with biometrics for sensitive operations
-            const authResult = await biometricAuth.authenticateForSensitiveOperation(
-                `withdraw ${request.amount || 'all'} from investment`
-            );
+            const authResult =
+                await biometricAuth.authenticateForSensitiveOperation(
+                    `withdraw ${request.amount || 'all'} from investment`
+                );
 
             if (!authResult.success) {
                 return {
@@ -215,20 +272,30 @@ export class InvestmentService {
                 };
             }
 
-            const response = await apiClient.request<UserInvestment>(`/investments/user/${id}/withdraw`, {
-                method: 'POST',
-                body: JSON.stringify(request),
-            });
+            const response = await apiClient.request<UserInvestment>(
+                `/investments/user/${id}/withdraw`,
+                {
+                    method: 'POST',
+                    body: JSON.stringify(request),
+                }
+            );
 
             return {
                 success: true,
                 investment: response.data,
             };
         } catch (error) {
-            logger.error('Failed to withdraw from investment', { error, id, request });
+            logger.error('Failed to withdraw from investment', {
+                error,
+                id,
+                request,
+            });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to withdraw from investment',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to withdraw from investment',
             };
         }
     }
@@ -239,8 +306,9 @@ export class InvestmentService {
     async getInvestmentStats(): Promise<InvestmentStatsResponse> {
         try {
             logger.info('Fetching investment statistics');
-            
-            const response = await apiClient.request<InvestmentStats>('/investments/stats');
+
+            const response =
+                await apiClient.request<InvestmentStats>('/investments/stats');
 
             return {
                 success: true,
@@ -250,7 +318,10 @@ export class InvestmentService {
             logger.error('Failed to fetch investment statistics', { error });
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Failed to fetch investment statistics',
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to fetch investment statistics',
             };
         }
     }
@@ -258,21 +329,34 @@ export class InvestmentService {
     /**
      * Get investment performance
      */
-    async getInvestmentPerformance(investmentId?: string, period?: string): Promise<InvestmentPerformance[]> {
+    async getInvestmentPerformance(
+        investmentId?: string,
+        period?: string
+    ): Promise<InvestmentPerformance[]> {
         try {
-            logger.info('Fetching investment performance', { investmentId, period });
-            
+            logger.info('Fetching investment performance', {
+                investmentId,
+                period,
+            });
+
             const params = new URLSearchParams();
             if (investmentId) params.append('investmentId', investmentId);
             if (period) params.append('period', period);
 
             const query = params.toString();
-            const endpoint = query ? `/investments/performance?${query}` : '/investments/performance';
+            const endpoint = query
+                ? `/investments/performance?${query}`
+                : '/investments/performance';
 
-            const response = await apiClient.request<InvestmentPerformance[]>(endpoint);
+            const response =
+                await apiClient.request<InvestmentPerformance[]>(endpoint);
             return response.data;
         } catch (error) {
-            logger.error('Failed to fetch investment performance', { error, investmentId, period });
+            logger.error('Failed to fetch investment performance', {
+                error,
+                investmentId,
+                period,
+            });
             throw new Error('Failed to fetch investment performance');
         }
     }
@@ -283,11 +367,15 @@ export class InvestmentService {
     async getInvestmentRecommendations(): Promise<InvestmentOption[]> {
         try {
             logger.info('Fetching investment recommendations');
-            
-            const response = await apiClient.request<InvestmentOption[]>('/investments/recommendations');
+
+            const response = await apiClient.request<InvestmentOption[]>(
+                '/investments/recommendations'
+            );
             return response.data;
         } catch (error) {
-            logger.error('Failed to fetch investment recommendations', { error });
+            logger.error('Failed to fetch investment recommendations', {
+                error,
+            });
             throw new Error('Failed to fetch investment recommendations');
         }
     }
@@ -295,14 +383,22 @@ export class InvestmentService {
     /**
      * Calculate investment returns
      */
-    async calculateInvestmentReturns(investmentId: string, amount: number, period: number): Promise<{
+    async calculateInvestmentReturns(
+        investmentId: string,
+        amount: number,
+        period: number
+    ): Promise<{
         projectedValue: number;
         projectedReturn: number;
         projectedReturnPercentage: number;
     }> {
         try {
-            logger.info('Calculating investment returns', { investmentId, amount, period });
-            
+            logger.info('Calculating investment returns', {
+                investmentId,
+                amount,
+                period,
+            });
+
             const response = await apiClient.request<{
                 projectedValue: number;
                 projectedReturn: number;
@@ -318,7 +414,12 @@ export class InvestmentService {
 
             return response.data;
         } catch (error) {
-            logger.error('Failed to calculate investment returns', { error, investmentId, amount, period });
+            logger.error('Failed to calculate investment returns', {
+                error,
+                investmentId,
+                amount,
+                period,
+            });
             throw new Error('Failed to calculate investment returns');
         }
     }

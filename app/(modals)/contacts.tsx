@@ -26,15 +26,20 @@ export default function ContactsScreen() {
     });
 
     // Fetch contacts
-    const { data: contacts, isLoading, refetch } = useQuery({
+    const {
+        data: contacts,
+        isLoading,
+        refetch,
+    } = useQuery({
         queryKey: ['contacts'],
         queryFn: () => contactService.getContacts(),
     });
 
-    const filteredContacts = contacts?.filter(contact =>
-        contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        contact.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        contact.phone?.includes(searchQuery)
+    const filteredContacts = contacts?.filter(
+        contact =>
+            contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            contact.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            contact.phone?.includes(searchQuery)
     );
 
     const handleAddContact = async () => {
@@ -55,7 +60,12 @@ export default function ContactsScreen() {
             if (result.success) {
                 Alert.alert('Success', 'Contact added successfully!');
                 setShowAddModal(false);
-                setNewContact({ name: '', email: '', phone: '', blockchainAddress: '' });
+                setNewContact({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    blockchainAddress: '',
+                });
                 refetch();
             } else {
                 Alert.alert('Error', result.error || 'Failed to add contact');
@@ -79,7 +89,10 @@ export default function ContactsScreen() {
                         if (result.success) {
                             refetch();
                         } else {
-                            Alert.alert('Error', result.error || 'Failed to delete contact');
+                            Alert.alert(
+                                'Error',
+                                result.error || 'Failed to delete contact'
+                            );
                         }
                     },
                 },
@@ -102,17 +115,23 @@ export default function ContactsScreen() {
                 </View>
                 {item.email && (
                     <Text style={styles.contactDetail}>
-                        <MaterialIcons name="email" size={14} color="#666" /> {item.email}
+                        <MaterialIcons name="email" size={14} color="#666" />{' '}
+                        {item.email}
                     </Text>
                 )}
                 {item.phone && (
                     <Text style={styles.contactDetail}>
-                        <MaterialIcons name="phone" size={14} color="#666" /> {item.phone}
+                        <MaterialIcons name="phone" size={14} color="#666" />{' '}
+                        {item.phone}
                     </Text>
                 )}
                 {item.blockchainAddress && (
                     <Text style={styles.contactDetail}>
-                        <MaterialIcons name="account-balance-wallet" size={14} color="#666" />{' '}
+                        <MaterialIcons
+                            name="account-balance-wallet"
+                            size={14}
+                            color="#666"
+                        />{' '}
                         {item.blockchainAddress.slice(0, 8)}...
                     </Text>
                 )}
@@ -120,7 +139,9 @@ export default function ContactsScreen() {
             <View style={styles.contactActions}>
                 <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => Alert.alert('Send to Contact', `Send to ${item.name}?`)}
+                    onPress={() =>
+                        Alert.alert('Send to Contact', `Send to ${item.name}?`)
+                    }
                 >
                     <MaterialIcons name="send" size={20} color="#007AFF" />
                 </TouchableOpacity>
@@ -204,7 +225,10 @@ export default function ContactsScreen() {
                             placeholder="Email"
                             value={newContact.email}
                             onChangeText={text =>
-                                setNewContact(prev => ({ ...prev, email: text }))
+                                setNewContact(prev => ({
+                                    ...prev,
+                                    email: text,
+                                }))
                             }
                             keyboardType="email-address"
                             autoCapitalize="none"
@@ -215,7 +239,10 @@ export default function ContactsScreen() {
                             placeholder="Phone"
                             value={newContact.phone}
                             onChangeText={text =>
-                                setNewContact(prev => ({ ...prev, phone: text }))
+                                setNewContact(prev => ({
+                                    ...prev,
+                                    phone: text,
+                                }))
                             }
                             keyboardType="phone-pad"
                         />
@@ -225,23 +252,36 @@ export default function ContactsScreen() {
                             placeholder="Blockchain Address"
                             value={newContact.blockchainAddress}
                             onChangeText={text =>
-                                setNewContact(prev => ({ ...prev, blockchainAddress: text }))
+                                setNewContact(prev => ({
+                                    ...prev,
+                                    blockchainAddress: text,
+                                }))
                             }
                             autoCapitalize="none"
                         />
 
                         <View style={styles.modalActions}>
                             <TouchableOpacity
-                                style={[styles.modalButton, styles.cancelButton]}
+                                style={[
+                                    styles.modalButton,
+                                    styles.cancelButton,
+                                ]}
                                 onPress={() => setShowAddModal(false)}
                             >
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                                <Text style={styles.cancelButtonText}>
+                                    Cancel
+                                </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.modalButton, styles.addButtonModal]}
+                                style={[
+                                    styles.modalButton,
+                                    styles.addButtonModal,
+                                ]}
                                 onPress={handleAddContact}
                             >
-                                <Text style={styles.addButtonText}>Add Contact</Text>
+                                <Text style={styles.addButtonText}>
+                                    Add Contact
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -419,4 +459,3 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
 });
-

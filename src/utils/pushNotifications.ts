@@ -1,6 +1,6 @@
 /**
  * Push Notifications Utilities
- * 
+ *
  * Provides push notification capabilities using Firebase Cloud Messaging
  * Handles notification permissions, registration, and processing
  */
@@ -78,11 +78,13 @@ export class PushNotificationManager {
     async requestPermissions(): Promise<boolean> {
         try {
             if (Device.isDevice) {
-                const { status: existingStatus } = await Notifications.getPermissionsAsync();
+                const { status: existingStatus } =
+                    await Notifications.getPermissionsAsync();
                 let finalStatus = existingStatus;
 
                 if (existingStatus !== 'granted') {
-                    const { status } = await Notifications.requestPermissionsAsync();
+                    const { status } =
+                        await Notifications.requestPermissionsAsync();
                     finalStatus = status;
                 }
 
@@ -98,7 +100,9 @@ export class PushNotificationManager {
                 return false;
             }
         } catch (error) {
-            logger.error('Failed to request notification permissions', { error });
+            logger.error('Failed to request notification permissions', {
+                error,
+            });
             return false;
         }
     }
@@ -132,7 +136,9 @@ export class PushNotificationManager {
 
             return this.pushToken;
         } catch (error) {
-            logger.error('Failed to register for push notifications', { error });
+            logger.error('Failed to register for push notifications', {
+                error,
+            });
             return null;
         }
     }
@@ -142,24 +148,26 @@ export class PushNotificationManager {
      */
     private setupNotificationListeners(): void {
         // Listen for notifications received while app is foregrounded
-        const notificationListener = Notifications.addNotificationReceivedListener((notification) => {
-            logger.info('Notification received', { 
-                title: notification.request.content.title,
-                body: notification.request.content.body,
-                data: notification.request.content.data,
+        const notificationListener =
+            Notifications.addNotificationReceivedListener(notification => {
+                logger.info('Notification received', {
+                    title: notification.request.content.title,
+                    body: notification.request.content.body,
+                    data: notification.request.content.data,
+                });
             });
-        });
 
         // Listen for user interactions with notifications
-        const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
-            logger.info('Notification response received', { 
-                actionIdentifier: response.actionIdentifier,
-                data: response.notification.request.content.data,
+        const responseListener =
+            Notifications.addNotificationResponseReceivedListener(response => {
+                logger.info('Notification response received', {
+                    actionIdentifier: response.actionIdentifier,
+                    data: response.notification.request.content.data,
+                });
+
+                // Handle notification tap
+                this.handleNotificationTap(response);
             });
-            
-            // Handle notification tap
-            this.handleNotificationTap(response);
-        });
 
         this.notificationListeners.push(notificationListener, responseListener);
     }
@@ -167,25 +175,33 @@ export class PushNotificationManager {
     /**
      * Handle notification tap
      */
-    private handleNotificationTap(response: Notifications.NotificationResponse): void {
+    private handleNotificationTap(
+        response: Notifications.NotificationResponse
+    ): void {
         const data = response.notification.request.content.data;
-        
+
         if (data?.type) {
             switch (data.type) {
                 case 'transaction':
                     // Navigate to transaction details
-                    logger.info('Navigate to transaction', { transactionId: data.transactionId });
+                    logger.info('Navigate to transaction', {
+                        transactionId: data.transactionId,
+                    });
                     break;
                 case 'education':
                     // Navigate to education content
-                    logger.info('Navigate to education', { contentId: data.contentId });
+                    logger.info('Navigate to education', {
+                        contentId: data.contentId,
+                    });
                     break;
                 case 'security':
                     // Navigate to security settings
                     logger.info('Navigate to security settings');
                     break;
                 default:
-                    logger.info('Unknown notification type', { type: data.type });
+                    logger.info('Unknown notification type', {
+                        type: data.type,
+                    });
             }
         }
     }
@@ -206,7 +222,9 @@ export class PushNotificationManager {
                 trigger: null, // Send immediately
             });
 
-            logger.info('Local notification sent', { title: notification.title });
+            logger.info('Local notification sent', {
+                title: notification.title,
+            });
         } catch (error) {
             logger.error('Failed to send local notification', { error });
         }
@@ -231,7 +249,9 @@ export class PushNotificationManager {
                 trigger,
             });
 
-            logger.info('Notification scheduled', { title: notification.title });
+            logger.info('Notification scheduled', {
+                title: notification.title,
+            });
         } catch (error) {
             logger.error('Failed to schedule notification', { error });
         }
@@ -351,7 +371,7 @@ export class PushNotificationManager {
      * Cleanup notification listeners
      */
     cleanup(): void {
-        this.notificationListeners.forEach((listener) => {
+        this.notificationListeners.forEach(listener => {
             listener.remove();
         });
         this.notificationListeners = [];
