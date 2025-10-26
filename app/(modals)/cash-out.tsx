@@ -7,20 +7,22 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
+import { offRampService } from '../../src/services/OffRampService';
+import { SecurityUtils } from '../../src/utils/securityUtils';
 
 export default function CashOutScreen() {
     const router = useRouter();
-    const [amount, setAmount] = useState('');
-    const [selectedMethod, setSelectedMethod] = useState<
-        'bank' | 'card' | 'paypal'
-    >('bank');
+    const [tokenAmount, setTokenAmount] = useState('');
+    const [selectedToken, setSelectedToken] = useState<'SOL' | 'USDC' | 'EURC'>('USDC');
+    const [currency, setCurrency] = useState('USD');
     const [bankDetails, setBankDetails] = useState({
         accountNumber: '',
-        routingNumber: '',
         accountName: '',
+        bankName: '',
     });
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const withdrawalMethods = [
         {
@@ -33,41 +35,49 @@ export default function CashOutScreen() {
         { id: 'paypal', name: 'PayPal', icon: 'payment', fee: '3.5%' },
     ];
 
-    const handleCashOut = () => {
-        if (!amount.trim()) {
+    const handleCashOut = async () => {
+        if (!tokenAmount.trim()) {
             Alert.alert('Error', 'Please enter an amount');
             return;
         }
 
-        const numAmount = parseFloat(amount);
+        const numAmount = parseFloat(tokenAmount);
         if (isNaN(numAmount) || numAmount <= 0) {
             Alert.alert('Error', 'Please enter a valid amount');
             return;
         }
 
-        if (selectedMethod === 'bank' && !bankDetails.accountNumber) {
-            Alert.alert('Error', 'Please enter bank account details');
+        if (!SecurityUtils.isValidAmount(numAmount)) {
+            Alert.alert('Error', 'Amount exceeds maximum limit');
             return;
         }
 
-        Alert.alert(
-            'Confirm Withdrawal',
-            `Withdraw $${amount} to your ${withdrawalMethods.find(m => m.id === selectedMethod)?.name}?`,
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Withdraw',
-                    onPress: () => {
-                        console.log('Withdrawing:', {
-                            amount,
-                            method: selectedMethod,
-                            bankDetails,
-                        });
-                        router.back();
-                    },
-                },
-            ]
-        );
+        if (!bankDetails.accountNumber || !bankDetails.accountName || !bankDetails.bankName) {
+            Alert.alert('Error', 'Please enter all bank account details');
+            return;
+        }
+
+        setIsProcessing(true);
+
+        try {
+            const result = await offRampService.initiateOffRamp({
+                tokenType: selectedToken,
+                tokenAmount: numAmount,
+                currency,
+                bankDetails,
+            });
+
+            if (result.success) {
+                Alert.alert('Success', 'Off-ramp transaction initiated successfully!');
+                router.back();
+            } else {
+                Alert.alert('Error', result.error || 'Failed to initiate off-ramp transaction');
+            }
+        } catch (error) {
+            Alert.alert('Error', 'Failed to cash out. Please try again.');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     return (
