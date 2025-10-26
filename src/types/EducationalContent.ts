@@ -2,25 +2,19 @@ export interface EducationalContent {
     id: string;
     title: string;
     description: string;
-    content: string;
-    type: 'article' | 'video' | 'quiz' | 'interactive';
-    category:
-        | 'basic_finance'
-        | 'crypto_fundamentals'
-        | 'investment_strategies'
-        | 'portfolio_management';
+    category: string;
     difficulty: 'beginner' | 'intermediate' | 'advanced';
-    estimatedTime: number;
-    points: number;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
+    duration: number; // Duration in minutes
+    rewardAmount: number; // BONK reward amount
+    isCompleted: boolean;
+    progress: number; // 0-100
+    createdAt: string; // ISO date string
 }
 
 export interface LearningProgress {
     id: string;
     userId: string;
-    contentId: string;
+    moduleId: string; // Changed from contentId to moduleId to match backend
     status: 'not_started' | 'in_progress' | 'completed';
     progress: number;
     score?: number;

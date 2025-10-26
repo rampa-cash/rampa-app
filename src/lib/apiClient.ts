@@ -147,23 +147,86 @@ class ApiClient {
 
         const query = queryParams.toString();
         const endpoint = query
-            ? `/education/content?${query}`
-            : '/education/content';
+            ? `/learning/modules?${query}`
+            : '/learning/modules';
 
         return this.request<EducationalContent[]>(endpoint);
     }
 
     async getLearningProgress(): Promise<ApiResponse<LearningProgress[]>> {
-        return this.request<LearningProgress[]>('/education/progress');
+        return this.request<LearningProgress[]>('/learning/progress');
     }
 
     async updateLearningProgress(
         data: UpdateProgressRequest
     ): Promise<ApiResponse<LearningProgress>> {
-        return this.request<LearningProgress>('/education/progress', {
+        return this.request<LearningProgress>('/learning/progress/update', {
             method: 'POST',
             body: JSON.stringify(data),
         });
+    }
+
+    // Investment endpoints
+    async getInvestmentOptions(params?: {
+        type?: string;
+        riskLevel?: string;
+        limit?: number;
+        offset?: number;
+    }): Promise<ApiResponse<any[]>> {
+        const queryParams = new URLSearchParams();
+        if (params?.type) queryParams.append('type', params.type);
+        if (params?.riskLevel) queryParams.append('riskLevel', params.riskLevel);
+        if (params?.limit) queryParams.append('limit', params.limit.toString());
+        if (params?.offset) queryParams.append('offset', params.offset.toString());
+
+        const query = queryParams.toString();
+        const endpoint = query ? `/investments/options?${query}` : '/investments/options';
+
+        return this.request<any[]>(endpoint);
+    }
+
+    async getInvestmentOptionById(id: string): Promise<ApiResponse<any>> {
+        return this.request<any>(`/investments/options/${id}`);
+    }
+
+    async getUserInvestments(): Promise<ApiResponse<any[]>> {
+        return this.request<any[]>('/investments/user');
+    }
+
+    async createInvestment(data: any): Promise<ApiResponse<any>> {
+        return this.request<any>('/investments/user/create', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async getUserInvestmentById(id: string): Promise<ApiResponse<any>> {
+        return this.request<any>(`/investments/user/${id}`);
+    }
+
+    async withdrawFromInvestment(id: string, data: any): Promise<ApiResponse<any>> {
+        return this.request<any>(`/investments/user/${id}/withdraw`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async getInvestmentStats(): Promise<ApiResponse<any>> {
+        return this.request<any>('/investments/stats');
+    }
+
+    async getInvestmentPerformance(params?: {
+        investmentId?: string;
+        period?: string;
+    }): Promise<ApiResponse<any[]>> {
+        const queryParams = new URLSearchParams();
+        if (params?.investmentId) queryParams.append('investmentId', params.investmentId);
+        if (params?.period) queryParams.append('period', params.period);
+
+        const query = queryParams.toString();
+        const endpoint = query ? `/investments/performance?${query}` : '/investments/performance';
+
+        return this.request<any[]>(endpoint);
     }
 }
 

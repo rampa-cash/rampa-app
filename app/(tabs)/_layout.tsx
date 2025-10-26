@@ -44,6 +44,15 @@ export default function TabLayout() {
                     ),
                 }}
             />
+            <Tabs.Screen
+                name="invest"
+                options={{
+                    title: 'Invest',
+                    tabBarIcon: ({ color }) => (
+                        <MaterialIcons name="trending-up" size={24} color={color} />
+                    ),
+                }}
+            />
         </Tabs>
     );
 }
