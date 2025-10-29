@@ -25,6 +25,7 @@ export default function CashOutScreen() {
         bankName: '',
     });
     const [isProcessing, setIsProcessing] = useState(false);
+    const [selectedMethod, setSelectedMethod] = useState('bank');
 
     const withdrawalMethods = [
         {
@@ -113,8 +114,8 @@ export default function CashOutScreen() {
                         <TextInput
                             style={styles.amountInput}
                             placeholder="0.00"
-                            value={amount}
-                            onChangeText={setAmount}
+                            value={tokenAmount}
+                            onChangeText={setTokenAmount}
                             keyboardType="numeric"
                             placeholderTextColor="#999"
                         />
@@ -213,7 +214,7 @@ export default function CashOutScreen() {
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>Amount</Text>
                         <Text style={styles.summaryValue}>
-                            ${amount || '0.00'}
+                            ${tokenAmount || '0.00'}
                         </Text>
                     </View>
                     <View style={styles.summaryRow}>
@@ -229,7 +230,7 @@ export default function CashOutScreen() {
                     <View style={[styles.summaryRow, styles.summaryTotal]}>
                         <Text style={styles.summaryLabel}>Total</Text>
                         <Text style={styles.summaryValue}>
-                            ${amount || '0.00'}
+                            ${tokenAmount || '0.00'}
                         </Text>
                     </View>
                 </View>
