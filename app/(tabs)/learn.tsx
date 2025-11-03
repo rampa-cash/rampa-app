@@ -11,12 +11,12 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { learningApiClient } from '../../src/lib';
-import { learningService } from '../../src/services/LearningService';
 import {
     EducationalContent,
+    learningApiClient,
     LearningProgress,
-} from '../../src/types/EducationalContent';
+    learningService,
+} from '../../src/domain/learning';
 
 export default function LearnScreen() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(

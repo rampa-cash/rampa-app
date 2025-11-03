@@ -9,8 +9,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { offRampService } from '../../src/services/OffRampService';
-import { SecurityUtils } from '../../src/utils/securityUtils';
+import { offRampService } from '../../src/domain/offRamp';
+import { SecurityUtils } from '../../src/shared/utils/securityUtils';
 
 export default function CashOutScreen() {
     const router = useRouter();

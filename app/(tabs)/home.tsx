@@ -9,8 +9,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useAuth } from '../../src/hooks/useAuth';
-import { transactionApiClient } from '../../src/lib';
+import { useAuth } from '../../src/domain/auth';
+import { transactionApiClient } from '../../src/domain/transactions';
 
 export default function HomeScreen() {
     const router = useRouter();
