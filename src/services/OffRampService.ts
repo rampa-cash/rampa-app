@@ -1,4 +1,4 @@
-import { apiClient } from '../lib/apiClient';
+import { offRampApiClient } from '../lib';
 import {
     BankAccount,
     OffRampEstimate,
@@ -37,13 +37,7 @@ export class OffRampService {
                 };
             }
 
-            const response = await apiClient.request<OffRampTransaction>(
-                '/offramp/initiate',
-                {
-                    method: 'POST',
-                    body: JSON.stringify(request),
-                }
-            );
+            const response = await offRampApiClient.initiateOffRamp(request);
 
             return {
                 success: true,
@@ -79,13 +73,11 @@ export class OffRampService {
                 currency,
             });
 
-            const response = await apiClient.request<OffRampEstimate>(
-                '/offramp/estimate',
-                {
-                    method: 'POST',
-                    body: JSON.stringify({ tokenAmount, tokenType, currency }),
-                }
-            );
+            const response = await offRampApiClient.getOffRampEstimate({
+                tokenAmount,
+                tokenType,
+                currency,
+            });
 
             return response.data;
         } catch (error) {
@@ -110,9 +102,7 @@ export class OffRampService {
                 transactionId,
             });
 
-            const response = await apiClient.request<OffRampTransaction>(
-                `/offramp/${transactionId}`
-            );
+            const response = await offRampApiClient.getOffRampStatus(transactionId);
 
             return response.data;
         } catch (error) {
@@ -133,9 +123,7 @@ export class OffRampService {
         try {
             logger.info('Cancelling off-ramp transaction', { transactionId });
 
-            await apiClient.request(`/offramp/${transactionId}/cancel`, {
-                method: 'POST',
-            });
+            await offRampApiClient.cancelOffRamp(transactionId);
 
             return { success: true };
         } catch (error) {
@@ -164,20 +152,7 @@ export class OffRampService {
         try {
             logger.info('Getting off-ramp transaction history', { params });
 
-            const queryParams = new URLSearchParams();
-            if (params?.limit)
-                queryParams.append('limit', params.limit.toString());
-            if (params?.offset)
-                queryParams.append('offset', params.offset.toString());
-            if (params?.status) queryParams.append('status', params.status);
-
-            const query = queryParams.toString();
-            const endpoint = query
-                ? `/offramp/history?${query}`
-                : '/offramp/history';
-
-            const response =
-                await apiClient.request<OffRampTransaction[]>(endpoint);
+            const response = await offRampApiClient.getOffRampHistory(params);
             return response.data;
         } catch (error) {
             logger.error('Failed to get off-ramp transaction history', {
@@ -200,13 +175,7 @@ export class OffRampService {
         try {
             logger.info('Adding bank account', { bankDetails });
 
-            const response = await apiClient.request<BankAccount>(
-                '/offramp/bank-accounts',
-                {
-                    method: 'POST',
-                    body: JSON.stringify(bankDetails),
-                }
-            );
+            const response = await offRampApiClient.addBankAccount(bankDetails);
 
             return {
                 success: true,
@@ -231,9 +200,7 @@ export class OffRampService {
         try {
             logger.info('Getting user bank accounts');
 
-            const response = await apiClient.request<BankAccount[]>(
-                '/offramp/bank-accounts'
-            );
+            const response = await offRampApiClient.getBankAccounts();
             return response.data;
         } catch (error) {
             logger.error('Failed to get bank accounts', { error });
@@ -250,9 +217,7 @@ export class OffRampService {
         try {
             logger.info('Deleting bank account', { accountId });
 
-            await apiClient.request(`/offramp/bank-accounts/${accountId}`, {
-                method: 'DELETE',
-            });
+            await offRampApiClient.deleteBankAccount(accountId);
 
             return { success: true };
         } catch (error) {
@@ -280,9 +245,7 @@ export class OffRampService {
                 currency,
             });
 
-            const response = await apiClient.request<{ rate: number }>(
-                `/offramp/exchange-rate?tokenType=${tokenType}&currency=${currency}`
-            );
+            const response = await offRampApiClient.getExchangeRate(tokenType, currency);
 
             return response.data.rate;
         } catch (error) {

@@ -10,7 +10,7 @@ import {
     View,
 } from 'react-native';
 import { useAuth } from '../../src/hooks/useAuth';
-import { apiClient } from '../../src/lib/apiClient';
+import { transactionApiClient } from '../../src/lib';
 
 export default function HomeScreen() {
     const router = useRouter();
@@ -19,7 +19,7 @@ export default function HomeScreen() {
     // Fetch transactions
     const { data: transactions, isLoading: transactionsLoading } = useQuery({
         queryKey: ['transactions'],
-        queryFn: () => apiClient.getTransactions({ limit: 5 }),
+        queryFn: () => transactionApiClient.getTransactions({ limit: 5 }),
     });
 
     const handleAddMoney = () => {
