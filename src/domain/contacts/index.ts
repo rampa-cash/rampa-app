@@ -13,4 +13,3 @@ export type { ContactResponse } from './ContactService';
 
 // API Client
 export { contactApiClient, ContactApiClient } from './apiClient';
-

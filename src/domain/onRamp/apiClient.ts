@@ -60,7 +60,7 @@ export class OnRampApiClient extends BaseApiClient {
         status?: string;
     }) {
         const queryParams: Record<string, string | number | undefined> = {};
-        
+
         if (params?.limit) queryParams.limit = params.limit;
         if (params?.offset) queryParams.offset = params.offset;
         if (params?.status) queryParams.status = params.status;
@@ -92,4 +92,3 @@ export class OnRampApiClient extends BaseApiClient {
 }
 
 export const onRampApiClient = new OnRampApiClient();
-

@@ -9,8 +9,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { biometricAuth } from '../../src/utils/biometricAuth';
-import { SecurityUtils } from '../../src/utils/securityUtils';
+import { biometricAuth } from '../../src/shared/utils/biometricAuth';
+import { SecurityUtils } from '../../src/shared/utils/securityUtils';
 
 export default function AddMoneyScreen() {
     const router = useRouter();

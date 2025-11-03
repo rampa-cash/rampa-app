@@ -41,7 +41,8 @@ export class InvestmentService {
         try {
             logger.info('Fetching investment options', { params });
 
-            const response = await investmentApiClient.getInvestmentOptions(params);
+            const response =
+                await investmentApiClient.getInvestmentOptions(params);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch investment options', { error });
@@ -56,7 +57,8 @@ export class InvestmentService {
         try {
             logger.info('Fetching investment option by ID', { id });
 
-            const response = await investmentApiClient.getInvestmentOptionById(id);
+            const response =
+                await investmentApiClient.getInvestmentOptionById(id);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch investment option by ID', {
@@ -76,7 +78,8 @@ export class InvestmentService {
         try {
             logger.info('Fetching investment options by type', { type });
 
-            const response = await investmentApiClient.getInvestmentOptionsByType(type);
+            const response =
+                await investmentApiClient.getInvestmentOptionsByType(type);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch investment options by type', {
@@ -98,7 +101,10 @@ export class InvestmentService {
                 riskLevel,
             });
 
-            const response = await investmentApiClient.getInvestmentOptionsByRiskLevel(riskLevel);
+            const response =
+                await investmentApiClient.getInvestmentOptionsByRiskLevel(
+                    riskLevel
+                );
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch investment options by risk level', {
@@ -124,7 +130,10 @@ export class InvestmentService {
         try {
             logger.info('Searching investment options', { query, filters });
 
-            const response = await investmentApiClient.searchInvestmentOptions(query, filters);
+            const response = await investmentApiClient.searchInvestmentOptions(
+                query,
+                filters
+            );
             return response.data;
         } catch (error) {
             logger.error('Failed to search investment options', {
@@ -172,7 +181,8 @@ export class InvestmentService {
                 };
             }
 
-            const response = await investmentApiClient.createInvestment(request);
+            const response =
+                await investmentApiClient.createInvestment(request);
 
             return {
                 success: true,
@@ -197,7 +207,8 @@ export class InvestmentService {
         try {
             logger.info('Fetching user investment by ID', { id });
 
-            const response = await investmentApiClient.getUserInvestmentById(id);
+            const response =
+                await investmentApiClient.getUserInvestmentById(id);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch user investment by ID', {
@@ -231,7 +242,10 @@ export class InvestmentService {
                 };
             }
 
-            const response = await investmentApiClient.withdrawFromInvestment(id, request);
+            const response = await investmentApiClient.withdrawFromInvestment(
+                id,
+                request
+            );
 
             return {
                 success: true,
@@ -313,7 +327,8 @@ export class InvestmentService {
         try {
             logger.info('Fetching investment recommendations');
 
-            const response = await investmentApiClient.getInvestmentRecommendations();
+            const response =
+                await investmentApiClient.getInvestmentRecommendations();
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch investment recommendations', {
@@ -342,11 +357,12 @@ export class InvestmentService {
                 period,
             });
 
-            const response = await investmentApiClient.calculateInvestmentReturns(
-                investmentId,
-                amount,
-                period
-            );
+            const response =
+                await investmentApiClient.calculateInvestmentReturns(
+                    investmentId,
+                    amount,
+                    period
+                );
 
             return response.data;
         } catch (error) {

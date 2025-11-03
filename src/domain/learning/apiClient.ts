@@ -1,8 +1,5 @@
 import { BaseApiClient } from '../../shared/lib/baseApiClient';
-import {
-    EducationalContent,
-    LearningProgress,
-} from './types';
+import { EducationalContent, LearningProgress } from './types';
 
 /**
  * Learning API Client
@@ -27,7 +24,7 @@ export class LearningApiClient extends BaseApiClient {
         offset?: number;
     }) {
         const queryParams: Record<string, string | number | undefined> = {};
-        
+
         if (params?.category) queryParams.category = params.category;
         if (params?.difficulty) queryParams.difficulty = params.difficulty;
         if (params?.limit) queryParams.limit = params.limit;
@@ -136,8 +133,10 @@ export class LearningApiClient extends BaseApiClient {
             type?: string;
         }
     ) {
-        const queryParams: Record<string, string | number | undefined> = { q: query };
-        
+        const queryParams: Record<string, string | number | undefined> = {
+            q: query,
+        };
+
         if (filters?.category) queryParams.category = filters.category;
         if (filters?.difficulty) queryParams.difficulty = filters.difficulty;
         if (filters?.type) queryParams.type = filters.type;
@@ -179,4 +178,3 @@ export class LearningApiClient extends BaseApiClient {
 }
 
 export const learningApiClient = new LearningApiClient();
-

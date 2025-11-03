@@ -6,18 +6,19 @@
 
 // Types
 export type { Transaction } from './types';
-export type { Wallet, WalletBalance } from './wallet';
+export type { Wallet, WalletBalance, WalletProviderType } from './wallet';
 
 // Service
 export { transactionService } from './TransactionService';
 export type {
-    CreateTransactionRequest, TransactionHistoryResponse, TransactionResponse
+    CreateTransactionRequest,
+    TransactionHistoryResponse,
+    TransactionResponse,
 } from './TransactionService';
 
 // API Client
 export { transactionApiClient, TransactionApiClient } from './apiClient';
 export type {
     CreateTransactionRequest as ApiCreateTransactionRequest,
-    TransactionHistoryResponse as ApiTransactionHistoryResponse
+    TransactionHistoryResponse as ApiTransactionHistoryResponse,
 } from './apiClient';
-

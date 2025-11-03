@@ -59,9 +59,11 @@ export class BaseApiClient {
     /**
      * Build query string from parameters
      */
-    protected buildQueryString(params: Record<string, string | number | undefined>): string {
+    protected buildQueryString(
+        params: Record<string, string | number | undefined>
+    ): string {
         const queryParams = new URLSearchParams();
-        
+
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
                 queryParams.append(key, value.toString());
@@ -71,4 +73,3 @@ export class BaseApiClient {
         return queryParams.toString();
     }
 }
-

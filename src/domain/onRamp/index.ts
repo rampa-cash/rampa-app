@@ -6,7 +6,9 @@
 
 // Types
 export type {
-    OnRampEstimate, OnRampInitiateRequest, OnRampTransaction
+    OnRampEstimate,
+    OnRampInitiateRequest,
+    OnRampTransaction,
 } from './types';
 
 // Service
@@ -15,4 +17,3 @@ export type { OnRampResponse } from './OnRampService';
 
 // API Client
 export { onRampApiClient, OnRampApiClient } from './apiClient';
-

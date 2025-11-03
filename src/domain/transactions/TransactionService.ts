@@ -80,7 +80,9 @@ export class TransactionService {
                 notes: request.notes,
             });
 
-            logger.info('Transaction created successfully', { transactionId: response.data.id });
+            logger.info('Transaction created successfully', {
+                transactionId: response.data.id,
+            });
 
             return {
                 success: true,
@@ -134,7 +136,8 @@ export class TransactionService {
         transactionId: string
     ): Promise<Transaction | null> {
         try {
-            const response = await transactionApiClient.getTransaction(transactionId);
+            const response =
+                await transactionApiClient.getTransaction(transactionId);
 
             logger.info('Transaction retrieved', { transactionId });
             return response.data;
@@ -163,7 +166,8 @@ export class TransactionService {
                 throw new Error('Biometric authentication required');
             }
 
-            const response = await transactionApiClient.cancelTransaction(transactionId);
+            const response =
+                await transactionApiClient.cancelTransaction(transactionId);
 
             logger.info('Transaction cancelled successfully', {
                 transactionId,
@@ -197,7 +201,8 @@ export class TransactionService {
         completedAt?: string;
     }> {
         try {
-            const response = await transactionApiClient.getTransactionStatus(transactionId);
+            const response =
+                await transactionApiClient.getTransactionStatus(transactionId);
 
             return response.data;
         } catch (error) {
@@ -248,7 +253,10 @@ export class TransactionService {
         estimatedTime: string;
     }> {
         try {
-            const response = await transactionApiClient.getTransactionFees(amount, currency);
+            const response = await transactionApiClient.getTransactionFees(
+                amount,
+                currency
+            );
 
             return response.data;
         } catch (error) {
@@ -266,7 +274,8 @@ export class TransactionService {
         userName?: string;
     }> {
         try {
-            const response = await transactionApiClient.validateRecipientAddress(address);
+            const response =
+                await transactionApiClient.validateRecipientAddress(address);
 
             return response.data;
         } catch (error) {

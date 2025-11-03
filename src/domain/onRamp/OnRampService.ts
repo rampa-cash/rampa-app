@@ -101,7 +101,8 @@ export class OnRampService {
                 transactionId,
             });
 
-            const response = await onRampApiClient.getOnRampStatus(transactionId);
+            const response =
+                await onRampApiClient.getOnRampStatus(transactionId);
 
             return response.data;
         } catch (error) {
@@ -168,8 +169,7 @@ export class OnRampService {
         try {
             logger.info('Getting supported on-ramp currencies');
 
-            const response =
-                await onRampApiClient.getSupportedCurrencies();
+            const response = await onRampApiClient.getSupportedCurrencies();
             return response.data;
         } catch (error) {
             logger.error('Failed to get supported on-ramp currencies', {
@@ -192,7 +192,10 @@ export class OnRampService {
                 tokenType,
             });
 
-            const response = await onRampApiClient.getExchangeRate(currency, tokenType);
+            const response = await onRampApiClient.getExchangeRate(
+                currency,
+                tokenType
+            );
 
             return response.data.rate;
         } catch (error) {

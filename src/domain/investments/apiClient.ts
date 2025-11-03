@@ -24,7 +24,7 @@ export class InvestmentApiClient extends BaseApiClient {
         offset?: number;
     }) {
         const queryParams: Record<string, string | number | undefined> = {};
-        
+
         if (params?.type) queryParams.type = params.type;
         if (params?.riskLevel) queryParams.riskLevel = params.riskLevel;
         if (params?.limit) queryParams.limit = params.limit;
@@ -75,8 +75,10 @@ export class InvestmentApiClient extends BaseApiClient {
             maxAmount?: number;
         }
     ) {
-        const queryParams: Record<string, string | number | undefined> = { q: query };
-        
+        const queryParams: Record<string, string | number | undefined> = {
+            q: query,
+        };
+
         if (filters?.type) queryParams.type = filters.type;
         if (filters?.riskLevel) queryParams.riskLevel = filters.riskLevel;
         if (filters?.minAmount) queryParams.minAmount = filters.minAmount;
@@ -115,10 +117,7 @@ export class InvestmentApiClient extends BaseApiClient {
     /**
      * Withdraw from investment
      */
-    async withdrawFromInvestment(
-        id: string,
-        data: WithdrawInvestmentRequest
-    ) {
+    async withdrawFromInvestment(id: string, data: WithdrawInvestmentRequest) {
         return this.request<UserInvestment>(
             `/investments/user/${id}/withdraw`,
             {
@@ -143,8 +142,9 @@ export class InvestmentApiClient extends BaseApiClient {
         period?: string;
     }) {
         const queryParams: Record<string, string | number | undefined> = {};
-        
-        if (params?.investmentId) queryParams.investmentId = params.investmentId;
+
+        if (params?.investmentId)
+            queryParams.investmentId = params.investmentId;
         if (params?.period) queryParams.period = params.period;
 
         const query = this.buildQueryString(queryParams);
@@ -182,4 +182,3 @@ export class InvestmentApiClient extends BaseApiClient {
 }
 
 export const investmentApiClient = new InvestmentApiClient();
-

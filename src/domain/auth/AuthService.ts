@@ -1,3 +1,4 @@
+import { AuthProvider, ProviderFactory } from '../../shared/infrastructure';
 import { User } from './types';
 
 export interface AuthResult {
@@ -13,16 +14,24 @@ export interface VerificationResult {
 }
 
 export class AuthService {
+    constructor(
+        private authProvider: AuthProvider = ProviderFactory.createAuthProvider()
+    ) {}
+
     /**
      * Sign up or log in user with email
      */
     async signUpOrLogIn(email: string): Promise<AuthResult> {
         try {
-            // Mock implementation - replace with actual Para SDK calls
-            // const userExists = await para.checkIfUserExists({ email });
+            const userExists = await this.authProvider.checkUserExists(email);
 
-            // For now, simulate user creation flow
-            return { stage: 'verify', needsVerification: true };
+            if (userExists) {
+                // User exists, proceed to login
+                return { stage: 'login', needsVerification: false };
+            } else {
+                // New user, needs verification
+                return { stage: 'verify', needsVerification: true };
+            }
         } catch (error) {
             console.error('Authentication failed:', error);
             throw new Error('Authentication failed');
@@ -36,11 +45,19 @@ export class AuthService {
         verificationCode: string
     ): Promise<VerificationResult> {
         try {
-            // Mock implementation - replace with actual Para SDK calls
-            // await para.verifyEmail({ verificationCode });
+            const result =
+                await this.authProvider.verifyEmail(verificationCode);
 
-            // For now, simulate successful verification
-            return { success: true };
+            if (!result.success) {
+                return { success: false };
+            }
+
+            // If verification successful, get user info
+            // Note: User data will come from backend API after session validation
+            return {
+                success: true,
+                sessionToken: result.sessionToken,
+            };
         } catch (error) {
             console.error('Verification failed:', error);
             throw new Error('Verification failed');
@@ -55,14 +72,20 @@ export class AuthService {
         sessionToken: string;
     }> {
         try {
-            // Mock implementation - replace with actual Para SDK calls
-            // const isActive = await para.isSessionActive();
-            // const userId = para.getUserId();
-            // const email = para.getEmail();
+            // Check if session is active using auth provider
+            const isActive = await this.authProvider.isSessionActive();
+            if (!isActive) {
+                throw new Error('Session is not active');
+            }
 
-            // For now, simulate active session
-            const userId = 'mock-user-id';
-            const email = 'user@example.com';
+            // Get user info from auth provider
+            const userId = await this.authProvider.getUserId();
+            const email = await this.authProvider.getEmail();
+            const sessionToken = await this.authProvider.getSessionToken();
+
+            if (!userId || !email || !sessionToken) {
+                throw new Error('Failed to retrieve user information');
+            }
 
             // Mock user data - replace with actual backend call
             const user: User = {
@@ -95,9 +118,6 @@ export class AuthService {
                 updatedAt: new Date(),
             };
 
-            // Mock session token - replace with actual backend response
-            const sessionToken = 'mock-session-token';
-
             return { user, sessionToken };
         } catch (error) {
             console.error('Session validation failed:', error);
@@ -110,9 +130,7 @@ export class AuthService {
      */
     async logout(): Promise<void> {
         try {
-            // Mock implementation - replace with actual Para SDK calls
-            // await para.logout();
-            // logger.info('User logged out successfully');
+            await this.authProvider.logout();
         } catch (error) {
             console.error('Logout failed:', error);
             throw new Error('Logout failed');

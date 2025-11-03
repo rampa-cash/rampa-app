@@ -81,4 +81,3 @@ export class ContactApiClient extends BaseApiClient {
 }
 
 export const contactApiClient = new ContactApiClient();
-

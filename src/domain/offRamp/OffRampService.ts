@@ -102,7 +102,8 @@ export class OffRampService {
                 transactionId,
             });
 
-            const response = await offRampApiClient.getOffRampStatus(transactionId);
+            const response =
+                await offRampApiClient.getOffRampStatus(transactionId);
 
             return response.data;
         } catch (error) {
@@ -165,9 +166,7 @@ export class OffRampService {
     /**
      * Add bank account for off-ramp withdrawals
      */
-    async addBankAccount(
-        bankDetails: BankAccount
-    ): Promise<{
+    async addBankAccount(bankDetails: BankAccount): Promise<{
         success: boolean;
         bankAccount?: BankAccount;
         error?: string;
@@ -245,7 +244,10 @@ export class OffRampService {
                 currency,
             });
 
-            const response = await offRampApiClient.getExchangeRate(tokenType, currency);
+            const response = await offRampApiClient.getExchangeRate(
+                tokenType,
+                currency
+            );
 
             return response.data.rate;
         } catch (error) {

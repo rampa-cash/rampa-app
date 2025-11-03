@@ -6,7 +6,10 @@
 
 // Types
 export type {
-    BankAccount, OffRampEstimate, OffRampInitiateRequest, OffRampTransaction
+    BankAccount,
+    OffRampEstimate,
+    OffRampInitiateRequest,
+    OffRampTransaction,
 } from './types';
 
 // Service
@@ -15,4 +18,3 @@ export type { OffRampResponse } from './OffRampService';
 
 // API Client
 export { offRampApiClient, OffRampApiClient } from './apiClient';
-

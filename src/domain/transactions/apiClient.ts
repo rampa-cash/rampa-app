@@ -31,7 +31,7 @@ export class TransactionApiClient extends BaseApiClient {
         status?: string;
     }) {
         const queryParams: Record<string, string | number | undefined> = {};
-        
+
         if (params?.limit) queryParams.limit = params.limit;
         if (params?.offset) queryParams.offset = params.offset;
         if (params?.status) queryParams.status = params.status;
@@ -69,7 +69,7 @@ export class TransactionApiClient extends BaseApiClient {
         currency?: string;
     }) {
         const queryParams: Record<string, string | number | undefined> = {};
-        
+
         if (params?.page) queryParams.page = params.page;
         if (params?.limit) queryParams.limit = params.limit;
         if (params?.status) queryParams.status = params.status;
@@ -96,9 +96,12 @@ export class TransactionApiClient extends BaseApiClient {
      * Cancel a pending transaction
      */
     async cancelTransaction(transactionId: string) {
-        return this.request<Transaction>(`/transactions/${transactionId}/cancel`, {
-            method: 'POST',
-        });
+        return this.request<Transaction>(
+            `/transactions/${transactionId}/cancel`,
+            {
+                method: 'POST',
+            }
+        );
     }
 
     /**
@@ -159,4 +162,3 @@ export class TransactionApiClient extends BaseApiClient {
 }
 
 export const transactionApiClient = new TransactionApiClient();
-

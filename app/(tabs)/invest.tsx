@@ -11,7 +11,10 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { InvestmentOption, investmentService } from '../../src/domain/investments';
+import {
+    InvestmentOption,
+    investmentService,
+} from '../../src/domain/investments';
 
 export default function InvestScreen() {
     const [selectedFilter, setSelectedFilter] = useState<

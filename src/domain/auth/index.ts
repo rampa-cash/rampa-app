@@ -5,7 +5,12 @@
  */
 
 // Types
-export type { NotificationSettings, PrivacySettings, User, UserPreferences } from './types';
+export type {
+    NotificationSettings,
+    PrivacySettings,
+    User,
+    UserPreferences,
+} from './types';
 
 // Store
 export { useAuthStore } from './authStore';
@@ -20,4 +25,3 @@ export type { AuthActions, AuthState } from './useAuth';
 
 // API Client
 export { authApiClient, AuthApiClient } from './apiClient';
-

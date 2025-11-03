@@ -1,9 +1,6 @@
 import { logger } from '../../shared/utils/errorHandler';
 import { learningApiClient } from './apiClient';
-import {
-    EducationalContent,
-    LearningProgress,
-} from './types';
+import { EducationalContent, LearningProgress } from './types';
 
 export interface LearningModuleResponse {
     success: boolean;
@@ -54,7 +51,8 @@ export class LearningService {
         try {
             logger.info('Fetching educational content', { params });
 
-            const response = await learningApiClient.getEducationalContent(params);
+            const response =
+                await learningApiClient.getEducationalContent(params);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch educational content', { error });
@@ -69,7 +67,8 @@ export class LearningService {
         try {
             logger.info('Fetching educational content by ID', { id });
 
-            const response = await learningApiClient.getEducationalContentById(id);
+            const response =
+                await learningApiClient.getEducationalContentById(id);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch educational content by ID', {
@@ -129,7 +128,8 @@ export class LearningService {
         try {
             logger.info('Starting learning module', { moduleId });
 
-            const response = await learningApiClient.startLearningModule(moduleId);
+            const response =
+                await learningApiClient.startLearningModule(moduleId);
 
             return {
                 success: true,
@@ -160,7 +160,8 @@ export class LearningService {
         try {
             logger.info('Completing learning module', { moduleId, score });
 
-            const response = await learningApiClient.completeLearningModule(moduleId);
+            const response =
+                await learningApiClient.completeLearningModule(moduleId);
 
             return {
                 success: true,
@@ -195,7 +196,8 @@ export class LearningService {
 
             // Note: Quiz submission endpoint not defined in backend API spec
             // This would need to be implemented on the backend
-            const response = await learningApiClient.submitQuizResults(quizResult);
+            const response =
+                await learningApiClient.submitQuizResults(quizResult);
 
             return {
                 success: true,
@@ -250,7 +252,8 @@ export class LearningService {
 
             // Note: Recommendations endpoint not defined in backend API spec
             // This would need to be implemented on the backend
-            const response = await learningApiClient.getRecommendedLearningPath();
+            const response =
+                await learningApiClient.getRecommendedLearningPath();
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch recommended learning path', {
@@ -274,7 +277,10 @@ export class LearningService {
         try {
             logger.info('Searching educational content', { query, filters });
 
-            const response = await learningApiClient.searchEducationalContent(query, filters);
+            const response = await learningApiClient.searchEducationalContent(
+                query,
+                filters
+            );
             return response.data;
         } catch (error) {
             logger.error('Failed to search educational content', {

@@ -61,7 +61,7 @@ export class OffRampApiClient extends BaseApiClient {
         status?: string;
     }) {
         const queryParams: Record<string, string | number | undefined> = {};
-        
+
         if (params?.limit) queryParams.limit = params.limit;
         if (params?.offset) queryParams.offset = params.offset;
         if (params?.status) queryParams.status = params.status;
@@ -77,7 +77,12 @@ export class OffRampApiClient extends BaseApiClient {
     /**
      * Add bank account for off-ramp withdrawals
      */
-    async addBankAccount(bankDetails: Omit<BankAccount, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) {
+    async addBankAccount(
+        bankDetails: Omit<
+            BankAccount,
+            'id' | 'userId' | 'createdAt' | 'updatedAt'
+        >
+    ) {
         return this.request<BankAccount>('/offramp/bank-accounts', {
             method: 'POST',
             body: JSON.stringify(bankDetails),
@@ -114,4 +119,3 @@ export class OffRampApiClient extends BaseApiClient {
 }
 
 export const offRampApiClient = new OffRampApiClient();
-

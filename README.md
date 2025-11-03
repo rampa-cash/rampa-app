@@ -5,6 +5,7 @@
 ## 🚀 Features
 
 ### Core Remittance Features
+
 - **Instant Cross-Border Transfers**: Send money across borders within 30 seconds using SOL, USDC, or EURC on Solana
 - **Secure Wallet Management**: Non-custodial MPC (Multi-Party Computation) wallets via Para service - no seed phrases to manage
 - **Multiple Payment Methods**: Add funds via bank transfer, credit/debit cards, or mobile money
@@ -12,12 +13,14 @@
 - **Contact Management**: Save and manage recipients for faster transfers
 
 ### Financial Education
+
 - **Learning Modules**: Access articles, videos, and interactive content about personal finance and crypto fundamentals
 - **Investment Education**: Learn advanced investment strategies and portfolio management
 - **Gamified Learning**: Complete micro-learning modules with rewards and progress tracking
 - **Financial Literacy Tools**: Improve financial knowledge with quizzes and practice simulations
 
 ### Security & Compliance
+
 - **Soft KYC**: Email + phone verification for standard operations
 - **Biometric Authentication**: Secure sensitive operations with fingerprint/face recognition
 - **Transaction Limits**: Custom limits for verified users with risk management
@@ -26,12 +29,14 @@
 ## 🛠 Tech Stack
 
 ### Core Technologies
+
 - **React Native** 0.82.1 - Cross-platform mobile development
 - **Expo SDK** ~54.0 - Development platform and tooling
 - **TypeScript** 5.9.2 - Type-safe development
 - **Expo Router** ~6.0 - File-based routing system
 
 ### Key Dependencies
+
 - **@getpara/react-native-wallet** - Para SDK for MPC wallet management
 - **@tanstack/react-query** - Server state management and data fetching
 - **zustand** - Lightweight state management
@@ -43,6 +48,7 @@
 - **@react-native-async-storage/async-storage** - Async storage for app preferences
 
 ### Blockchain & Crypto
+
 - **Solana Blockchain** - Underlying blockchain network
 - **Supported Currencies**: SOL, USDC, EURC
 - **Quick Crypto** - Cryptographic utilities
@@ -124,8 +130,8 @@ rampa-app/
 
 - **Node.js** 18+ and npm/yarn
 - **React Native development environment**
-  - For iOS: Xcode (Mac only)
-  - For Android: Android Studio
+    - For iOS: Xcode (Mac only)
+    - For Android: Android Studio
 - **Expo CLI** (installed globally or via npx)
 - **Para SDK API Key** - Required for authentication and wallet management
 - **Backend API Access** - Staging/development environment credentials
@@ -133,28 +139,31 @@ rampa-app/
 ### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd rampa-app
-   ```
+
+    ```bash
+    git clone <repository-url>
+    cd rampa-app
+    ```
 
 2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+
+    ```bash
+    npm install
+    ```
 
 3. **Configure environment variables**
-   
-   Create a `.env` file in the root directory:
-   ```env
-   EXPO_PUBLIC_PARA_API_KEY=your_para_api_key
-   EXPO_PUBLIC_API_URL=https://staging-api.rampacash.com/v1
-   ```
+
+    Create a `.env` file in the root directory:
+
+    ```env
+    EXPO_PUBLIC_PARA_API_KEY=your_para_api_key
+    EXPO_PUBLIC_API_URL=https://staging-api.rampacash.com/v1
+    ```
 
 4. **Start the development server**
-   ```bash
-   npx expo start
-   ```
+    ```bash
+    npx expo start
+    ```
 
 ### Running on Different Platforms
 
@@ -185,9 +194,9 @@ The app follows a **frontend-only architecture** with the following principles:
 
 1. **API-First**: All data comes from backend API calls - no local database
 2. **Secure Storage**: Session tokens stored in Expo SecureStore, app preferences in AsyncStorage
-3. **State Management**: 
-   - React Query for server state (API data)
-   - Zustand for client state (auth, UI state)
+3. **State Management**:
+    - React Query for server state (API data)
+    - Zustand for client state (auth, UI state)
 4. **Routing**: Expo Router for file-based navigation
 5. **Authentication**: Para SDK for MPC wallet creation and management
 
@@ -227,18 +236,21 @@ The app follows a **frontend-only architecture** with the following principles:
 ## 🧩 Key Features Implementation
 
 ### Wallet Management
+
 - Automatic wallet creation via Para SDK
 - Multi-currency support (SOL, USDC, EURC)
 - Real-time balance updates
 - Transaction history
 
 ### Money Transfers
+
 - Instant cross-border transfers on Solana
 - Contact-based sending
 - QR code receiving
 - Transaction status tracking
 
 ### Financial Services
+
 - On-ramp: Add funds via traditional payment methods
 - Off-ramp: Convert to fiat and withdraw to bank accounts
 - Investment education and learning modules
@@ -278,13 +290,13 @@ The app uses **EAS Build** (Expo Application Services) for building production-r
 
 1. **Configure EAS** (see `eas.json`)
 2. **Build for staging**:
-   ```bash
-   eas build --platform all --profile staging
-   ```
+    ```bash
+    eas build --platform all --profile staging
+    ```
 3. **Build for production**:
-   ```bash
-   eas build --platform all --profile production
-   ```
+    ```bash
+    eas build --platform all --profile production
+    ```
 
 ### Environment-Specific Builds
 
