@@ -1,3 +1,4 @@
+import "@getpara/react-native-wallet/shim";
 import {
     DarkTheme,
     DefaultTheme,
