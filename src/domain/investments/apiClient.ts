@@ -84,9 +84,9 @@ export class InvestmentApiClient extends BaseApiClient {
         if (filters?.minAmount) queryParams.minAmount = filters.minAmount;
         if (filters?.maxAmount) queryParams.maxAmount = filters.maxAmount;
 
-        const query = this.buildQueryString(queryParams);
+        const queryString = this.buildQueryString(queryParams);
         return this.request<InvestmentOption[]>(
-            `/investments/options/search?${query}`
+            `/investments/options/search?${queryString}`
         );
     }
 

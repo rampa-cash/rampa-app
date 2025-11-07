@@ -141,9 +141,9 @@ export class LearningApiClient extends BaseApiClient {
         if (filters?.difficulty) queryParams.difficulty = filters.difficulty;
         if (filters?.type) queryParams.type = filters.type;
 
-        const query = this.buildQueryString(queryParams);
+        const queryString = this.buildQueryString(queryParams);
         return this.request<EducationalContent[]>(
-            `/learning/modules/search?${query}`
+            `/learning/modules/search?${queryString}`
         );
     }
 
