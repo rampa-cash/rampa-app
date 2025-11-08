@@ -5,6 +5,7 @@ export interface AuthResult {
     stage: 'verify' | 'login';
     needsVerification?: boolean;
     success?: boolean;
+    authState?: any; // For passkey registration
 }
 
 export interface VerificationResult {
@@ -14,6 +15,8 @@ export interface VerificationResult {
 }
 
 export class AuthService {
+    private currentAuthState: any = null;
+
     constructor(
         private authProvider: AuthProvider = ProviderFactory.createAuthProvider()
     ) {}
@@ -21,46 +24,141 @@ export class AuthService {
     /**
      * Sign up or log in user with email
      */
-    async signUpOrLogIn(email: string): Promise<AuthResult> {
+    async signUpOrLogInWithEmail(email: string): Promise<AuthResult> {
         try {
-            const userExists = await this.authProvider.checkUserExists(email);
-
-            if (userExists) {
-                // User exists, proceed to login
-                return { stage: 'login', needsVerification: false };
-            } else {
-                // New user, needs verification
-                return { stage: 'verify', needsVerification: true };
-            }
+            const authState = await this.authProvider.signUpOrLogInWithEmail(email);
+            this.currentAuthState = authState.authState;
+            
+            return {
+                stage: authState.stage,
+                needsVerification: authState.needsVerification,
+                authState: authState.authState,
+            };
         } catch (error) {
-            console.error('Authentication failed:', error);
-            throw new Error('Authentication failed');
+            console.error('Email authentication failed:', error);
+            throw error;
         }
     }
 
     /**
-     * Verify new account with verification code
+     * Sign up or log in user with phone number
+     */
+    async signUpOrLogInWithPhone(phoneNumber: string): Promise<AuthResult> {
+        try {
+            const authState = await this.authProvider.signUpOrLogInWithPhone(phoneNumber);
+            this.currentAuthState = authState.authState;
+            
+            return {
+                stage: authState.stage,
+                needsVerification: authState.needsVerification,
+                authState: authState.authState,
+            };
+        } catch (error) {
+            console.error('Phone authentication failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Sign up or log in user with OAuth provider
+     */
+    async signUpOrLogInWithOAuth(provider: 'google' | 'apple'): Promise<AuthResult> {
+        try {
+            const authState = await this.authProvider.signUpOrLogInWithOAuth(provider);
+            this.currentAuthState = authState.authState;
+            
+            return {
+                stage: authState.stage,
+                needsVerification: authState.needsVerification,
+                authState: authState.authState,
+            };
+        } catch (error) {
+            console.error(`${provider} authentication failed:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Verify new account with verification code (for email or phone)
      */
     async verifyNewAccount(
         verificationCode: string
     ): Promise<VerificationResult> {
         try {
-            const result =
-                await this.authProvider.verifyEmail(verificationCode);
+            const result = await this.authProvider.verifyNewAccount(
+                verificationCode,
+                this.currentAuthState
+            );
 
             if (!result.success) {
                 return { success: false };
             }
 
-            // If verification successful, get user info
-            // Note: User data will come from backend API after session validation
+            // Store the verified auth state for passkey registration
+            this.currentAuthState = result.authState;
+
+            // Register passkey for new user
+            const passkeyResult = await this.authProvider.registerPasskey(result.authState);
+
+            if (!passkeyResult.success) {
+                return { success: false };
+            }
+
+            return {
+                success: true,
+                sessionToken: passkeyResult.sessionToken,
+            };
+        } catch (error) {
+            console.error('Verification failed:', error);
+            throw new Error('Verification failed');
+        }
+    }
+
+    /**
+     * Login existing user with passkey
+     */
+    async loginWithPasskey(): Promise<VerificationResult> {
+        try {
+            const result = await this.authProvider.loginWithPasskey();
+
+            if (!result.success) {
+                return { success: false };
+            }
+
             return {
                 success: true,
                 sessionToken: result.sessionToken,
             };
         } catch (error) {
-            console.error('Verification failed:', error);
-            throw new Error('Verification failed');
+            console.error('Passkey login failed:', error);
+            throw new Error('Passkey login failed');
+        }
+    }
+
+    /**
+     * Complete OAuth authentication (register or login with passkey)
+     */
+    async completeOAuth(authState: any): Promise<VerificationResult> {
+        try {
+            // For OAuth, if stage is 'verify', register passkey; if 'login', login with passkey
+            // The authState from signUpOrLogInWithOAuth contains the stage info
+            if (authState?.stage === 'verify') {
+                // New user - register passkey
+                const result = await this.authProvider.registerPasskey(authState);
+                if (!result.success) {
+                    return { success: false };
+                }
+                return {
+                    success: true,
+                    sessionToken: result.sessionToken,
+                };
+            } else {
+                // Existing user - login with passkey
+                return await this.loginWithPasskey();
+            }
+        } catch (error) {
+            console.error('OAuth completion failed:', error);
+            throw new Error('OAuth completion failed');
         }
     }
 
@@ -81,16 +179,17 @@ export class AuthService {
             // Get user info from auth provider
             const userId = await this.authProvider.getUserId();
             const email = await this.authProvider.getEmail();
+            const phone = await this.authProvider.getPhone();
             const sessionToken = await this.authProvider.getSessionToken();
 
-            if (!userId || !email || !sessionToken) {
+            if (!userId || !sessionToken) {
                 throw new Error('Failed to retrieve user information');
             }
 
             // Mock user data - replace with actual backend call
             const user: User = {
                 id: userId,
-                email: email,
+                email: email || 'user@example.com', // Fallback if email is null
                 firstName: 'John',
                 lastName: 'Doe',
                 country: 'US',

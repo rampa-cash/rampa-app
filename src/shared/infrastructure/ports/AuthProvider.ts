@@ -9,19 +9,50 @@ export interface VerificationResult {
     success: boolean;
     userId?: string;
     email?: string;
+    phone?: string;
     sessionToken?: string;
+    authState?: any; // Provider-specific auth state (e.g., for passkey registration)
+}
+
+export interface AuthState {
+    stage: 'verify' | 'login';
+    needsVerification?: boolean;
+    authState?: any; // Provider-specific state for passkey registration
 }
 
 export interface AuthProvider {
     /**
-     * Check if a user exists with the given email
+     * Sign up or log in with email
+     * Returns auth state indicating if verification is needed or if user can proceed to passkey login
      */
-    checkUserExists(email: string): Promise<boolean>;
+    signUpOrLogInWithEmail(email: string): Promise<AuthState>;
 
     /**
-     * Verify email with verification code
+     * Sign up or log in with phone number
+     * Returns auth state indicating if verification is needed or if user can proceed to passkey login
      */
-    verifyEmail(verificationCode: string): Promise<VerificationResult>;
+    signUpOrLogInWithPhone(phoneNumber: string): Promise<AuthState>;
+
+    /**
+     * Sign up or log in with OAuth provider (e.g., Google)
+     * Returns auth state indicating if passkey registration is needed
+     */
+    signUpOrLogInWithOAuth(provider: 'google' | 'apple'): Promise<AuthState>;
+
+    /**
+     * Verify new account with verification code (for email or phone)
+     */
+    verifyNewAccount(verificationCode: string, authState?: any): Promise<VerificationResult>;
+
+    /**
+     * Register passkey for new user (after verification)
+     */
+    registerPasskey(authState: any): Promise<VerificationResult>;
+
+    /**
+     * Login existing user with passkey
+     */
+    loginWithPasskey(): Promise<VerificationResult>;
 
     /**
      * Check if current session is active
@@ -37,6 +68,11 @@ export interface AuthProvider {
      * Get current user email
      */
     getEmail(): Promise<string | null>;
+
+    /**
+     * Get current user phone number
+     */
+    getPhone(): Promise<string | null>;
 
     /**
      * Get current session token
