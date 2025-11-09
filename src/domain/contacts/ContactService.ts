@@ -1,6 +1,6 @@
-import { apiClient } from '../lib/apiClient';
-import { Contact } from '../types/Contact';
-import { logger } from '../utils/errorHandler';
+import { logger } from '../../shared/utils/errorHandler';
+import { contactApiClient } from './apiClient';
+import { Contact } from './types';
 
 export interface ContactResponse {
     success: boolean;
@@ -16,7 +16,7 @@ export class ContactService {
         try {
             logger.info('Fetching user contacts');
 
-            const response = await apiClient.getContacts();
+            const response = await contactApiClient.getContacts();
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch contacts', { error });
@@ -31,9 +31,7 @@ export class ContactService {
         try {
             logger.info('Fetching contact by ID', { id });
 
-            const response = await apiClient.request<Contact>(
-                `/contacts/${id}`
-            );
+            const response = await contactApiClient.getContactById(id);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch contact by ID', { error, id });
@@ -50,7 +48,7 @@ export class ContactService {
         try {
             logger.info('Adding new contact', { contact });
 
-            const response = await apiClient.createContact(contact);
+            const response = await contactApiClient.createContact(contact);
 
             return {
                 success: true,
@@ -78,7 +76,7 @@ export class ContactService {
         try {
             logger.info('Updating contact', { id, updates });
 
-            const response = await apiClient.updateContact(id, updates);
+            const response = await contactApiClient.updateContact(id, updates);
 
             return {
                 success: true,
@@ -105,7 +103,7 @@ export class ContactService {
         try {
             logger.info('Deleting contact', { id });
 
-            await apiClient.deleteContact(id);
+            await contactApiClient.deleteContact(id);
 
             return { success: true };
         } catch (error) {
@@ -127,9 +125,7 @@ export class ContactService {
         try {
             logger.info('Searching contacts', { query });
 
-            const response = await apiClient.request<Contact[]>(
-                `/contacts/search?q=${encodeURIComponent(query)}`
-            );
+            const response = await contactApiClient.searchContacts(query);
 
             return response.data;
         } catch (error) {
@@ -147,9 +143,7 @@ export class ContactService {
         try {
             logger.info('Verifying contact', { id });
 
-            await apiClient.request(`/contacts/${id}/verify`, {
-                method: 'POST',
-            });
+            await contactApiClient.verifyContact(id);
 
             return { success: true };
         } catch (error) {
@@ -171,9 +165,7 @@ export class ContactService {
         try {
             logger.info('Marking contact as recently used', { id });
 
-            await apiClient.request(`/contacts/${id}/last-used`, {
-                method: 'PUT',
-            });
+            await contactApiClient.markAsRecentlyUsed(id);
         } catch (error) {
             logger.error('Failed to mark contact as recently used', {
                 error,

@@ -11,8 +11,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { contactService } from '../../src/services/ContactService';
-import { Contact } from '../../src/types/Contact';
+import { Contact, contactService } from '../../src/domain/contacts';
 
 export default function ContactsScreen() {
     const router = useRouter();

@@ -1,9 +1,6 @@
-import { apiClient } from '../lib/apiClient';
-import {
-    EducationalContent,
-    LearningProgress,
-} from '../types/EducationalContent';
-import { logger } from '../utils/errorHandler';
+import { logger } from '../../shared/utils/errorHandler';
+import { learningApiClient } from './apiClient';
+import { EducationalContent, LearningProgress } from './types';
 
 export interface LearningModuleResponse {
     success: boolean;
@@ -54,13 +51,8 @@ export class LearningService {
         try {
             logger.info('Fetching educational content', { params });
 
-            const response = await apiClient.request<EducationalContent[]>(
-                '/learning/modules',
-                {
-                    method: 'GET',
-                    // Add query parameters if needed
-                }
-            );
+            const response =
+                await learningApiClient.getEducationalContent(params);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch educational content', { error });
@@ -75,9 +67,8 @@ export class LearningService {
         try {
             logger.info('Fetching educational content by ID', { id });
 
-            const response = await apiClient.request<EducationalContent>(
-                `/learning/modules/${id}`
-            );
+            const response =
+                await learningApiClient.getEducationalContentById(id);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch educational content by ID', {
@@ -95,10 +86,7 @@ export class LearningService {
         try {
             logger.info('Fetching learning progress');
 
-            const response =
-                await apiClient.request<LearningProgress[]>(
-                    '/learning/progress'
-                );
+            const response = await learningApiClient.getLearningProgress();
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch learning progress', { error });
@@ -118,16 +106,12 @@ export class LearningService {
         try {
             logger.info('Updating learning progress', { data });
 
-            const response = await apiClient.request<LearningProgress>(
-                '/learning/progress/update',
-                {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        moduleId: data.moduleId,
-                        progress: data.progress,
-                    }),
-                }
-            );
+            const response = await learningApiClient.updateLearningProgress({
+                contentId: data.moduleId,
+                progress: data.progress,
+                score: data.score,
+                timeSpent: data.timeSpent,
+            });
             return response.data;
         } catch (error) {
             logger.error('Failed to update learning progress', { error, data });
@@ -144,15 +128,8 @@ export class LearningService {
         try {
             logger.info('Starting learning module', { moduleId });
 
-            const response = await apiClient.request<LearningProgress>(
-                '/learning/progress/start',
-                {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        moduleId: moduleId,
-                    }),
-                }
-            );
+            const response =
+                await learningApiClient.startLearningModule(moduleId);
 
             return {
                 success: true,
@@ -183,15 +160,8 @@ export class LearningService {
         try {
             logger.info('Completing learning module', { moduleId, score });
 
-            const response = await apiClient.request<LearningProgress>(
-                '/learning/progress/complete',
-                {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        moduleId: moduleId,
-                    }),
-                }
-            );
+            const response =
+                await learningApiClient.completeLearningModule(moduleId);
 
             return {
                 success: true,
@@ -226,13 +196,8 @@ export class LearningService {
 
             // Note: Quiz submission endpoint not defined in backend API spec
             // This would need to be implemented on the backend
-            const response = await apiClient.request<LearningProgress>(
-                '/learning/quiz/submit',
-                {
-                    method: 'POST',
-                    body: JSON.stringify(quizResult),
-                }
-            );
+            const response =
+                await learningApiClient.submitQuizResults(quizResult);
 
             return {
                 success: true,
@@ -260,13 +225,7 @@ export class LearningService {
         try {
             logger.info('Fetching learning statistics');
 
-            const response = await apiClient.request<{
-                totalModules: number;
-                completedModules: number;
-                totalPoints: number;
-                currentStreak: number;
-                averageScore: number;
-            }>('/learning/stats');
+            const response = await learningApiClient.getLearningStats();
 
             return {
                 success: true,
@@ -293,9 +252,8 @@ export class LearningService {
 
             // Note: Recommendations endpoint not defined in backend API spec
             // This would need to be implemented on the backend
-            const response = await apiClient.request<EducationalContent[]>(
-                '/learning/recommendations'
-            );
+            const response =
+                await learningApiClient.getRecommendedLearningPath();
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch recommended learning path', {
@@ -319,14 +277,9 @@ export class LearningService {
         try {
             logger.info('Searching educational content', { query, filters });
 
-            const params = new URLSearchParams({ q: query });
-            if (filters?.category) params.append('category', filters.category);
-            if (filters?.difficulty)
-                params.append('difficulty', filters.difficulty);
-            if (filters?.type) params.append('type', filters.type);
-
-            const response = await apiClient.request<EducationalContent[]>(
-                `/learning/modules/search?${params.toString()}`
+            const response = await learningApiClient.searchEducationalContent(
+                query,
+                filters
             );
             return response.data;
         } catch (error) {
@@ -357,17 +310,7 @@ export class LearningService {
 
             // Note: Achievements endpoint not defined in backend API spec
             // This would need to be implemented on the backend
-            const response = await apiClient.request<
-                Array<{
-                    id: string;
-                    title: string;
-                    description: string;
-                    icon: string;
-                    points: number;
-                    unlockedAt?: string;
-                    progress?: number;
-                }>
-            >('/learning/achievements');
+            const response = await learningApiClient.getLearningAchievements();
 
             return response.data.map(achievement => ({
                 ...achievement,
@@ -392,15 +335,10 @@ export class LearningService {
 
             // Note: Favorites endpoint not defined in backend API spec
             // This would need to be implemented on the backend
-            const response = await apiClient.request<{ isFavorite: boolean }>(
-                `/learning/modules/${contentId}/favorite`,
-                {
-                    method: 'POST',
-                }
-            );
+            const response = await learningApiClient.toggleFavorite(contentId);
 
             return {
-                success: true,
+                success: response.success !== false,
                 isFavorite: response.data.isFavorite,
             };
         } catch (error) {

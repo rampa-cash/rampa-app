@@ -8,8 +8,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { transactionService } from '../../src/services/TransactionService';
-import { SecurityUtils } from '../../src/utils/securityUtils';
+import { transactionService } from '../../src/domain/transactions';
+import { SecurityUtils } from '../../src/shared/utils/securityUtils';
 
 export default function SendScreen() {
     const [recipient, setRecipient] = useState('');

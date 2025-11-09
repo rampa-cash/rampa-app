@@ -5,11 +5,11 @@
  * receiving money, transaction history, and status updates
  */
 
-import { apiClient } from '../lib/apiClient';
-import { Transaction } from '../types/Transaction';
-import { biometricAuth } from '../utils/biometricAuth';
-import { logger } from '../utils/errorHandler';
-import { SecurityUtils } from '../utils/securityUtils';
+import { biometricAuth } from '../../shared/utils/biometricAuth';
+import { logger } from '../../shared/utils/errorHandler';
+import { SecurityUtils } from '../../shared/utils/securityUtils';
+import { transactionApiClient } from './apiClient';
+import { Transaction } from './types';
 
 export interface CreateTransactionRequest {
     recipientAddress: string;
@@ -72,30 +72,17 @@ export class TransactionService {
                 );
             }
 
-            // Generate transaction ID
-            const transactionId = SecurityUtils.generateTransactionId();
-
-            // Create transaction data
-            const transactionData = {
-                id: transactionId,
+            // Call backend API
+            const response = await transactionApiClient.createTransaction({
                 recipientAddress: request.recipientAddress,
                 amount: request.amount,
                 currency: request.currency,
-                notes: request.notes || '',
-                status: 'pending' as const,
-                createdAt: new Date().toISOString(),
-            };
+                notes: request.notes,
+            });
 
-            // Call backend API
-            const response = await apiClient.request<Transaction>(
-                '/transactions',
-                {
-                    method: 'POST',
-                    body: JSON.stringify(transactionData),
-                }
-            );
-
-            logger.info('Transaction created successfully', { transactionId });
+            logger.info('Transaction created successfully', {
+                transactionId: response.data.id,
+            });
 
             return {
                 success: true,
@@ -123,22 +110,12 @@ export class TransactionService {
         currency?: string;
     }): Promise<TransactionHistoryResponse> {
         try {
-            const queryParams = new URLSearchParams();
-
-            if (params?.page)
-                queryParams.append('page', params.page.toString());
-            if (params?.limit)
-                queryParams.append('limit', params.limit.toString());
-            if (params?.status) queryParams.append('status', params.status);
-            if (params?.currency)
-                queryParams.append('currency', params.currency);
-
-            const endpoint = `/transactions${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-
-            const response =
-                await apiClient.request<TransactionHistoryResponse>(endpoint, {
-                    method: 'GET',
-                });
+            const response = await transactionApiClient.getTransactionHistory({
+                page: params?.page,
+                limit: params?.limit,
+                status: params?.status,
+                currency: params?.currency,
+            });
 
             logger.info('Transaction history retrieved', {
                 count: response.data.transactions.length,
@@ -159,12 +136,8 @@ export class TransactionService {
         transactionId: string
     ): Promise<Transaction | null> {
         try {
-            const response = await apiClient.request<Transaction>(
-                `/transactions/${transactionId}`,
-                {
-                    method: 'GET',
-                }
-            );
+            const response =
+                await transactionApiClient.getTransaction(transactionId);
 
             logger.info('Transaction retrieved', { transactionId });
             return response.data;
@@ -193,12 +166,8 @@ export class TransactionService {
                 throw new Error('Biometric authentication required');
             }
 
-            const response = await apiClient.request<Transaction>(
-                `/transactions/${transactionId}/cancel`,
-                {
-                    method: 'POST',
-                }
-            );
+            const response =
+                await transactionApiClient.cancelTransaction(transactionId);
 
             logger.info('Transaction cancelled successfully', {
                 transactionId,
@@ -232,13 +201,8 @@ export class TransactionService {
         completedAt?: string;
     }> {
         try {
-            const response = await apiClient.request<{
-                status: string;
-                blockchainTxHash?: string;
-                completedAt?: string;
-            }>(`/transactions/${transactionId}/status`, {
-                method: 'GET',
-            });
+            const response =
+                await transactionApiClient.getTransactionStatus(transactionId);
 
             return response.data;
         } catch (error) {
@@ -262,16 +226,7 @@ export class TransactionService {
         totalValue: number;
     }> {
         try {
-            const response = await apiClient.request<{
-                balances: Array<{
-                    currency: string;
-                    amount: number;
-                    lastUpdated: string;
-                }>;
-                totalValue: number;
-            }>('/wallet/balance', {
-                method: 'GET',
-            });
+            const response = await transactionApiClient.getWalletBalance();
 
             logger.info('Wallet balance retrieved', {
                 totalValue: response.data.totalValue,
@@ -298,15 +253,10 @@ export class TransactionService {
         estimatedTime: string;
     }> {
         try {
-            const response = await apiClient.request<{
-                networkFee: number;
-                serviceFee: number;
-                totalFee: number;
-                estimatedTime: string;
-            }>('/transactions/fees', {
-                method: 'POST',
-                body: JSON.stringify({ amount, currency }),
-            });
+            const response = await transactionApiClient.getTransactionFees(
+                amount,
+                currency
+            );
 
             return response.data;
         } catch (error) {
@@ -324,14 +274,8 @@ export class TransactionService {
         userName?: string;
     }> {
         try {
-            const response = await apiClient.request<{
-                isValid: boolean;
-                isRegistered: boolean;
-                userName?: string;
-            }>('/transactions/validate-recipient', {
-                method: 'POST',
-                body: JSON.stringify({ address }),
-            });
+            const response =
+                await transactionApiClient.validateRecipientAddress(address);
 
             return response.data;
         } catch (error) {
@@ -354,15 +298,7 @@ export class TransactionService {
         remainingMonthly: number;
     }> {
         try {
-            const response = await apiClient.request<{
-                dailyLimit: number;
-                monthlyLimit: number;
-                singleTransactionLimit: number;
-                remainingDaily: number;
-                remainingMonthly: number;
-            }>('/transactions/limits', {
-                method: 'GET',
-            });
+            const response = await transactionApiClient.getTransactionLimits();
 
             return response.data;
         } catch (error) {

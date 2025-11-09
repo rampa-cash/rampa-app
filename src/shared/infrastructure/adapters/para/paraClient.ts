@@ -1,9 +1,8 @@
 import { ParaMobile } from '@getpara/react-native-wallet';
 import { Environment } from '@getpara/web-sdk';
 
-// Initialize Para SDK with API key from environment
 export const para = new ParaMobile(
-    Environment.BETA, // Use BETA environment for development
+    Environment.BETA,
     process.env.EXPO_PUBLIC_PARA_API_KEY!,
     undefined,
     {

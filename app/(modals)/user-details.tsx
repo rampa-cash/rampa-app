@@ -8,7 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useAuth } from '../../src/hooks/useAuth';
+import { useAuth } from '../../src/domain/auth';
 
 export default function UserDetailsScreen() {
     const router = useRouter();

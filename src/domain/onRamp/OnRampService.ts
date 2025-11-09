@@ -1,11 +1,11 @@
-import { apiClient } from '../lib/apiClient';
+import { biometricAuth } from '../../shared/utils/biometricAuth';
+import { logger } from '../../shared/utils/errorHandler';
+import { onRampApiClient } from './apiClient';
 import {
     OnRampEstimate,
     OnRampInitiateRequest,
     OnRampTransaction,
-} from '../types/OnRampTransaction';
-import { biometricAuth } from '../utils/biometricAuth';
-import { logger } from '../utils/errorHandler';
+} from './types';
 
 export interface OnRampResponse {
     success: boolean;
@@ -36,13 +36,7 @@ export class OnRampService {
                 };
             }
 
-            const response = await apiClient.request<OnRampTransaction>(
-                '/onramp/initiate',
-                {
-                    method: 'POST',
-                    body: JSON.stringify(request),
-                }
-            );
+            const response = await onRampApiClient.initiateOnRamp(request);
 
             return {
                 success: true,
@@ -78,13 +72,11 @@ export class OnRampService {
                 tokenType,
             });
 
-            const response = await apiClient.request<OnRampEstimate>(
-                '/onramp/estimate',
-                {
-                    method: 'POST',
-                    body: JSON.stringify({ amount, currency, tokenType }),
-                }
-            );
+            const response = await onRampApiClient.getOnRampEstimate({
+                amount,
+                currency,
+                tokenType,
+            });
 
             return response.data;
         } catch (error) {
@@ -109,9 +101,8 @@ export class OnRampService {
                 transactionId,
             });
 
-            const response = await apiClient.request<OnRampTransaction>(
-                `/onramp/${transactionId}`
-            );
+            const response =
+                await onRampApiClient.getOnRampStatus(transactionId);
 
             return response.data;
         } catch (error) {
@@ -132,9 +123,7 @@ export class OnRampService {
         try {
             logger.info('Cancelling on-ramp transaction', { transactionId });
 
-            await apiClient.request(`/onramp/${transactionId}/cancel`, {
-                method: 'POST',
-            });
+            await onRampApiClient.cancelOnRamp(transactionId);
 
             return { success: true };
         } catch (error) {
@@ -163,20 +152,7 @@ export class OnRampService {
         try {
             logger.info('Getting on-ramp transaction history', { params });
 
-            const queryParams = new URLSearchParams();
-            if (params?.limit)
-                queryParams.append('limit', params.limit.toString());
-            if (params?.offset)
-                queryParams.append('offset', params.offset.toString());
-            if (params?.status) queryParams.append('status', params.status);
-
-            const query = queryParams.toString();
-            const endpoint = query
-                ? `/onramp/history?${query}`
-                : '/onramp/history';
-
-            const response =
-                await apiClient.request<OnRampTransaction[]>(endpoint);
+            const response = await onRampApiClient.getOnRampHistory(params);
             return response.data;
         } catch (error) {
             logger.error('Failed to get on-ramp transaction history', {
@@ -193,8 +169,7 @@ export class OnRampService {
         try {
             logger.info('Getting supported on-ramp currencies');
 
-            const response =
-                await apiClient.request<string[]>('/onramp/currencies');
+            const response = await onRampApiClient.getSupportedCurrencies();
             return response.data;
         } catch (error) {
             logger.error('Failed to get supported on-ramp currencies', {
@@ -217,8 +192,9 @@ export class OnRampService {
                 tokenType,
             });
 
-            const response = await apiClient.request<{ rate: number }>(
-                `/onramp/exchange-rate?currency=${currency}&tokenType=${tokenType}`
+            const response = await onRampApiClient.getExchangeRate(
+                currency,
+                tokenType
             );
 
             return response.data.rate;

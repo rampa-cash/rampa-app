@@ -11,12 +11,12 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { apiClient } from '../../src/lib/apiClient';
-import { learningService } from '../../src/services/LearningService';
 import {
     EducationalContent,
+    learningApiClient,
     LearningProgress,
-} from '../../src/types/EducationalContent';
+    learningService,
+} from '../../src/domain/learning';
 
 export default function LearnScreen() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(
@@ -31,7 +31,7 @@ export default function LearnScreen() {
     const { data: content, isLoading } = useQuery({
         queryKey: ['educational-content', selectedCategory],
         queryFn: () =>
-            apiClient.getEducationalContent({
+            learningApiClient.getEducationalContent({
                 category: selectedCategory || undefined,
                 limit: 20,
             }),
@@ -40,7 +40,7 @@ export default function LearnScreen() {
     // Fetch learning progress
     const { data: progress } = useQuery({
         queryKey: ['learning-progress'],
-        queryFn: () => apiClient.getLearningProgress(),
+        queryFn: () => learningApiClient.getLearningProgress(),
     });
 
     // Fetch learning stats

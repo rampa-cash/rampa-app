@@ -9,8 +9,13 @@
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,
         "ios": {
+            "buildReactNativeFromSource": true,
             "supportsTablet": true,
-            "bundleIdentifier": "com.anonymous.rampa-app"
+            "bundleIdentifier": "com.anonymous.rampa-app",
+            "associatedDomains": [
+                "webcredentials:app.beta.usecapsule.com?mode=developer",
+                "webcredentials:app.usecapsule.com"
+            ]
         },
         "android": {
             "adaptiveIcon": {
@@ -45,6 +50,12 @@
         "experiments": {
             "typedRoutes": true,
             "reactCompiler": true
+        },
+        "extra": {
+            "router": {},
+            "eas": {
+                "projectId": "f5ddac48-f9f9-44ee-8a3a-364d8cb81a0c"
+            }
         }
     }
 }
