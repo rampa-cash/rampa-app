@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { Theme, Palette } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
 
@@ -36,8 +36,7 @@ export function VirtualCard({
     gradient,
     style,
 }: VirtualCardProps) {
-    const mode: Mode = useColorScheme() === 'dark' ? 'dark' : 'light';
-    const t = Theme[mode];
+    const t = useTheme();
     const colors = gradient ?? Palette.gradients.primary;
 
     // Try to use expo-linear-gradient if available, otherwise fallback to solid bg

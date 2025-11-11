@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, Text, ViewStyle, TextStyle, StyleSheet } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Theme, Palette } from '@/constants/theme';
+import { useTheme, useThemeMode } from '@/hooks/use-theme';
 import { ButtonVariant } from './button-variants';
 
 type Mode = keyof typeof Theme; // 'light' | 'dark'
@@ -18,17 +18,16 @@ export type ButtonProps = {
 };
 
 function resolveVariantColors(
-    mode: Mode,
+    t: typeof Theme.light,
+    isDark: boolean,
     variant: ButtonVariant,
     disabled?: boolean,
     colorOverride?: keyof typeof Theme.light.text,
     bgOverride?: string
 ) {
-    const t = Theme[mode];
-
     if (disabled) {
-        const bg = mode === 'dark' ? '#2B2E33' : '#E9E6FF';
-        const fg = mode === 'dark' ? t.text.lessEmphasis : '#AFA7FF';
+        const bg = isDark ? '#2B2E33' : '#E9E6FF';
+        const fg = isDark ? t.text.lessEmphasis : '#AFA7FF';
         return { background: bgOverride ?? bg, foreground: colorOverride ? t.text[colorOverride] : fg };
     }
 
@@ -42,17 +41,17 @@ function resolveVariantColors(
             // In dark mode use white pill with black text; in light use black pill with white text
             return {
                 background:
-                    bgOverride ?? (mode === 'dark' ? t.neutral.white : t.neutral.black),
+                    bgOverride ?? (isDark ? t.neutral.white : t.neutral.black),
                 foreground: colorOverride
                     ? t.text[colorOverride]
-                    : mode === 'dark'
+                    : isDark
                     ? t.neutral.black
                     : t.neutral.white,
             };
         case ButtonVariant.Secondary:
             return {
                 background:
-                    bgOverride ?? (mode === 'dark' ? t.background.light : '#000000'),
+                    bgOverride ?? (isDark ? t.background.light : '#000000'),
                 foreground: colorOverride ? t.text[colorOverride] : t.text.normal,
             };
         case ButtonVariant.Tertiary:
@@ -74,9 +73,11 @@ export function AppButton({
     style,
     textStyle,
 }: ButtonProps) {
-    const mode: Mode = useColorScheme() === 'dark' ? 'dark' : 'light';
+    const t = useTheme();
+    const { isDark, mode } = useThemeMode();
     const { background, foreground } = resolveVariantColors(
-        mode,
+        t,
+        isDark,
         variant,
         disabled,
         color,

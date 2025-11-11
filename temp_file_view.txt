@@ -1,17 +1,18 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+﻿import { Tabs } from 'expo-router';
+import React, { useMemo } from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import CustomTabBar from '@/components/TabBar';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import { Palette } from '@/constants/theme';
-import useTheme, { useThemeMode } from '@/hooks/use-theme';
+import { Palette, Theme } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { View } from 'react-native';
- 
+
 export default function TabLayout() {
-    const {icon,background,primary,neutral,text } = useTheme();
-    const {isDark } = useThemeMode();
+    const {theme} = useTheme();
+    const isDark = useMemo(() => theme === 'dark', [theme]);
+    console.log({isDark,theme});
     
     return (
         <View style={{ flex: 1 }}>
@@ -61,7 +62,7 @@ export default function TabLayout() {
                     options={{
                         title: 'Send',
                         tabBarIcon: ({ color, focused }) => (
-                            <Icon name={IconName.Property1Send} bordered={!isDark && !focused} size={24} bgColor={focused ? color : isDark?neutral.graphiteGrey:'transparent'}   label='Send' shape='circle' borderColor={icon.normal} color={isDark?icon.normal:focused?'white':icon.normal}/>
+                            <Icon name={IconName.Property1Send} bordered={!isDark && !focused} size={24} bgColor={focused ? color : isDark?Palette.neutral.graphiteGrey:'transparent'}   label='Send' shape='circle' borderColor={Theme.light.icon.normal} />
                         ),
                     }}
                 />
@@ -77,14 +78,3 @@ export default function TabLayout() {
                 />
                 <Tabs.Screen
                     name="explore"
-                    options={{
-                        title: 'Explore',
-                        tabBarIcon: ({ color, focused }) => (
-                            <Icon name={focused ? IconName.Property1Learn : IconName.Property1LearnOutline} size={24} color={color} />
-                        ),
-                    }}
-                />
-            </Tabs>
-        </View>
-    );
-}

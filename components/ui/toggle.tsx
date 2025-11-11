@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { Switch } from 'react-native';
 
 import { Palette, Theme } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme, useThemeMode } from '@/hooks/use-theme';
 
 type Mode = keyof typeof Theme;
 
@@ -85,20 +85,21 @@ export function Toggle({
   accessibilityLabel,
   testID,
 }: ToggleProps) {
-  const mode: Mode = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const t = useTheme();
+  const { isDark } = useThemeMode();
   const [inner, setInner] = useState<boolean>(defaultValue ?? false);
   const isControlled = typeof value === 'boolean';
   const current = isControlled ? (value as boolean) : inner;
 
   const colors = useMemo(
     () =>
-      resolveColors(mode, current, disabled, {
+      resolveColors(isDark ? 'dark' as Mode : 'light' as Mode, current, disabled, {
         trackColorActive,
         trackColorInactive,
         thumbColorActive,
         thumbColorInactive,
       }),
-    [mode, current, disabled, trackColorActive, trackColorInactive, thumbColorActive, thumbColorInactive]
+    [isDark, current, disabled, trackColorActive, trackColorInactive, thumbColorActive, thumbColorInactive]
   );
 
   const scale = getScale(size);
@@ -125,7 +126,7 @@ export function Toggle({
     return <View style={containerStyle as any}>{body}</View>;
   }
 
-  const t = Theme[mode];
+  // t already from useTheme
   const labelNode = typeof label === 'string' ? (
     <Text style={[styles.label, { color: disabled ? t.text.lessEmphasis : t.text.normal }]}>{label}</Text>
   ) : (
@@ -169,4 +170,3 @@ const styles = StyleSheet.create({
 });
 
 export default Toggle;
-
