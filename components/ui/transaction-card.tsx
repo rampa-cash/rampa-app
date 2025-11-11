@@ -2,8 +2,8 @@ import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Theme } from '@/constants/theme';
+import { useTheme, useThemeMode } from '@/hooks/use-theme';
 
 type Mode = keyof typeof Theme;
 
@@ -26,10 +26,10 @@ export function TransactionCard({
     right,
     style,
 }: TransactionCardProps) {
-    const mode: Mode = useColorScheme() === 'dark' ? 'dark' : 'light';
-    const t = Theme[mode];
-    const bg = mode === 'dark' ? t.background.onBase2 : t.background.onBase;
-    const border = mode === 'dark' ? t.outline.outline2 : t.outline.outline1;
+    const t = useTheme();
+    const { isDark } = useThemeMode();
+    const bg = isDark ? t.background.onBase2 : t.background.onBase;
+    const border = isDark ? t.outline.outline2 : t.outline.outline1;
 
     return (
         <View style={[styles.card, { backgroundColor: bg, borderColor: border }, style as any]}>
@@ -80,4 +80,3 @@ const styles = StyleSheet.create({
 });
 
 export default TransactionCard;
-

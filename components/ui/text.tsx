@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, type TextProps, StyleSheet, type TextStyle } from 'react-native';
 
 import { Theme } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { TextVariant } from './text-variants';
 
 type ThemeMode = keyof typeof Theme; // 'light' | 'dark'
@@ -50,9 +50,9 @@ const variantStyles: Record<TextVariant, TextStyle> = {
     [TextVariant.NumH3]: { fontSize: 24, lineHeight: lh(24, 1.0), fontWeight: '400' },
 };
 
-function resolveColor(mode: ThemeMode, color?: TextColorName) {
+function resolveColor(t: typeof Theme.light, color?: TextColorName) {
     const name: TextColorName = color ?? 'normal';
-    return Theme[mode].text[name];
+    return t.text[name];
 }
 
 export function AppText({
@@ -62,8 +62,8 @@ export function AppText({
     style,
     ...rest
 }: AppTextProps) {
-    const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
-    const textColor = resolveColor(scheme, color);
+    const t = useTheme();
+    const textColor = resolveColor(t, color);
     const baseStyle = variantStyles[variant];
 
     return (

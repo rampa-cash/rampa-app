@@ -2,8 +2,8 @@ import React from 'react';
 import { Pressable, View, ViewStyle, StyleSheet } from 'react-native';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Theme } from '@/constants/theme';
+import { useTheme, useThemeMode } from '@/hooks/use-theme';
 import { IconSymbol } from './icon-symbol';
 
 type Mode = keyof typeof Theme;
@@ -19,11 +19,10 @@ export type ListCardProps = {
     style?: ViewStyle | ViewStyle[];
 };
 
-function surface(mode: Mode) {
-    const t = Theme[mode];
+function surface(t: typeof Theme.light, isDark: boolean) {
     return {
-        bg: mode === 'dark' ? t.background.onBase2 : t.background.onBase,
-        border: mode === 'dark' ? t.outline.outline2 : t.outline.outline1,
+        bg: isDark ? t.background.onBase2 : t.background.onBase,
+        border: isDark ? t.outline.outline2 : t.outline.outline1,
         title: t.text.normal,
         desc: t.text.lessEmphasis,
         chevron: t.icon.normal,
@@ -40,8 +39,9 @@ export function ListCard({
     disabled,
     style,
 }: ListCardProps) {
-    const mode: Mode = useColorScheme() === 'dark' ? 'dark' : 'light';
-    const c = surface(mode);
+    const t = useTheme();
+    const { isDark } = useThemeMode();
+    const c = surface(t, isDark);
 
     const Container = onPress ? Pressable : View;
 
@@ -97,4 +97,3 @@ const styles = StyleSheet.create({
 });
 
 export default ListCard;
-

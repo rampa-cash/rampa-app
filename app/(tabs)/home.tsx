@@ -10,6 +10,8 @@ import {
     View,
 } from 'react-native';
 import { useAuth } from '../../src/domain/auth';
+import AmountRow from '@/components/ui/amount-row';
+import { AmountTone, AmountSize } from '@/components/ui/amount-variants';
 import { transactionApiClient } from '../../src/domain/transactions';
 
 export default function HomeScreen() {
@@ -57,11 +59,12 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.balanceCard}>
-                <Text style={styles.balanceLabel}>Total Balance</Text>
-                <Text style={styles.balanceAmount}>$0.00</Text>
-                <Text style={styles.balanceSubtext}>
-                    SOL: 0.00 | USDC: 0.00 | EURC: 0.00
-                </Text>
+                <Text style={styles.balanceLabel}>Amounts</Text>
+                <View style={{ width: '100%' }}>
+                    <AmountRow label="No Input Amount" value={0} currency={'EUR'} tone={AmountTone.Muted} size={AmountSize.Lg} />
+                    <AmountRow label="Input Amount" value={5} currency={'EUR'} tone={AmountTone.Default} size={AmountSize.Lg} />
+                    <AmountRow label="Output Amount" value={5} currency={'EUR'} tone={AmountTone.Accent} size={AmountSize.Lg} />
+                </View>
             </View>
 
             <View style={styles.actionsContainer}>

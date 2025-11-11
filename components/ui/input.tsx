@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 import { Theme, Palette } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme, useThemeMode } from '@/hooks/use-theme';
 import { InputVariant } from './input-variants';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
@@ -31,13 +31,13 @@ export type AppInputProps = Omit<TextInputProps, 'style' | 'placeholderTextColor
 };
 
 function resolveColors(
-    mode: Mode,
+    t: typeof Theme.light,
+    isDark: boolean,
     variant: InputVariant,
     focused: boolean,
     hasError: boolean,
     disabled?: boolean
 ) {
-    const t = Theme[mode];
 
     const baseText = disabled ? t.text.lessEmphasis : t.text.normal;
     const placeholder = t.text.lessEmphasis;
@@ -95,14 +95,15 @@ export function AppInput({
     editable,
     ...rest
 }: AppInputProps) {
-    const mode: Mode = useColorScheme() === 'dark' ? 'dark' : 'light';
+    const t = useTheme();
+    const { isDark } = useThemeMode();
     const [focused, setFocused] = useState(false);
     const [reveal, setReveal] = useState(false);
 
     const hasError = Boolean(error);
     const scheme = useMemo(
-        () => resolveColors(mode, variant, focused, hasError, disabled || editable === false),
-        [mode, variant, focused, hasError, disabled, editable]
+        () => resolveColors(t, isDark, variant, focused, hasError, disabled || editable === false),
+        [t, isDark, variant, focused, hasError, disabled, editable]
     );
 
     const showToggle = Boolean(secureToggle && secureTextEntry);
@@ -222,4 +223,3 @@ const styles = StyleSheet.create({
 });
 
 export default AppInput;
-

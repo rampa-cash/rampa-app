@@ -3,7 +3,7 @@ import { StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-n
 import { createIconSetFromIcoMoon } from 'react-native-vector-icons';
 
 import { Theme } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/use-theme';
 import { IconName } from './icon-names';
 
 // Load IcoMoon config and font (expo bundler requires require for assets)
@@ -48,9 +48,11 @@ export default function Icon({
     shape = 'square',
     containerStyle,
 }: IconProps) {
-    const mode: Mode = useColorScheme() === 'dark' ? 'dark' : 'light';
-    const themed = tone ? Theme[mode].icon[tone] : Theme[mode].icon.lessEmphasis;
+    const t = useTheme();
+    const themed = tone ? t.icon[tone] : t.icon.lessEmphasis;
     const tint = color ?? themed;
+    console.log({color,name});
+    
     const finalLabelColor = labelColor ?? tint;
     const baseSize = label ? size * 2.5 : size * 2;
     const wrapperStyle: StyleProp<ViewStyle> = [
