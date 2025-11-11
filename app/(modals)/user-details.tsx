@@ -9,10 +9,14 @@ import {
     View,
 } from 'react-native';
 import { useAuth } from '../../src/domain/auth';
+import { useTheme } from '../../hooks/use-theme';
+import Toggle from '../../components/ui/toggle';
+import { Colors } from '@/constants/theme';
 
 export default function UserDetailsScreen() {
     const router = useRouter();
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
 
     const handleLogout = () => {
         logout();
@@ -64,6 +68,8 @@ export default function UserDetailsScreen() {
         },
     ];
 
+    const styles = getStyles(theme);
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -71,7 +77,7 @@ export default function UserDetailsScreen() {
                     onPress={() => router.back()}
                     style={styles.closeButton}
                 >
-                    <MaterialIcons name="close" size={24} color="#333" />
+                    <MaterialIcons name="close" size={24} color={Colors[theme].text} />
                 </TouchableOpacity>
                 <Text style={styles.title}>Profile</Text>
                 <View style={styles.placeholder} />
@@ -133,7 +139,7 @@ export default function UserDetailsScreen() {
                                 <MaterialIcons
                                     name={item.icon as any}
                                     size={24}
-                                    color="#666"
+                                    color={Colors[theme].icon}
                                 />
                                 <Text style={styles.menuItemText}>
                                     {item.name}
@@ -146,6 +152,16 @@ export default function UserDetailsScreen() {
                             />
                         </TouchableOpacity>
                     ))}
+                     <View style={[styles.menuItem, { justifyContent: 'space-between' }]}>
+                        <View style={styles.menuItemLeft}>
+                            <MaterialIcons name="brightness-6" size={24} color={Colors[theme].icon} />
+                            <Text style={styles.menuItemText}>Dark Mode</Text>
+                        </View>
+                        <Toggle
+                            value={theme === 'dark'}
+                            onValueChange={toggleTheme}
+                        />
+                    </View>
                 </View>
 
                 <View style={styles.statsSection}>
@@ -186,17 +202,17 @@ export default function UserDetailsScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: 'light' | 'dark') => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: Colors[theme].background,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 20,
-        backgroundColor: '#fff',
+        backgroundColor: Colors[theme].background,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
     },
@@ -206,7 +222,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#333',
+        color: Colors[theme].text,
     },
     placeholder: {
         width: 32,
@@ -216,7 +232,7 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     profileSection: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors[theme].background,
         padding: 24,
         borderRadius: 12,
         alignItems: 'center',
@@ -228,7 +244,7 @@ const styles = StyleSheet.create({
     userName: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#333',
+        color: Colors[theme].text,
         marginBottom: 4,
     },
     userEmail: {
@@ -250,7 +266,7 @@ const styles = StyleSheet.create({
         marginLeft: 4,
     },
     menuSection: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors[theme].background,
         borderRadius: 12,
         marginBottom: 20,
     },
@@ -269,11 +285,11 @@ const styles = StyleSheet.create({
     },
     menuItemText: {
         fontSize: 16,
-        color: '#333',
+        color: Colors[theme].text,
         marginLeft: 12,
     },
     statsSection: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors[theme].background,
         padding: 20,
         borderRadius: 12,
         marginBottom: 20,
@@ -281,7 +297,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#333',
+        color: Colors[theme].text,
         marginBottom: 16,
     },
     statsGrid: {
@@ -312,7 +328,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: Colors[theme].background,
         padding: 16,
         borderRadius: 8,
         borderWidth: 1,
