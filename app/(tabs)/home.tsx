@@ -1,26 +1,60 @@
-import BalanceCarousel from '@/components/ui/balance-carousel';
-import IconButton from '@/components/ui/buttons/IconButton';
+import { BalanceCarousel } from '@/components/ui/balance-carousel';
+import { IconButton } from '@/components/ui/buttons/IconButton';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import InvestCard from '@/components/ui/invest-card';
-import ScreenContainer from '@/components/ui/screen-container';
+import { InvestCard } from '@/components/ui/invest-card';
+import { ScreenContainer } from '@/components/ui/screen-container';
+import { AppText } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
-import { useThemeMode } from '@/hooks/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useAuth } from '../../src/domain/auth';
+import {
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import {
+    useSafeAreaInsets
+} from 'react-native-safe-area-context';
 import { transactionApiClient } from '../../src/domain/transactions';
 
 export default function HomeScreen() {
     const router = useRouter();
-    const { user } = useAuth();
-    const { isDark } = useThemeMode();
+    const insets = useSafeAreaInsets();
+
     const assetsMock = [
-        { id: 'btc', symbol: 'USDC', address: 'Today, 10:35 AM', price: '€61.245', changePositive: true },
-        { id: 'eth', symbol: 'EURC', address: 'Today, 10:35 AM', price: '€3.245', changePositive: false },
+        {
+            id: 'btc',
+            symbol: 'EURC',
+            address: 'Today, 10:35 AM',
+            price: '€61.245',
+            changePositive: true,
+        },
+        {
+            id: 'eth',
+            symbol: 'EURC',
+            address: 'Today, 10:35 AM',
+            price: '€3.245',
+            changePositive: false,
+        },
+        {
+            id: 'btc1',
+            symbol: 'EURC',
+            address: 'Today, 10:35 AM',
+            price: '€61.245',
+            changePositive: true,
+        },
+        {
+            id: 'eth1',
+            symbol: 'EURC',
+            address: 'Today, 10:35 AM',
+            price: '€3.245',
+            changePositive: false,
+        },
     ];
     const { data: transactions, isLoading: transactionsLoading } = useQuery({
         queryKey: ['transactions'],
@@ -44,8 +78,8 @@ export default function HomeScreen() {
     };
 
     return (
-        <ScreenContainer scroll padded style={styles.container}>
-            <View style={styles.header}>
+        <ScreenContainer padded style={styles.container}>
+            <View style={[styles.header, { paddingTop: insets.top }]}>
                 <TouchableOpacity
                     onPress={handleUserDetails}
                     style={styles.profileButton}
@@ -56,9 +90,14 @@ export default function HomeScreen() {
                         color="#007AFF"
                     />
                 </TouchableOpacity>
+                <IconButton
+                    iconName={IconName.Property1Search}
+                    shape="circle"
+                    iconSize={16}
+                />
             </View>
 
-            <View style={{ paddingHorizontal: 20, }}>
+            <View style={{ paddingHorizontal: 20 }}>
                 <BalanceCarousel
                     balances={[
                         { type: 'EUR', value: 0 },
@@ -69,19 +108,51 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.actionsContainer}>
-                <IconButton iconName={IconName.Property1Plus} title='Add Founds' textPosition='outside' iconSize={16} />
-                <IconButton iconName={IconName.Property1ArrowReceive} title='Receive Money' textPosition='outside' iconSize={16} />
-                <IconButton iconName={IconName.Property1ArrowSend} title='Cash Out' textPosition='outside' iconSize={16} />
-
-
+                <IconButton
+                    iconName={IconName.Property1Plus}
+                    title="Add Founds"
+                    textPosition="outside"
+                    iconSize={16}
+                    onPress={handleAddMoney}
+                />
+                <IconButton
+                    iconName={IconName.Property1ArrowReceive}
+                    title="Receive Money"
+                    textPosition="outside"
+                    iconSize={16}
+                    onPress={handleReceiveMoney}
+                />
+                <IconButton
+                    iconName={IconName.Property1ArrowSend}
+                    title="Cash Out"
+                    textPosition="outside"
+                    iconSize={16}
+                    onPress={handleCashOut}
+                />
             </View>
 
             <View style={styles.transactionsSection}>
-                <Text style={styles.sectionTitle}>Recent Transactions</Text>
+                <View style={styles.titleSection}>
+                    <AppText style={styles.sectionTitle}>
+                        Recent Transactions
+                    </AppText>
+                    <IconButton
+                        iconName={IconName.Property1ArrowRight}
+                        iconSize={12}
+                        backgroundColor="transparent"
+                        title="SEE MORE"
+                        textPosition="left"
+                        textStyle={[
+                            styles.loadingText,
+                            { fontSize: 12, padding: 2 },
+                        ]}
+                        style={{ padding: 0 }}
+                    />
+                </View>
                 {transactionsLoading ? (
-                    <Text style={styles.loadingText}>
+                    <AppText style={styles.loadingText}>
                         Loading transactions...
-                    </Text>
+                    </AppText>
                 ) : transactions?.data?.length ? (
                     transactions.data.map(transaction => (
                         <View
@@ -90,8 +161,7 @@ export default function HomeScreen() {
                         >
                             <View style={styles.transactionInfo}>
                                 <Text style={styles.transactionAmount}>
-                                    {transaction.amount}{' '}
-                                    {transaction.currency}
+                                    {transaction.amount} {transaction.currency}
                                 </Text>
                                 <Text style={styles.transactionStatus}>
                                     {transaction.status}
@@ -105,20 +175,33 @@ export default function HomeScreen() {
                         </View>
                     ))
                 ) : (
-
-                    <View style={{ gap: 12 }}>
-                        {assetsMock.map(a => (
+                    <FlatList
+                        style={{ gap: 12 }}
+                        renderItem={({ item: a }) => (
                             <InvestCard
                                 key={a.id}
                                 symbol={a.symbol}
                                 address={a.address}
                                 price={a.price}
                                 changePositive={a.changePositive}
-                                left={<Icon name={IconName.Property1CurrencyDollar} size={34} color={Palette.secondary.openBlue} />}
+                                style={{ marginBottom: 8 }}
+                                left={
+                                    <Icon
+                                        name={IconName.Property1CurrencyDollar}
+                                        size={34}
+                                        color={Palette.secondary.openBlue}
+                                    />
+                                }
+                                addressPrefix={
+                                    <Icon
+                                        name={IconName.Property1Variant25}
+                                        size={14}
+                                    />
+                                }
                             />
-                        ))}
-                    </View>
-
+                        )}
+                        data={assetsMock}
+                    ></FlatList>
                 )}
             </View>
         </ScreenContainer>
@@ -133,6 +216,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        alignContent: 'center',
         padding: 20,
     },
     greeting: {
@@ -180,15 +264,18 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     transactionsSection: {
-        backgroundColor: '#fff',
-        margin: 20,
-        padding: 20,
+        marginTop: 20,
         borderRadius: 12,
+    },
+    titleSection: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: 400,
-        marginBottom: 16,
     },
     transactionItem: {
         flexDirection: 'row',

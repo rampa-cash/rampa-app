@@ -1,11 +1,11 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { useTheme } from '@/hooks/theme';
+import { AppButton } from '@/components/ui/buttons/button';
+import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
-import { AppButton } from '@/components/ui/button';
-import { ButtonVariant } from '@/components/ui/button-variants';
+import { useTheme } from '@/hooks/theme';
 import ModalScaffold from './ModalScaffold';
 
 export type ConfirmationModalProps = {

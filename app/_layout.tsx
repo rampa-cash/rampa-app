@@ -7,17 +7,19 @@ import {
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { ThemeProvider } from '../hooks/ThemeProvider';
 import { queryClient } from '../src/lib/queryClient';
 import { ProviderFactory } from '../src/shared/infrastructure';
+import SplashScreen from '../components/ui/splash-screen';
 
 export const unstable_settings = {
     anchor: '(tabs)',
 };
 
 function AppLayout() {
+    const [booting, setBooting] = useState(true);
 
     useEffect(() => {
         const initProviders = async () => {
@@ -25,6 +27,8 @@ function AppLayout() {
                 await ProviderFactory.initializeProviders();
             } catch (error) {
                 console.error('Failed to initialize providers:', error);
+            } finally {
+                setBooting(false);
             }
         };
 
@@ -32,6 +36,15 @@ function AppLayout() {
     }, []);
 
     const { theme } = useTheme();
+
+    if (booting) {
+        return (
+            <NavThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+                <SplashScreen />
+                <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+            </NavThemeProvider>
+        );
+    }
 
     return (
         <NavThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
