@@ -1,45 +1,27 @@
-import AmountRow from '@/components/ui/amount-row';
-import { AmountSize, AmountTone } from '@/components/ui/amount-variants';
+import BalanceCarousel from '@/components/ui/balance-carousel';
+import IconButton from '@/components/ui/buttons/IconButton';
+import Icon from '@/components/ui/icons/Icon';
+import { IconName } from '@/components/ui/icons/icon-names';
+import InvestCard from '@/components/ui/invest-card';
+import ScreenContainer from '@/components/ui/screen-container';
+import { Palette } from '@/constants/theme';
 import { useThemeMode } from '@/hooks/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../../src/domain/auth';
 import { transactionApiClient } from '../../src/domain/transactions';
 
 export default function HomeScreen() {
     const router = useRouter();
     const { user } = useAuth();
-    const insets = useSafeAreaInsets();
     const { isDark } = useThemeMode();
-    const colors = isDark ? ['rgba(154, 70, 255, 0.2)', 'rgba(22, 240, 150, 0)'] : ['#9A46FF', '#16F096'];
-    // Fetch transactions
-    // Try to use expo-linear-gradient if available, otherwise fallback to solid bg
-    let LinearGradientImpl: any = null;
-    try {
-        LinearGradientImpl = require('expo-linear-gradient').LinearGradient;
-    } catch {}
-
-    const ScreenBackground: React.ComponentType<any> =
-        LinearGradientImpl ?? View;
-    const backgroundProps = LinearGradientImpl
-        ? {
-              colors: [colors[0], colors[1]],
-              start: { x: 0, y: 0 },
-              end: { x: 1, y: 1 },
-            
-          }
-        : { style: [{ backgroundColor: colors[0] }] };
-
+    const assetsMock = [
+        { id: 'btc', symbol: 'USDC', address: 'Today, 10:35 AM', price: '€61.245', changePositive: true },
+        { id: 'eth', symbol: 'EURC', address: 'Today, 10:35 AM', price: '€3.245', changePositive: false },
+    ];
     const { data: transactions, isLoading: transactionsLoading } = useQuery({
         queryKey: ['transactions'],
         queryFn: () => transactionApiClient.getTransactions({ limit: 5 }),
@@ -62,110 +44,90 @@ export default function HomeScreen() {
     };
 
     return (
-        <ScrollView style={[styles.container, { paddingTop: insets.top }]}>
-            <ScreenBackground {...backgroundProps} >
-                <View style={styles.header}>
-                    <TouchableOpacity
-                        onPress={handleUserDetails}
-                        style={styles.profileButton}
-                    >
-                        <MaterialIcons
-                            name="account-circle"
-                            size={42}
-                            color="#007AFF"
-                        />
-                    </TouchableOpacity>
-                </View>
+        <ScreenContainer scroll padded style={styles.container}>
+            <View style={styles.header}>
+                <TouchableOpacity
+                    onPress={handleUserDetails}
+                    style={styles.profileButton}
+                >
+                    <MaterialIcons
+                        name="account-circle"
+                        size={42}
+                        color="#007AFF"
+                    />
+                </TouchableOpacity>
+            </View>
 
-                <View style={styles.balanceCard}>
-                    <Text style={styles.balanceLabel}>ALL ACCOUNT</Text>
-                    <View style={{ width: '100%' }}>
-                        <AmountRow
-                            value={0}
-                            currency={'EUR'}
-                            tone={AmountTone.Muted}
-                            size={AmountSize.Lg}
-                        />
-                    </View>
-                </View>
+            <View style={{ paddingHorizontal: 20, }}>
+                <BalanceCarousel
+                    balances={[
+                        { type: 'EUR', value: 0 },
+                        { type: 'USD', value: 0 },
+                        { type: 'SOL', value: 0 },
+                    ]}
+                />
+            </View>
 
-                <View style={styles.actionsContainer}>
-                    <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={handleAddMoney}
-                    >
-                        <MaterialIcons name="add" size={24} color="#007AFF" />
-                        <Text style={styles.actionText}>Add Founds</Text>
-                    </TouchableOpacity>
+            <View style={styles.actionsContainer}>
+                <IconButton iconName={IconName.Property1Plus} title='Add Founds' textPosition='outside' iconSize={16} />
+                <IconButton iconName={IconName.Property1ArrowReceive} title='Receive Money' textPosition='outside' iconSize={16} />
+                <IconButton iconName={IconName.Property1ArrowSend} title='Cash Out' textPosition='outside' iconSize={16} />
 
-                    <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={handleReceiveMoney}
-                    >
-                        <MaterialIcons
-                            name="qr-code"
-                            size={24}
-                            color="#007AFF"
-                        />
-                        <Text style={styles.actionText}>Receive Money</Text>
-                    </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={handleCashOut}
-                    >
-                        <MaterialIcons
-                            name="account-balance"
-                            size={24}
-                            color="#007AFF"
-                        />
-                        <Text style={styles.actionText}>Cash Out</Text>
-                    </TouchableOpacity>
-                </View>
+            </View>
 
-                <View style={styles.transactionsSection}>
-                    <Text style={styles.sectionTitle}>Recent Transactions</Text>
-                    {transactionsLoading ? (
-                        <Text style={styles.loadingText}>
-                            Loading transactions...
-                        </Text>
-                    ) : transactions?.data?.length ? (
-                        transactions.data.map(transaction => (
-                            <View
-                                key={transaction.id}
-                                style={styles.transactionItem}
-                            >
-                                <View style={styles.transactionInfo}>
-                                    <Text style={styles.transactionAmount}>
-                                        {transaction.amount}{' '}
-                                        {transaction.currency}
-                                    </Text>
-                                    <Text style={styles.transactionStatus}>
-                                        {transaction.status}
-                                    </Text>
-                                </View>
-                                <Text style={styles.transactionDate}>
-                                    {new Date(
-                                        transaction.createdAt
-                                    ).toLocaleDateString()}
+            <View style={styles.transactionsSection}>
+                <Text style={styles.sectionTitle}>Recent Transactions</Text>
+                {transactionsLoading ? (
+                    <Text style={styles.loadingText}>
+                        Loading transactions...
+                    </Text>
+                ) : transactions?.data?.length ? (
+                    transactions.data.map(transaction => (
+                        <View
+                            key={transaction.id}
+                            style={styles.transactionItem}
+                        >
+                            <View style={styles.transactionInfo}>
+                                <Text style={styles.transactionAmount}>
+                                    {transaction.amount}{' '}
+                                    {transaction.currency}
+                                </Text>
+                                <Text style={styles.transactionStatus}>
+                                    {transaction.status}
                                 </Text>
                             </View>
-                        ))
-                    ) : (
-                        <Text style={styles.emptyText}>
-                            No transactions yet
-                        </Text>
-                    )}
-                </View>
-            </ScreenBackground>
-        </ScrollView>
+                            <Text style={styles.transactionDate}>
+                                {new Date(
+                                    transaction.createdAt
+                                ).toLocaleDateString()}
+                            </Text>
+                        </View>
+                    ))
+                ) : (
+
+                    <View style={{ gap: 12 }}>
+                        {assetsMock.map(a => (
+                            <InvestCard
+                                key={a.id}
+                                symbol={a.symbol}
+                                address={a.address}
+                                price={a.price}
+                                changePositive={a.changePositive}
+                                left={<Icon name={IconName.Property1CurrencyDollar} size={34} color={Palette.secondary.openBlue} />}
+                            />
+                        ))}
+                    </View>
+
+                )}
+            </View>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
     },
     header: {
         flexDirection: 'row',
@@ -208,20 +170,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         paddingHorizontal: 20,
-        marginBottom: 20,
+        marginVertical: 20,
     },
-    actionButton: {
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        padding: 16,
-        borderRadius: 12,
-        minWidth: 80,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
+
     actionText: {
         marginTop: 8,
         fontSize: 12,
@@ -236,9 +187,8 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: 400,
         marginBottom: 16,
-        color: '#333',
     },
     transactionItem: {
         flexDirection: 'row',

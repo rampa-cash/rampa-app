@@ -16,6 +16,8 @@ export type AmountProps = {
     locale?: string;
     showCents?: boolean;
     useIcon?: boolean; // otherwise, use currency character
+    symbolOverride?: string; // e.g., '?' for SOL
+    iconNameOverride?: IconName; // custom icon if needed
     size?: AmountSize;
     tone?: AmountTone;
     align?: 'left' | 'center' | 'right';
@@ -28,7 +30,7 @@ function resolveVariant(size: AmountSize): TextVariant {
         case AmountSize.Sm:
             return TextVariant.NumBody;
         case AmountSize.Lg:
-            return TextVariant.NumH2;
+            return TextVariant.NumH1;
         case AmountSize.Md:
         default:
             return TextVariant.NumH3;
@@ -41,6 +43,8 @@ export function Amount({
     locale,
     showCents = true,
     useIcon = false,
+    symbolOverride,
+    iconNameOverride,
     size = AmountSize.Lg,
     tone = AmountTone.Default,
     align,
@@ -62,26 +66,36 @@ export function Amount({
     }, [tone, t]);
 
     // Format parts so we can style currency symbol separately
+    const useCurrencyFormat = !symbolOverride; // if overriding symbol (e.g., SOL), use plain decimal format
     const formatter = useMemo(
         () =>
-            new Intl.NumberFormat(locale, {
-                style: 'currency',
-                currency,
-                minimumFractionDigits: showCents ? 2 : 0,
-                maximumFractionDigits: showCents ? 2 : 0,
-            }),
-        [currency, locale, showCents]
+            new Intl.NumberFormat(
+                locale,
+                useCurrencyFormat
+                    ? {
+                        style: 'currency',
+                        currency,
+                        minimumFractionDigits: showCents ? 2 : 0,
+                        maximumFractionDigits: showCents ? 2 : 0,
+                    }
+                    : {
+                        style: 'decimal',
+                        minimumFractionDigits: showCents ? 2 : 0,
+                        maximumFractionDigits: showCents ? 2 : 0,
+                    }
+            ),
+        [currency, locale, showCents, useCurrencyFormat]
     );
 
     const parts = formatter.formatToParts(value);
-    const currencyPart = CurrencySymbol[currency];
+    const currencyPart = symbolOverride ?? CurrencySymbol[currency];
     const integer = parts
         .filter(p => p.type === 'integer' || p.type === 'group')
         .map(p => p.value)
         .join('');
     const decimal = showCents
-        ? parts.find(p => p.type === 'decimal')?.value +
-          (parts.find(p => p.type === 'fraction')?.value ?? '00')
+        ? (parts.find(p => p.type === 'decimal')?.value ?? '.') +
+        (parts.find(p => p.type === 'fraction')?.value ?? '00')
         : '';
 
     const variant = resolveVariant(size);
@@ -91,16 +105,17 @@ export function Amount({
             {useIcon ? (
                 <Icon
                     name={
-                        currency === 'USD'
+                        iconNameOverride ??
+                        (currency === 'USD'
                             ? IconName.Property1CurrencyDollar
-                            : IconName.Property1Euro
+                            : IconName.Property1Euro)
                     }
                     size={
                         variant === TextVariant.NumH2
                             ? 24
                             : variant === TextVariant.NumH3
-                              ? 20
-                              : 16
+                                ? 20
+                                : 16
                     }
                     color={color}
                     containerStyle={{ marginRight: 6 }}
@@ -137,3 +152,4 @@ const styles = StyleSheet.create({
 });
 
 export default Amount;
+
