@@ -1,7 +1,7 @@
+import { Palette, Theme } from '@/constants/theme';
+import { useTheme, useThemeMode } from '@/hooks/theme';
 import React from 'react';
-import { Pressable, Text, ViewStyle, TextStyle, StyleSheet } from 'react-native';
-import { Theme, Palette } from '@/constants/theme';
-import { useTheme, useThemeMode } from '@/hooks/use-theme';
+import { Pressable, StyleSheet, Text, TextStyle, ViewStyle } from 'react-native';
 import { ButtonVariant } from './button-variants';
 
 type Mode = keyof typeof Theme; // 'light' | 'dark'

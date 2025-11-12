@@ -1,3 +1,5 @@
+import { Colors } from '@/constants/theme';
+import { useTheme } from '@/hooks/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -8,10 +10,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useAuth } from '../../src/domain/auth';
-import { useTheme } from '../../hooks/use-theme';
 import Toggle from '../../components/ui/toggle';
-import { Colors } from '@/constants/theme';
+import { useAuth } from '../../src/domain/auth';
 
 export default function UserDetailsScreen() {
     const router = useRouter();

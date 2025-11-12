@@ -6,43 +6,48 @@ import CustomTabBar from '@/components/TabBar';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
 import { Palette } from '@/constants/theme';
-import useTheme, { useThemeMode } from '@/hooks/use-theme';
+import { useTheme, useThemeMode } from '@/hooks/theme';
 import { View } from 'react-native';
- 
+
 export default function TabLayout() {
-    const {icon,background,primary,neutral,text } = useTheme();
-    const {isDark } = useThemeMode();
-    
+    const { icon, background, primary, neutral, text } = useTheme();
+    const { isDark } = useThemeMode();
+
     return (
         <View style={{ flex: 1 }}>
             <Tabs
-
                 screenOptions={{
-                    tabBarActiveTintColor:
-                        Palette.primary.flowAqua,
+                    tabBarActiveTintColor: Palette.primary.flowAqua,
                     headerShown: false,
                     tabBarShowLabel: false,
 
                     tabBarButton: HapticTab,
                     tabBarStyle: {
-                        justifyContent: 'center',
-                        height: 64,
-                        alignContent: 'center',
-
+                        minHeight: 80,
                     },
                     tabBarIconStyle: {
                         height: '100%',
+                        width: '100%',
                     },
                 }}
-                tabBar={(props) => <CustomTabBar inactiveSteps={[2]} {...props} />}
+                tabBar={props => (
+                    <CustomTabBar inactiveSteps={[2]} {...props} />
+                )}
             >
-
                 <Tabs.Screen
                     name="home"
                     options={{
                         title: 'Home',
                         tabBarIcon: ({ color, focused }) => (
-                            <Icon name={focused ? IconName.Property1RampaSolid : IconName.Property1RampaOutline} size={24} color={color} />
+                            <Icon
+                                name={
+                                    focused
+                                        ? IconName.Property1RampaSolid
+                                        : IconName.Property1RampaOutline
+                                }
+                                size={24}
+                                color={color}
+                            />
                         ),
                     }}
                 />
@@ -52,7 +57,15 @@ export default function TabLayout() {
                     options={{
                         title: 'Wallet',
                         tabBarIcon: ({ color, focused }) => (
-                            <Icon name={focused ? IconName.Property1Card : IconName.Property1CardOutline} size={24} color={color} />
+                            <Icon
+                                name={
+                                    focused
+                                        ? IconName.Property1Card
+                                        : IconName.Property1CardOutline
+                                }
+                                size={24}
+                                color={color}
+                            />
                         ),
                     }}
                 />
@@ -61,7 +74,28 @@ export default function TabLayout() {
                     options={{
                         title: 'Send',
                         tabBarIcon: ({ color, focused }) => (
-                            <Icon name={IconName.Property1Send} bordered={!isDark && !focused} size={24} bgColor={focused ? color : isDark?neutral.graphiteGrey:'transparent'}   label='Send' shape='circle' borderColor={icon.normal} color={isDark?icon.normal:focused?'white':icon.normal}/>
+                            <Icon
+                                name={IconName.Property1Send}
+                                bordered={!isDark && !focused}
+                                size={24}
+                                bgColor={
+                                    focused
+                                        ? color
+                                        : isDark
+                                          ? neutral.graphiteGrey
+                                          : 'transparent'
+                                }
+                                label="Send"
+                                shape="circle"
+                                borderColor={icon.normal}
+                                color={
+                                    isDark
+                                        ? icon.normal
+                                        : focused
+                                          ? 'white'
+                                          : icon.normal
+                                }
+                            />
                         ),
                     }}
                 />
@@ -71,7 +105,15 @@ export default function TabLayout() {
                     options={{
                         title: 'Invest',
                         tabBarIcon: ({ color, focused }) => (
-                            <Icon name={focused ? IconName.Property1Chart : IconName.Property1ChartOutline} size={24} color={color} />
+                            <Icon
+                                name={
+                                    focused
+                                        ? IconName.Property1Chart
+                                        : IconName.Property1ChartOutline
+                                }
+                                size={24}
+                                color={color}
+                            />
                         ),
                     }}
                 />
@@ -80,7 +122,15 @@ export default function TabLayout() {
                     options={{
                         title: 'Explore',
                         tabBarIcon: ({ color, focused }) => (
-                            <Icon name={focused ? IconName.Property1Learn : IconName.Property1LearnOutline} size={24} color={color} />
+                            <Icon
+                                name={
+                                    focused
+                                        ? IconName.Property1Learn
+                                        : IconName.Property1LearnOutline
+                                }
+                                size={24}
+                                color={color}
+                            />
                         ),
                     }}
                 />

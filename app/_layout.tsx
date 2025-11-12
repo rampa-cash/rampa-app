@@ -1,3 +1,4 @@
+import { useTheme } from '@/hooks/theme';
 import {
     DarkTheme,
     DefaultTheme,
@@ -8,16 +9,15 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { ThemeProvider } from '../hooks/ThemeProvider';
 import { queryClient } from '../src/lib/queryClient';
 import { ProviderFactory } from '../src/shared/infrastructure';
-import { ThemeProvider, useTheme } from '../hooks/use-theme';
 
 export const unstable_settings = {
     anchor: '(tabs)',
 };
 
 function AppLayout() {
-    const { theme } = useTheme();
 
     useEffect(() => {
         const initProviders = async () => {
@@ -30,6 +30,8 @@ function AppLayout() {
 
         initProviders();
     }, []);
+
+    const { theme } = useTheme();
 
     return (
         <NavThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -46,12 +48,13 @@ function AppLayout() {
     );
 }
 
-export default function RootLayout() {
+ function RootLayout() {
     return (
-        <QueryClientProvider client={queryClient}>
-            <ThemeProvider>
+        <ThemeProvider>
+            <QueryClientProvider client={queryClient}>
                 <AppLayout />
-            </ThemeProvider>
-        </QueryClientProvider>
+            </QueryClientProvider>
+        </ThemeProvider>
     );
 }
+export default RootLayout

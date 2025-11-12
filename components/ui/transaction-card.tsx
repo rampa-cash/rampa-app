@@ -1,9 +1,9 @@
+import { Theme } from '@/constants/theme';
+import { useTheme, useThemeMode } from '@/hooks/theme';
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
-import { Theme } from '@/constants/theme';
-import { useTheme, useThemeMode } from '@/hooks/use-theme';
 
 type Mode = keyof typeof Theme;
 
@@ -26,20 +26,32 @@ export function TransactionCard({
     right,
     style,
 }: TransactionCardProps) {
-    const t = useTheme();
+    const t = useTheme( );
     const { isDark } = useThemeMode();
     const bg = isDark ? t.background.onBase2 : t.background.onBase;
     const border = isDark ? t.outline.outline2 : t.outline.outline1;
 
     return (
-        <View style={[styles.card, { backgroundColor: bg, borderColor: border }, style as any]}>
+        <View
+            style={[
+                styles.card,
+                { backgroundColor: bg, borderColor: border },
+                style as any,
+            ]}
+        >
             {left ? <View style={styles.left}>{left}</View> : null}
             <View style={styles.body}>
-                <AppText variant={TextVariant.BodyMedium} style={{ color: t.text.normal }}>
+                <AppText
+                    variant={TextVariant.BodyMedium}
+                    style={{ color: t.text.normal }}
+                >
                     {title}
                 </AppText>
                 {subtitle ? (
-                    <AppText variant={TextVariant.Caption} style={{ color: t.text.lessEmphasis }}>
+                    <AppText
+                        variant={TextVariant.Caption}
+                        style={{ color: t.text.lessEmphasis }}
+                    >
                         {subtitle}
                     </AppText>
                 ) : null}
@@ -49,7 +61,8 @@ export function TransactionCard({
                     variant={TextVariant.BodyMedium}
                     style={{ color: positive ? t.text.success : t.text.normal }}
                 >
-                    {positive ? '+' : ''}{amount}
+                    {positive ? '+' : ''}
+                    {amount}
                 </AppText>
                 {right}
             </View>

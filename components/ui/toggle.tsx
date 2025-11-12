@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { Switch } from 'react-native';
+import { Pressable, StyleSheet, Switch, Text, View, ViewStyle } from 'react-native';
+
 
 import { Palette, Theme } from '@/constants/theme';
-import { useTheme, useThemeMode } from '@/hooks/use-theme';
-
+import { useTheme, useThemeMode } from '@/hooks/theme';
+ 
 type Mode = keyof typeof Theme;
 
 export type ToggleSize = 'sm' | 'md' | 'lg';
@@ -46,9 +46,9 @@ function getScale(size: ToggleSize) {
   }
 }
 
-function resolveColors(mode: Mode, active: boolean, disabled?: boolean, overrides?: Pick<ToggleProps,
+function resolveColors(mode: Mode, active: boolean,t:any, disabled?: boolean, overrides?: Pick<ToggleProps,
   'trackColorActive' | 'trackColorInactive' | 'thumbColorActive' | 'thumbColorInactive'>) {
-  const t = Theme[mode];
+ 
 
   const trackOn = overrides?.trackColorActive ?? Palette.primary.signalViolet;
   const trackOff = overrides?.trackColorInactive ?? (mode === 'dark' ? t.outline.outline2 : t.outline.outline2);
@@ -85,7 +85,7 @@ export function Toggle({
   accessibilityLabel,
   testID,
 }: ToggleProps) {
-  const t = useTheme();
+  const t = useTheme( );
   const { isDark } = useThemeMode();
   const [inner, setInner] = useState<boolean>(defaultValue ?? false);
   const isControlled = typeof value === 'boolean';
@@ -93,13 +93,13 @@ export function Toggle({
 
   const colors = useMemo(
     () =>
-      resolveColors(isDark ? 'dark' as Mode : 'light' as Mode, current, disabled, {
+      resolveColors(isDark ? 'dark' as Mode : 'light' as Mode, current,t, disabled, {
         trackColorActive,
         trackColorInactive,
         thumbColorActive,
         thumbColorInactive,
       }),
-    [isDark, current, disabled, trackColorActive, trackColorInactive, thumbColorActive, thumbColorInactive]
+    [isDark, current, t, disabled, trackColorActive, trackColorInactive, thumbColorActive, thumbColorInactive]
   );
 
   const scale = getScale(size);
