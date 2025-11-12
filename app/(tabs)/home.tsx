@@ -1,5 +1,6 @@
 import AmountRow from '@/components/ui/amount-row';
 import { AmountSize, AmountTone } from '@/components/ui/amount-variants';
+import { useThemeMode } from '@/hooks/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -11,14 +12,34 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/domain/auth';
 import { transactionApiClient } from '../../src/domain/transactions';
 
 export default function HomeScreen() {
     const router = useRouter();
     const { user } = useAuth();
-
+    const insets = useSafeAreaInsets();
+    const { isDark } = useThemeMode();
+    const colors = isDark ? ['rgba(154, 70, 255, 0.2)', 'rgba(22, 240, 150, 0)'] : ['#9A46FF', '#16F096'];
     // Fetch transactions
+    // Try to use expo-linear-gradient if available, otherwise fallback to solid bg
+    let LinearGradientImpl: any = null;
+    try {
+        LinearGradientImpl = require('expo-linear-gradient').LinearGradient;
+    } catch {}
+
+    const ScreenBackground: React.ComponentType<any> =
+        LinearGradientImpl ?? View;
+    const backgroundProps = LinearGradientImpl
+        ? {
+              colors: [colors[0], colors[1]],
+              start: { x: 0, y: 0 },
+              end: { x: 1, y: 1 },
+            
+          }
+        : { style: [{ backgroundColor: colors[0] }] };
+
     const { data: transactions, isLoading: transactionsLoading } = useQuery({
         queryKey: ['transactions'],
         queryFn: () => transactionApiClient.getTransactions({ limit: 5 }),
@@ -41,93 +62,102 @@ export default function HomeScreen() {
     };
 
     return (
-        <ScrollView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity
-                    onPress={handleUserDetails}
-                    style={styles.profileButton}
-                >
-                    <MaterialIcons
-                        name="account-circle"
-                        size={32}
-                        color="#007AFF"
-                    />
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.balanceCard}>
-                <Text style={styles.balanceLabel}>ALL ACCOUNT</Text>
-                <View style={{ width: '100%' }}>
-                    <AmountRow
-                        value={0}
-                        currency={'EUR'}
-                        tone={AmountTone.Muted}
-                        size={AmountSize.Lg}
-                    />
+        <ScrollView style={[styles.container, { paddingTop: insets.top }]}>
+            <ScreenBackground {...backgroundProps} >
+                <View style={styles.header}>
+                    <TouchableOpacity
+                        onPress={handleUserDetails}
+                        style={styles.profileButton}
+                    >
+                        <MaterialIcons
+                            name="account-circle"
+                            size={42}
+                            color="#007AFF"
+                        />
+                    </TouchableOpacity>
                 </View>
-            </View>
 
-            <View style={styles.actionsContainer}>
-                <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={handleAddMoney}
-                >
-                    <MaterialIcons name="add" size={24} color="#007AFF" />
-                    <Text style={styles.actionText}>Add Money</Text>
-                </TouchableOpacity>
+                <View style={styles.balanceCard}>
+                    <Text style={styles.balanceLabel}>ALL ACCOUNT</Text>
+                    <View style={{ width: '100%' }}>
+                        <AmountRow
+                            value={0}
+                            currency={'EUR'}
+                            tone={AmountTone.Muted}
+                            size={AmountSize.Lg}
+                        />
+                    </View>
+                </View>
 
-                <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={handleReceiveMoney}
-                >
-                    <MaterialIcons name="qr-code" size={24} color="#007AFF" />
-                    <Text style={styles.actionText}>Receive</Text>
-                </TouchableOpacity>
+                <View style={styles.actionsContainer}>
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={handleAddMoney}
+                    >
+                        <MaterialIcons name="add" size={24} color="#007AFF" />
+                        <Text style={styles.actionText}>Add Founds</Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={handleCashOut}
-                >
-                    <MaterialIcons
-                        name="account-balance"
-                        size={24}
-                        color="#007AFF"
-                    />
-                    <Text style={styles.actionText}>Cash Out</Text>
-                </TouchableOpacity>
-            </View>
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={handleReceiveMoney}
+                    >
+                        <MaterialIcons
+                            name="qr-code"
+                            size={24}
+                            color="#007AFF"
+                        />
+                        <Text style={styles.actionText}>Receive Money</Text>
+                    </TouchableOpacity>
 
-            <View style={styles.transactionsSection}>
-                <Text style={styles.sectionTitle}>Recent Transactions</Text>
-                {transactionsLoading ? (
-                    <Text style={styles.loadingText}>
-                        Loading transactions...
-                    </Text>
-                ) : transactions?.data?.length ? (
-                    transactions.data.map(transaction => (
-                        <View
-                            key={transaction.id}
-                            style={styles.transactionItem}
-                        >
-                            <View style={styles.transactionInfo}>
-                                <Text style={styles.transactionAmount}>
-                                    {transaction.amount} {transaction.currency}
-                                </Text>
-                                <Text style={styles.transactionStatus}>
-                                    {transaction.status}
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={handleCashOut}
+                    >
+                        <MaterialIcons
+                            name="account-balance"
+                            size={24}
+                            color="#007AFF"
+                        />
+                        <Text style={styles.actionText}>Cash Out</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.transactionsSection}>
+                    <Text style={styles.sectionTitle}>Recent Transactions</Text>
+                    {transactionsLoading ? (
+                        <Text style={styles.loadingText}>
+                            Loading transactions...
+                        </Text>
+                    ) : transactions?.data?.length ? (
+                        transactions.data.map(transaction => (
+                            <View
+                                key={transaction.id}
+                                style={styles.transactionItem}
+                            >
+                                <View style={styles.transactionInfo}>
+                                    <Text style={styles.transactionAmount}>
+                                        {transaction.amount}{' '}
+                                        {transaction.currency}
+                                    </Text>
+                                    <Text style={styles.transactionStatus}>
+                                        {transaction.status}
+                                    </Text>
+                                </View>
+                                <Text style={styles.transactionDate}>
+                                    {new Date(
+                                        transaction.createdAt
+                                    ).toLocaleDateString()}
                                 </Text>
                             </View>
-                            <Text style={styles.transactionDate}>
-                                {new Date(
-                                    transaction.createdAt
-                                ).toLocaleDateString()}
-                            </Text>
-                        </View>
-                    ))
-                ) : (
-                    <Text style={styles.emptyText}>No transactions yet</Text>
-                )}
-            </View>
+                        ))
+                    ) : (
+                        <Text style={styles.emptyText}>
+                            No transactions yet
+                        </Text>
+                    )}
+                </View>
+            </ScreenBackground>
         </ScrollView>
     );
 }
