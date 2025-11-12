@@ -1,16 +1,16 @@
 import React, { useMemo, useState } from 'react';
 import {
-    View,
-    TextInput,
-    StyleSheet,
-    TextInputProps,
-    ViewStyle,
-    TextStyle,
     Pressable,
+    StyleSheet,
+    TextInput,
+    TextInputProps,
+    TextStyle,
+    View,
+    ViewStyle,
 } from 'react-native';
 
-import { Theme, Palette } from '@/constants/theme';
-import { useTheme, useThemeMode } from '@/hooks/use-theme';
+import { Palette, Theme } from '@/constants/theme';
+import { useTheme, useThemeMode } from '@/hooks/theme';
 import { InputVariant } from './input-variants';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';

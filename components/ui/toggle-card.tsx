@@ -1,9 +1,9 @@
+import { Palette, Theme } from '@/constants/theme';
+import { useTheme } from '@/hooks/theme';
 import React from 'react';
 import { Switch, ViewStyle } from 'react-native';
 import { ListCard } from './list-card';
-import { Theme, Palette } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-
+ 
 type Mode = keyof typeof Theme;
 
 export type ToggleCardProps = {
@@ -23,7 +23,7 @@ export function ToggleCard({
     disabled,
     style,
 }: ToggleCardProps) {
-    const t = useTheme();
+    const t = useTheme( );
     return (
         <ListCard
             title={title}

@@ -5,8 +5,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
-import { useThemeMode } from '@/hooks/use-theme';
-
+import { useThemeMode } from '@/hooks/theme';
+ 
 export function Collapsible({
     children,
     title,

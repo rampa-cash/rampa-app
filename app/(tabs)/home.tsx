@@ -1,3 +1,5 @@
+import AmountRow from '@/components/ui/amount-row';
+import { AmountSize, AmountTone } from '@/components/ui/amount-variants';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -10,8 +12,6 @@ import {
     View,
 } from 'react-native';
 import { useAuth } from '../../src/domain/auth';
-import AmountRow from '@/components/ui/amount-row';
-import { AmountTone, AmountSize } from '@/components/ui/amount-variants';
 import { transactionApiClient } from '../../src/domain/transactions';
 
 export default function HomeScreen() {
@@ -43,9 +43,6 @@ export default function HomeScreen() {
     return (
         <ScrollView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.greeting}>
-                    Hello, {user?.firstName || 'User'}!
-                </Text>
                 <TouchableOpacity
                     onPress={handleUserDetails}
                     style={styles.profileButton}
@@ -59,11 +56,14 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.balanceCard}>
-                <Text style={styles.balanceLabel}>Amounts</Text>
+                <Text style={styles.balanceLabel}>ALL ACCOUNT</Text>
                 <View style={{ width: '100%' }}>
-                    <AmountRow label="No Input Amount" value={0} currency={'EUR'} tone={AmountTone.Muted} size={AmountSize.Lg} />
-                    <AmountRow label="Input Amount" value={5} currency={'EUR'} tone={AmountTone.Default} size={AmountSize.Lg} />
-                    <AmountRow label="Output Amount" value={5} currency={'EUR'} tone={AmountTone.Accent} size={AmountSize.Lg} />
+                    <AmountRow
+                        value={0}
+                        currency={'EUR'}
+                        tone={AmountTone.Muted}
+                        size={AmountSize.Lg}
+                    />
                 </View>
             </View>
 
@@ -142,7 +142,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: 20,
-        backgroundColor: '#fff',
     },
     greeting: {
         fontSize: 24,

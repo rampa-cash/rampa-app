@@ -1,8 +1,8 @@
 import React from 'react';
-import { Text, type TextProps, StyleSheet, type TextStyle } from 'react-native';
+import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
 
 import { Theme } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme } from '@/hooks/theme';
 import { TextVariant } from './text-variants';
 
 type ThemeMode = keyof typeof Theme; // 'light' | 'dark'
@@ -62,7 +62,7 @@ export function AppText({
     style,
     ...rest
 }: AppTextProps) {
-    const t = useTheme();
+    const t = useTheme( );
     const textColor = resolveColor(t, color);
     const baseStyle = variantStyles[variant];
 

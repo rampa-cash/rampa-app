@@ -1,9 +1,9 @@
+import { Theme } from '@/constants/theme';
+import { useTheme, useThemeMode } from '@/hooks/theme';
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
-import { Theme } from '@/constants/theme';
-import { useTheme, useThemeMode } from '@/hooks/use-theme';
 
 type Mode = keyof typeof Theme;
 

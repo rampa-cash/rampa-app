@@ -1,10 +1,10 @@
+import { Theme } from '@/constants/theme';
+import { useTheme, useThemeMode } from '@/hooks/theme';
 import React from 'react';
-import { Pressable, View, ViewStyle, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import { IconSymbol } from './icon-symbol';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
-import { Theme } from '@/constants/theme';
-import { useTheme, useThemeMode } from '@/hooks/use-theme';
-import { IconSymbol } from './icon-symbol';
 
 type Mode = keyof typeof Theme;
 

@@ -1,7 +1,7 @@
+import { Palette, Theme } from '@/constants/theme';
+import { useTheme } from '@/hooks/theme';
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
-import { Theme, Palette } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
 
@@ -36,13 +36,13 @@ export function VirtualCard({
     gradient,
     style,
 }: VirtualCardProps) {
-    const t = useTheme();
+    const t = useTheme( );
     const colors = gradient ?? Palette.gradients.primary;
 
     // Try to use expo-linear-gradient if available, otherwise fallback to solid bg
     let LinearGradientImpl: any = null;
     try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+         
         LinearGradientImpl = require('expo-linear-gradient').LinearGradient;
     } catch {}
 
