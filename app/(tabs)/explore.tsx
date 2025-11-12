@@ -4,8 +4,8 @@ import { StyleSheet, View } from 'react-native';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Collapsible } from '@/components/ui/collapsible';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 
 import { Fonts } from '@/constants/theme';
 
@@ -13,22 +13,22 @@ import { Fonts } from '@/constants/theme';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
 
-import { AppButton } from '@/components/ui/button';
-import { ButtonVariant } from '@/components/ui/button-variants';
+import { AppButton } from '@/components/ui/buttons/button';
+import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 
 import { AppInput } from '@/components/ui/input';
 import { InputVariant } from '@/components/ui/input-variants';
 
-import { Toggle } from '@/components/ui/toggle';
-import { ToggleCard } from '@/components/ui/toggle-card';
-import { ListCard } from '@/components/ui/list-card';
-import { InvestCard } from '@/components/ui/invest-card';
-import { TransactionCard } from '@/components/ui/transaction-card';
-import { VirtualCard } from '@/components/ui/virtual-card';
 import { Amount } from '@/components/ui/amount';
 import { AmountRow } from '@/components/ui/amount-row';
 import { AmountSize, AmountTone } from '@/components/ui/amount-variants';
 import BalanceCarousel from '@/components/ui/balance-carousel';
+import { InvestCard } from '@/components/ui/invest-card';
+import { ListCard } from '@/components/ui/list-card';
+import { Toggle } from '@/components/ui/toggle';
+import { ToggleCard } from '@/components/ui/toggle-card';
+import { TransactionCard } from '@/components/ui/transaction-card';
+import { VirtualCard } from '@/components/ui/virtual-card';
 
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
@@ -49,7 +49,7 @@ export default function ExploreScreen() {
     { id: 'eth', symbol: 'ETH', address: 'Ethereum', price: '€3.245', change: '-0,85%', changePositive: false },
   ];
 
-  const textVariants: Array<{ v: TextVariant; label: string }> = useMemo(() => [
+  const textVariants: { v: TextVariant; label: string }[] = useMemo(() => [
     { v: TextVariant.H1, label: 'Text H1' },
     { v: TextVariant.H2, label: 'Text H2' },
     { v: TextVariant.BodyMedium, label: 'Body Medium' },

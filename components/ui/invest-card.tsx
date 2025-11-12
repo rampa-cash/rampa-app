@@ -1,22 +1,20 @@
-import { Theme } from '@/constants/theme';
 import { useTheme, useThemeMode } from '@/hooks/theme';
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
 
-type Mode = keyof typeof Theme;
-
 export type InvestCardProps = {
-    symbol: string; // e.g. APFLx
-    name?: string; // optional descriptive name
-    address?: string; // short address/chain
-    price: string; // formatted, e.g. €371.0
-    change?: string; // e.g. +4.64 / -1.32%
+    symbol: string;
+    name?: string;
+    address?: string;
+    addressPrefix?: React.ReactNode;
+    price: string;
+    change?: string;
     changePositive?: boolean;
     changePrice?: boolean;
-    left?: React.ReactNode; // token icon
-    right?: React.ReactNode; // e.g. context menu
+    left?: React.ReactNode;
+    right?: React.ReactNode;
     style?: ViewStyle | ViewStyle[];
 };
 
@@ -31,6 +29,7 @@ export function InvestCard({
     left,
     right,
     style,
+    addressPrefix,
 }: InvestCardProps) {
     const t = useTheme();
     const { isDark } = useThemeMode();
@@ -38,27 +37,51 @@ export function InvestCard({
     const border = isDark ? t.outline.outline2 : t.outline.outline1;
 
     return (
-        <View style={[styles.card, { backgroundColor: bg, borderColor: border }, style as any]}>
+        <View
+            style={[
+                styles.card,
+                { backgroundColor: bg, borderColor: border },
+                style as any,
+            ]}
+        >
             {left ? <View style={styles.side}>{left}</View> : null}
             <View style={[styles.body, { flex: 1 }]}>
-                <AppText variant={TextVariant.BodyMedium} style={{ color: t.text.normal }}>
+                <AppText
+                    variant={TextVariant.BodyMedium}
+                    style={{ color: t.text.normal }}
+                >
                     {symbol}
                 </AppText>
                 {address ? (
-                    <AppText variant={TextVariant.Caption} style={{ color: t.text.lessEmphasis }}>
-                        {address}
-                    </AppText>
+                    <View style={styles.addressContainer}>
+                        {addressPrefix}
+                        <AppText
+                            variant={TextVariant.Caption}
+                            style={{ color: t.text.lessEmphasis }}
+                        >
+                            {address}
+                        </AppText>
+                    </View>
                 ) : null}
             </View>
 
             <View style={styles.trailing}>
-                <AppText variant={TextVariant.BodyMedium} style={{ color: changePositive ? t.text.success : t.text.error }}>
+                <AppText
+                    variant={TextVariant.BodyMedium}
+                    style={{
+                        color: changePositive ? t.text.success : t.text.error,
+                    }}
+                >
                     {price}
                 </AppText>
                 {change ? (
                     <AppText
                         variant={TextVariant.Caption}
-                        style={{ color: changePositive ? t.text.success : t.text.error }}
+                        style={{
+                            color: changePositive
+                                ? t.text.success
+                                : t.text.error,
+                        }}
                     >
                         {change}
                     </AppText>
@@ -75,6 +98,10 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         borderWidth: 1,
         paddingHorizontal: 12,
+        alignItems: 'center',
+        flexDirection: 'row',
+    },
+    addressContainer: {
         alignItems: 'center',
         flexDirection: 'row',
     },

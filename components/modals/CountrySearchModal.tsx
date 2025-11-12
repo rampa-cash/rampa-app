@@ -1,15 +1,15 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { AppText } from '@/components/ui/text';
-import { TextVariant } from '@/components/ui/text-variants';
-import { AppInput } from '@/components/ui/input';
-import { InputVariant } from '@/components/ui/input-variants';
+import { AppButton } from '@/components/ui/buttons/button';
+import { ButtonVariant } from '@/components/ui/buttons/button-variants';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import { AppButton } from '@/components/ui/button';
-import { ButtonVariant } from '@/components/ui/button-variants';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AppInput } from '@/components/ui/input';
+import { InputVariant } from '@/components/ui/input-variants';
+import { AppText } from '@/components/ui/text';
+import { TextVariant } from '@/components/ui/text-variants';
 import ModalScaffold from './ModalScaffold';
 
 export type CountryItem = {

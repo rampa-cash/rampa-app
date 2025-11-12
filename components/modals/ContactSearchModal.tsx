@@ -1,15 +1,15 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, View } from 'react-native';
 
-import { useTheme } from '@/hooks/theme';
-import { AppText } from '@/components/ui/text';
-import { TextVariant } from '@/components/ui/text-variants';
-import { AppInput } from '@/components/ui/input';
-import { InputVariant } from '@/components/ui/input-variants';
+import { AppButton } from '@/components/ui/buttons/button';
+import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import { AppButton } from '@/components/ui/button';
-import { ButtonVariant } from '@/components/ui/button-variants';
+import { AppInput } from '@/components/ui/input';
+import { InputVariant } from '@/components/ui/input-variants';
+import { AppText } from '@/components/ui/text';
+import { TextVariant } from '@/components/ui/text-variants';
+import { useTheme } from '@/hooks/theme';
 import ModalScaffold from './ModalScaffold';
 
 export type ContactItem = {

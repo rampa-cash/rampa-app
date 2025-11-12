@@ -1,13 +1,13 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { useTheme } from '@/hooks/theme';
-import { AppText } from '@/components/ui/text';
-import { TextVariant } from '@/components/ui/text-variants';
+import { AppButton } from '@/components/ui/buttons/button';
+import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import { AppButton } from '@/components/ui/button';
-import { ButtonVariant } from '@/components/ui/button-variants';
+import { AppText } from '@/components/ui/text';
+import { TextVariant } from '@/components/ui/text-variants';
+import { useTheme } from '@/hooks/theme';
 import ModalScaffold from './ModalScaffold';
 
 export type CardLockInfoModalProps = {
