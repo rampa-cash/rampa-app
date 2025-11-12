@@ -7,12 +7,10 @@
 
 import { MockAuthProvider } from '../adapters/mock/MockAuthProvider';
 import { MockWalletProvider } from '../adapters/mock/MockWalletProvider';
+import { ParaAuthProvider } from '../adapters/para/ParaAuthProvider';
+import { ParaWalletProvider } from '../adapters/para/ParaWalletProvider';
 import { AuthProvider } from '../ports/AuthProvider';
 import { WalletProvider } from '../ports/WalletProvider';
-
-// Lazy imports for Para providers to avoid loading Para SDK when using mock providers
-let ParaAuthProvider: typeof import('../adapters/para/ParaAuthProvider').ParaAuthProvider;
-let ParaWalletProvider: typeof import('../adapters/para/ParaWalletProvider').ParaWalletProvider;
 
 export type AuthProviderType = 'para' | 'mock';
 export type WalletProviderType = 'para' | 'mock';
@@ -57,10 +55,6 @@ export class ProviderFactory {
 
         switch (type) {
             case 'para':
-                // Lazy load Para provider only when needed
-                if (!ParaAuthProvider) {
-                    ParaAuthProvider = require('../adapters/para/ParaAuthProvider').ParaAuthProvider;
-                }
                 return new ParaAuthProvider();
             case 'mock':
                 return new MockAuthProvider();
@@ -82,10 +76,6 @@ export class ProviderFactory {
 
         switch (type) {
             case 'para':
-                // Lazy load Para provider only when needed
-                if (!ParaWalletProvider) {
-                    ParaWalletProvider = require('../adapters/para/ParaWalletProvider').ParaWalletProvider;
-                }
                 return new ParaWalletProvider();
             case 'mock':
                 return new MockWalletProvider();
