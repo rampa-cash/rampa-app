@@ -14,6 +14,7 @@ export type InvestCardProps = {
     price: string; // formatted, e.g. €371.0
     change?: string; // e.g. +4.64 / -1.32%
     changePositive?: boolean;
+    changePrice?: boolean;
     left?: React.ReactNode; // token icon
     right?: React.ReactNode; // e.g. context menu
     style?: ViewStyle | ViewStyle[];
@@ -26,6 +27,7 @@ export function InvestCard({
     price,
     change,
     changePositive,
+    changePrice,
     left,
     right,
     style,
@@ -50,7 +52,7 @@ export function InvestCard({
             </View>
 
             <View style={styles.trailing}>
-                <AppText variant={TextVariant.BodyMedium} style={{ color: t.text.normal }}>
+                <AppText variant={TextVariant.BodyMedium} style={{ color: changePositive ? t.text.success : t.text.error }}>
                     {price}
                 </AppText>
                 {change ? (

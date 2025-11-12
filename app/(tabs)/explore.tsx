@@ -28,6 +28,7 @@ import { VirtualCard } from '@/components/ui/virtual-card';
 import { Amount } from '@/components/ui/amount';
 import { AmountRow } from '@/components/ui/amount-row';
 import { AmountSize, AmountTone } from '@/components/ui/amount-variants';
+import BalanceCarousel from '@/components/ui/balance-carousel';
 
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
@@ -241,6 +242,19 @@ export default function ExploreScreen() {
           <Amount value={1234.56} currency="USD" tone={AmountTone.Accent} />
           <Amount value={1234.56} currency="USD" tone={AmountTone.Muted} />
           <AmountRow value={9876.54} currency="EUR" />
+        </View>
+      </Collapsible>
+
+      {/* Balance Carousel */}
+      <Collapsible title="Balance Carousel">
+        <View style={styles.section}>
+          <BalanceCarousel
+            balances={[
+              { type: 'EUR', value: 0 },
+              { type: 'USD', value: 0 },
+              { type: 'SOL', value: 0 },
+            ]}
+          />
         </View>
       </Collapsible>
     </ParallaxScrollView>
