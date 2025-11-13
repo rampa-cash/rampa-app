@@ -1,14 +1,17 @@
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/hooks/theme';
 import {
     DarkTheme,
     DefaultTheme,
-    ThemeProvider,
+    ThemeProvider as NavThemeProvider,
 } from '@react-navigation/native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from "react";
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
+import SplashScreen from '../components/ui/splash-screen';
+import { ThemeProvider } from '../hooks/ThemeProvider';
+import { WalletProvider } from '../hooks/WalletProvider';
 import { queryClient } from '../src/lib/queryClient';
 import { ProviderFactory } from '../src/shared/infrastructure';
 
@@ -16,40 +19,60 @@ export const unstable_settings = {
     anchor: '(tabs)',
 };
 
-export default function RootLayout() {
-    const colorScheme = useColorScheme();
+function AppLayout() {
+    const [booting, setBooting] = useState(true);
+
     useEffect(() => {
         const initProviders = async () => {
             try {
                 await ProviderFactory.initializeProviders();
             } catch (error) {
                 console.error('Failed to initialize providers:', error);
+            } finally {
+                setBooting(false);
             }
         };
-        
+
         initProviders();
     }, []);
-    return (
-        <QueryClientProvider client={queryClient}>
-            <ThemeProvider
-                value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+
+    const { theme } = useTheme();
+
+    if (booting) {
+        return (
+            <NavThemeProvider
+                value={theme === 'dark' ? DarkTheme : DefaultTheme}
             >
-                <Stack>
-                    <Stack.Screen
-                        name="(auth)"
-                        options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                        name="(tabs)"
-                        options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                        name="(modals)"
-                        options={{ presentation: 'modal' }}
-                    />
-                </Stack>
-                <StatusBar style="auto" />
-            </ThemeProvider>
-        </QueryClientProvider>
+                <SplashScreen />
+                <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+            </NavThemeProvider>
+        );
+    }
+
+    return (
+        <NavThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                    name="(modals)"
+                    options={{ presentation: 'modal', headerShown: false }}
+                />
+            </Stack>
+            <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+        </NavThemeProvider>
     );
 }
+
+function RootLayout() {
+    return (
+        <ThemeProvider>
+            <WalletProvider>
+                <QueryClientProvider client={queryClient}>
+                    <AppLayout />
+                </QueryClientProvider>
+            </WalletProvider>
+        </ThemeProvider>
+    );
+}
+export default RootLayout;

@@ -23,3 +23,9 @@ export type {
     AuthProviderType,
     WalletProviderType
 } from './factory/ProviderFactory';
+
+// Adapters - Para (lazy exports to avoid loading Para SDK when using mock providers)
+// These are only exported when actually needed via ProviderFactory
+// To use Para adapters directly, import from their specific files:
+// import { ParaAuthProvider } from './adapters/para/ParaAuthProvider';
+// import { ParaWalletProvider } from './adapters/para/ParaWalletProvider';
