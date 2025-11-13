@@ -6,7 +6,6 @@ import { IconSymbol } from './icon-symbol';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
 
-type Mode = keyof typeof Theme;
 
 export type ListCardProps = {
     title: string;
@@ -46,7 +45,7 @@ export function ListCard({
     const Container = onPress ? Pressable : View;
 
     return (
-        <Container
+        <Container 
             onPress={onPress as any}
             disabled={disabled}
             style={({ pressed }: any) => [
@@ -84,6 +83,7 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         borderWidth: 1,
         flexDirection: 'row',
+        display: 'flex',
         alignItems: 'center',
         paddingHorizontal: 12,
     },

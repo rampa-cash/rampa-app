@@ -1,7 +1,7 @@
 import { useContext } from 'react';
-import { ThemeContext, ThemeMode } from './ThemeProvider';
+import { ThemeContext, ThemeContextValue, ThemeMode } from './ThemeProvider';
 // Hook principal: devuelve tokens + estado del tema + helpers
-export function useTheme(): any {
+export function useTheme(): ThemeContextValue {
     const ctx = useContext(ThemeContext);
 
     if (!ctx) {

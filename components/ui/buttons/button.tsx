@@ -45,8 +45,8 @@ function resolveVariantColors(
                 foreground: colorOverride
                     ? t.text[colorOverride]
                     : isDark
-                    ? t.neutral.black
-                    : t.neutral.white,
+                        ? t.neutral.black
+                        : t.neutral.white,
             };
         case ButtonVariant.Secondary:
             return {
@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
+        textAlign: 'center',
     },
     tertiary: {
         paddingVertical: 6,

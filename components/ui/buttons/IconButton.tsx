@@ -18,6 +18,7 @@ export type ButtonProps = {
     onPress?: () => void;
     disabled?: boolean;
     color?: keyof typeof Theme.light.text; // Optional text color override
+    iconColor?: keyof typeof Theme.light.icon; // Optional text color override
     backgroundColor?: string; // Optional background override
     style?: ViewStyle | ViewStyle[];
     textPosition?: 'left' | 'right' | 'top' | 'bottom' | 'outside';
@@ -32,6 +33,7 @@ function resolveVariantColors(
     isDark: boolean,
     disabled?: boolean,
     colorOverride?: keyof typeof Theme.light.text,
+    colorIconOverride?: keyof typeof Theme.light.icon,
     bgOverride?: string
 ) {
     if (disabled) {
@@ -45,7 +47,7 @@ function resolveVariantColors(
 
     return {
         background: bgOverride ?? (isDark ? t.background.dim : '#FAF9F6'),
-        color: colorOverride ? t.text[colorOverride] : t.icon.variant,
+        color: colorIconOverride ? t.icon[colorIconOverride] : t.icon.variant,
         foreground: colorOverride ? t.text[colorOverride] : t.text.normal,
     };
 }
@@ -57,6 +59,7 @@ export function IconButton({
     color,
     iconName,
     backgroundColor,
+    iconColor:iconColorOverride,
     style,
     textPosition,
     textStyle,
@@ -70,7 +73,7 @@ export function IconButton({
         background,
         foreground,
         color: iconColor,
-    } = resolveVariantColors(t, isDark, disabled, color, backgroundColor);
+    } = resolveVariantColors(t, isDark, disabled, color, iconColorOverride, backgroundColor);
 
     const circleSize = iconSize * 2.5;
     const shapeStyle: ViewStyle =
