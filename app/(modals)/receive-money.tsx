@@ -1,283 +1,264 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import AppButton from '@/components/ui/buttons/button';
+import { ButtonVariant } from '@/components/ui/buttons/button-variants';
+import { IconButton } from '@/components/ui/buttons/IconButton';
+import { IconName } from '@/components/ui/icons/icon-names';
+import { ListCard } from '@/components/ui/list-card';
+import ScreenContainer from '@/components/ui/screen-container';
+import { AppText } from '@/components/ui/text';
+import { TextVariant } from '@/components/ui/text-variants';
+import { useTheme } from '@/hooks/theme';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ModalScaffold } from '@/components/modals/ModalScaffold';
+
+type ReceiveCurrency = 'USD' | 'EUR' | 'SOL';
+
+const CURRENCY_OPTIONS: Array<{
+  id: ReceiveCurrency;
+  label: string;
+  description: string;
+}> = [
+  { id: 'USD', label: 'USD', description: 'US Dollar' },
+  { id: 'EUR', label: 'EUR', description: 'Euro' },
+  { id: 'SOL', label: 'SOL', description: 'Solana' },
+];
+
+const MOCK_WALLET_ADDRESS = '78393993....ckdd';
 
 export default function ReceiveMoneyScreen() {
-    const router = useRouter();
-    const [selectedCurrency, setSelectedCurrency] = useState<
-        'SOL' | 'USDC' | 'EURC'
-    >('USDC');
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const t = useTheme();
 
-    const currencies = [
-        { id: 'SOL', name: 'Solana', symbol: 'SOL' },
-        { id: 'USDC', name: 'USD Coin', symbol: 'USDC' },
-        { id: 'EURC', name: 'Euro Coin', symbol: 'EURC' },
-    ];
+  const [selectedCurrency, setSelectedCurrency] = useState<ReceiveCurrency>('USD');
+  const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
+  const selectedCurrencyMeta = CURRENCY_OPTIONS.find(c => c.id === selectedCurrency);
 
-    const handleShareAddress = () => {
-        Alert.alert(
-            'Share Address',
-            'Your wallet address has been copied to clipboard',
-            [{ text: 'OK' }]
-        );
-    };
+  const handleSelectCurrency = (id: ReceiveCurrency) => {
+    setSelectedCurrency(id);
+    setCurrencyModalVisible(false);
+  };
 
-    const handleGenerateQR = () => {
-        Alert.alert('QR Code', 'QR code generated for easy sharing', [
-            { text: 'OK' },
-        ]);
-    };
+  const handleShare = () => {
+    Alert.alert('Share wallet', 'Sharing options will be available soon.');
+  };
 
-    return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity
-                    onPress={() => router.back()}
-                    style={styles.closeButton}
-                >
-                    <MaterialIcons name="close" size={24} color="#333" />
-                </TouchableOpacity>
-                <Text style={styles.title}>Receive Money</Text>
-                <View style={styles.placeholder} />
-            </View>
+  const handleCopy = () => {
+    Alert.alert('Copied', 'Wallet address copied to clipboard.');
+  };
 
-            <View style={styles.content}>
-                <View style={styles.currencySelector}>
-                    <Text style={styles.label}>Select Currency</Text>
-                    <View style={styles.currencyButtons}>
-                        {currencies.map(currency => (
-                            <TouchableOpacity
-                                key={currency.id}
-                                style={[
-                                    styles.currencyButton,
-                                    selectedCurrency === currency.id &&
-                                        styles.currencyButtonSelected,
-                                ]}
-                                onPress={() =>
-                                    setSelectedCurrency(currency.id as any)
-                                }
-                            >
-                                <Text
-                                    style={[
-                                        styles.currencyText,
-                                        selectedCurrency === currency.id &&
-                                            styles.currencyTextSelected,
-                                    ]}
-                                >
-                                    {currency.symbol}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </View>
-
-                <View style={styles.qrSection}>
-                    <View style={styles.qrCode}>
-                        <MaterialIcons name="qr-code" size={120} color="#333" />
-                    </View>
-                    <Text style={styles.qrLabel}>
-                        Scan QR code to send {selectedCurrency}
-                    </Text>
-                </View>
-
-                <View style={styles.addressSection}>
-                    <Text style={styles.label}>Wallet Address</Text>
-                    <View style={styles.addressContainer}>
-                        <Text style={styles.addressText}>
-                            9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM
-                        </Text>
-                        <TouchableOpacity
-                            onPress={handleShareAddress}
-                            style={styles.copyButton}
-                        >
-                            <MaterialIcons
-                                name="content-copy"
-                                size={20}
-                                color="#007AFF"
-                            />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                <View style={styles.actionsContainer}>
-                    <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={handleShareAddress}
-                    >
-                        <MaterialIcons name="share" size={20} color="#007AFF" />
-                        <Text style={styles.actionText}>Share Address</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={handleGenerateQR}
-                    >
-                        <MaterialIcons
-                            name="qr-code-2"
-                            size={20}
-                            color="#007AFF"
-                        />
-                        <Text style={styles.actionText}>Generate QR</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.infoSection}>
-                    <Text style={styles.infoTitle}>How to receive money:</Text>
-                    <Text style={styles.infoText}>
-                        1. Share your wallet address or QR code with the sender
-                        {'\n'}
-                        2. The sender can send {selectedCurrency} to this
-                        address{'\n'}
-                        3. Funds will appear in your wallet once confirmed
-                    </Text>
-                </View>
-            </View>
+  return (
+    <>
+      <ScreenContainer
+        padded
+        scroll
+        contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + 32 }]}
+      >
+        <View style={[styles.nav, { paddingTop: insets.top }]}>
+          <IconButton
+            iconName={IconName.Property1ArrowLeft}
+            shape="circle"
+            iconSize={14}
+            bordered
+            onPress={() => router.back()}
+          />
         </View>
-    );
+
+        <View style={styles.header}>
+          <AppText variant={TextVariant.H1} style={styles.title}>
+            Receive money
+          </AppText>
+          <AppText variant={TextVariant.Secondary} color="lessEmphasis">
+            Share your wallet address to receive money instantly
+          </AppText>
+        </View>
+
+        <View>
+          <AppText variant={TextVariant.SecondaryMedium} color="lessEmphasis" style={styles.sectionLabel}>
+            Currency
+          </AppText>
+          <Pressable
+            onPress={() => setCurrencyModalVisible(true)}
+            style={[
+              styles.currencyPicker,
+              {
+                backgroundColor: t.background.onBase,
+                borderColor: t.outline.outline1,
+              },
+            ]}
+          >
+            <View style={styles.currencyPickerContent}>
+              <View style={[styles.currencyBadge, { backgroundColor: t.background.onBase2 }]}>
+                <AppText variant={TextVariant.BodyMedium}>{selectedCurrency}</AppText>
+              </View>
+              <AppText variant={TextVariant.Body}>{selectedCurrencyMeta?.description}</AppText>
+          </View>
+            <MaterialIcons name="keyboard-arrow-down" size={20} color={t.icon.lessEmphasis} />
+          </Pressable>
+        </View>
+
+        <View style={[styles.qrCard, { backgroundColor: t.background.onBase }]}>
+          <View style={[styles.qrMock, { backgroundColor: t.background.onBase2 }]}>
+            <MaterialIcons name="qr-code-2" size={140} color={t.icon.normal} />
+          </View>
+          <AppText variant={TextVariant.Secondary} color="lessEmphasis" align="center">
+            Show this code so others can send {selectedCurrency}
+          </AppText>
+        </View>
+
+        <View style={[styles.walletCard, { backgroundColor: t.background.onBase }]}>
+          <AppText variant={TextVariant.SecondaryMedium} color="lessEmphasis">
+            Your wallet address
+          </AppText>
+          <View style={[styles.walletValue, { backgroundColor: t.background.onBase2 }]}>
+            <AppText variant={TextVariant.Body} style={styles.walletText}>
+              {MOCK_WALLET_ADDRESS}
+            </AppText>
+            <AppButton
+              title="Copy"
+              variant={ButtonVariant.PrimaryContrast}
+              style={styles.copyButton}
+              onPress={handleCopy}
+            />
+          </View>
+        </View>
+
+        <View style={styles.actions}>
+          <AppButton title="Share" onPress={handleShare} />
+          <AppButton
+            title="Done"
+            variant={ButtonVariant.PrimaryContrast}
+            onPress={() => router.back()}
+          />
+        </View>
+      </ScreenContainer>
+
+      <Modal
+        visible={currencyModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCurrencyModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setCurrencyModalVisible(false)} />
+          <View style={styles.modalSheet}>
+            <ModalScaffold>
+              <AppText variant={TextVariant.BodyMedium}>Choose a currency</AppText>
+              <View style={{ gap: 8 }}>
+                {CURRENCY_OPTIONS.map(option => (
+                  <ListCard
+                    key={option.id}
+                    title={`${option.label} - ${option.description}`}
+                    showChevron={false}
+                    onPress={() => handleSelectCurrency(option.id)}
+                    style={
+                      option.id === selectedCurrency
+                        ? [
+                            {
+                              borderColor: t.primary.signalViolet,
+                            },
+                          ]
+                        : undefined
+                    }
+                    right={
+                      option.id === selectedCurrency ? (
+                        <MaterialIcons name="check" size={20} color={t.primary.signalViolet} />
+                      ) : undefined
+                    }
+                  />
+                ))}
+              </View>
+            </ModalScaffold>
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 20,
-        backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-    },
-    closeButton: {
-        padding: 4,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    placeholder: {
-        width: 32,
-    },
-    content: {
-        flex: 1,
-        padding: 20,
-    },
-    currencySelector: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 12,
-    },
-    currencyButtons: {
-        flexDirection: 'row',
-        backgroundColor: '#f0f0f0',
-        borderRadius: 8,
-        padding: 4,
-    },
-    currencyButton: {
-        flex: 1,
-        paddingVertical: 12,
-        alignItems: 'center',
-        borderRadius: 6,
-    },
-    currencyButtonSelected: {
-        backgroundColor: '#007AFF',
-    },
-    currencyText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#666',
-    },
-    currencyTextSelected: {
-        color: '#fff',
-    },
-    qrSection: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    qrCode: {
-        backgroundColor: '#f9f9f9',
-        padding: 20,
-        borderRadius: 12,
-        marginBottom: 16,
-    },
-    qrLabel: {
-        fontSize: 14,
-        color: '#666',
-        textAlign: 'center',
-    },
-    addressSection: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-        marginBottom: 20,
-    },
-    addressContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#f9f9f9',
-        padding: 12,
-        borderRadius: 8,
-        marginTop: 8,
-    },
-    addressText: {
-        flex: 1,
-        fontSize: 14,
-        color: '#333',
-        fontFamily: 'monospace',
-    },
-    copyButton: {
-        padding: 4,
-        marginLeft: 8,
-    },
-    actionsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 20,
-    },
-    actionButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#007AFF',
-    },
-    actionText: {
-        color: '#007AFF',
-        fontSize: 14,
-        fontWeight: '600',
-        marginLeft: 8,
-    },
-    infoSection: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-    },
-    infoTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 8,
-    },
-    infoText: {
-        fontSize: 14,
-        color: '#666',
-        lineHeight: 20,
-    },
+  container: {
+    flexGrow: 1,
+    gap: 24,
+  },
+  nav: {
+    alignItems: 'flex-start',
+  },
+  header: {
+    gap: 12,
+  },
+  title: {
+    lineHeight: 32,
+  },
+  sectionLabel: {
+    marginBottom: 8,
+  },
+  currencyPicker: {
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  currencyPickerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  currencyBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 14,
+  },
+  qrCard: {
+    padding: 24,
+    borderRadius: 24,
+    alignItems: 'center',
+    gap: 16,
+  },
+  qrMock: {
+    padding: 24,
+    borderRadius: 24,
+  },
+  walletCard: {
+    padding: 20,
+    borderRadius: 20,
+    gap: 12,
+  },
+  walletValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    gap: 12,
+  },
+  walletText: {
+    flex: 1,
+    fontFamily: 'monospace',
+  },
+  copyButton: {
+    minHeight: 36,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  actions: {
+    gap: 12,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+    padding: 16,
+  },
+  modalSheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: 'hidden',
+  },
 });

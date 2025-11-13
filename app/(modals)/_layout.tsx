@@ -4,10 +4,19 @@ export default function ModalLayout() {
     return (
         <Stack>
             <Stack.Screen
-                name="add-money"
+                name="add-funds"
                 options={{
-                    title: 'Add Money',
+                    title: 'Add Funds',
                     presentation: 'modal',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="add-funds-details"
+                options={{
+                    title: 'Add Funds Details',
+                    presentation: 'modal',
+                    headerShown: false,
                 }}
             />
             <Stack.Screen
@@ -15,6 +24,7 @@ export default function ModalLayout() {
                 options={{
                     title: 'Receive Money',
                     presentation: 'modal',
+                     headerShown: false,
                 }}
             />
             <Stack.Screen
@@ -22,6 +32,7 @@ export default function ModalLayout() {
                 options={{
                     title: 'Cash Out',
                     presentation: 'modal',
+                     headerShown: false,
                 }}
             />
             <Stack.Screen
@@ -29,6 +40,7 @@ export default function ModalLayout() {
                 options={{
                     title: 'User Details',
                     presentation: 'modal',
+                     headerShown: false,
                 }}
             />
         </Stack>

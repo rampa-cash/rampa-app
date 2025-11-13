@@ -24,6 +24,13 @@ export default function AuthLayout() {
                     headerShown: false,
                 }}
             />
+            <Stack.Screen
+                name="legal-name"
+                options={{
+                    title: 'Legal name',
+                    headerShown: false,
+                }}
+            />
         </Stack>
     );
 }

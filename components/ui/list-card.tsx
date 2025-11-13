@@ -6,7 +6,6 @@ import { IconSymbol } from './icon-symbol';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
 
-
 export type ListCardProps = {
     title: string;
     description?: string;
@@ -20,7 +19,7 @@ export type ListCardProps = {
 
 function surface(t: typeof Theme.light, isDark: boolean) {
     return {
-        bg: isDark ? t.background.onBase2 : t.background.onBase,
+        bg: isDark ? t.background.onBase2 : t.background.onBase2,
         border: isDark ? t.outline.outline2 : t.outline.outline1,
         title: t.text.normal,
         desc: t.text.lessEmphasis,
@@ -45,23 +44,33 @@ export function ListCard({
     const Container = onPress ? Pressable : View;
 
     return (
-        <Container 
+        <Container
             onPress={onPress as any}
             disabled={disabled}
             style={({ pressed }: any) => [
                 styles.card,
-                { backgroundColor: c.bg, borderColor: c.border, opacity: disabled ? 0.6 : pressed ? 0.9 : 1 },
+                {
+                    backgroundColor: c.bg,
+                    borderColor: c.border,
+                    opacity: disabled ? 0.6 : pressed ? 0.9 : 1,
+                },
                 style as any,
             ]}
         >
             {left ? <View style={styles.side}>{left}</View> : null}
 
             <View style={styles.body}>
-                <AppText variant={TextVariant.BodyMedium} style={{ color: c.title }}>
+                <AppText
+                    variant={TextVariant.BodyMedium}
+                    style={{ color: c.title }}
+                >
                     {title}
                 </AppText>
                 {description ? (
-                    <AppText variant={TextVariant.Secondary} style={{ color: c.desc }}>
+                    <AppText
+                        variant={TextVariant.Secondary}
+                        style={{ color: c.desc }}
+                    >
                         {description}
                     </AppText>
                 ) : null}
@@ -70,7 +79,11 @@ export function ListCard({
             {right ? <View style={styles.side}>{right}</View> : null}
             {showChevron && !right ? (
                 <View style={styles.side}>
-                    <IconSymbol name="chevron.right" color={c.chevron} size={20} />
+                    <IconSymbol
+                        name="chevron.right"
+                        color={c.chevron}
+                        size={20}
+                    />
                 </View>
             ) : null}
         </Container>

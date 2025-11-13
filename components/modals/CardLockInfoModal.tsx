@@ -8,7 +8,7 @@ import { IconName } from '@/components/ui/icons/icon-names';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
 import { useTheme } from '@/hooks/theme';
-import ModalScaffold from './ModalScaffold';
+import { ModalScaffold } from './ModalScaffold';
 
 export type CardLockInfoModalProps = {
   title?: string;

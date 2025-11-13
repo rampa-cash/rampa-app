@@ -6,7 +6,7 @@ import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
 import { useTheme } from '@/hooks/theme';
-import ModalScaffold from './ModalScaffold';
+import { ModalScaffold } from './ModalScaffold';
 
 export type ConfirmationModalProps = {
   title?: string;

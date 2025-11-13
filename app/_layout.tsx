@@ -9,10 +9,11 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
+import SplashScreen from '../components/ui/splash-screen';
 import { ThemeProvider } from '../hooks/ThemeProvider';
+import { WalletProvider } from '../hooks/WalletProvider';
 import { queryClient } from '../src/lib/queryClient';
 import { ProviderFactory } from '../src/shared/infrastructure';
-import SplashScreen from '../components/ui/splash-screen';
 
 export const unstable_settings = {
     anchor: '(tabs)',
@@ -39,7 +40,9 @@ function AppLayout() {
 
     if (booting) {
         return (
-            <NavThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+            <NavThemeProvider
+                value={theme === 'dark' ? DarkTheme : DefaultTheme}
+            >
                 <SplashScreen />
                 <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
             </NavThemeProvider>
@@ -53,7 +56,7 @@ function AppLayout() {
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen
                     name="(modals)"
-                    options={{ presentation: 'modal' }}
+                    options={{ presentation: 'modal', headerShown: false }}
                 />
             </Stack>
             <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
@@ -61,13 +64,15 @@ function AppLayout() {
     );
 }
 
- function RootLayout() {
+function RootLayout() {
     return (
         <ThemeProvider>
-            <QueryClientProvider client={queryClient}>
-                <AppLayout />
-            </QueryClientProvider>
+            <WalletProvider>
+                <QueryClientProvider client={queryClient}>
+                    <AppLayout />
+                </QueryClientProvider>
+            </WalletProvider>
         </ThemeProvider>
     );
 }
-export default RootLayout
+export default RootLayout;
