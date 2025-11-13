@@ -6,10 +6,11 @@ import { InvestCard } from '@/components/ui/invest-card';
 import { ScreenContainer } from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { Palette } from '@/constants/theme';
+import { useWallet, type WalletCurrency } from '@/hooks/WalletProvider';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
     FlatList,
     StyleSheet,
@@ -25,6 +26,7 @@ import { transactionApiClient } from '../../src/domain/transactions';
 export default function HomeScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
+    const { setCurrency } = useWallet();
 
     const assetsMock = [
         {
@@ -56,13 +58,26 @@ export default function HomeScreen() {
             changePositive: false,
         },
     ];
+
+    const balances = useMemo<{ type: WalletCurrency; value: number }[]>(
+        () => [
+            { type: 'EURC', value: 0 },
+            { type: 'USDC', value: 0 },
+            { type: 'SOL', value: 0 },
+        ],
+        []
+    );
+
+    useEffect(() => {
+        setCurrency(balances[0].type);
+    }, [balances, setCurrency]);
     const { data: transactions, isLoading: transactionsLoading } = useQuery({
         queryKey: ['transactions'],
         queryFn: () => transactionApiClient.getTransactions({ limit: 5 }),
     });
 
     const handleAddMoney = () => {
-        router.push('/(modals)/add-money' as any);
+        router.push('/(modals)/add-funds' as any);
     };
 
     const handleReceiveMoney = () => {
@@ -76,6 +91,13 @@ export default function HomeScreen() {
     const handleUserDetails = () => {
         router.push('/(modals)/user-details' as any);
     };
+
+    const handleCarouselChange = useCallback(
+        (_index: number, item: { type: WalletCurrency }) => {
+            setCurrency(item.type);
+        },
+        [setCurrency]
+    );
 
     return (
         <ScreenContainer padded style={styles.container}>
@@ -99,11 +121,8 @@ export default function HomeScreen() {
 
             <View style={{ paddingHorizontal: 20 }}>
                 <BalanceCarousel
-                    balances={[
-                        { type: 'EUR', value: 0 },
-                        { type: 'USD', value: 0 },
-                        { type: 'SOL', value: 0 },
-                    ]}
+                    balances={balances as any}
+                    onChangeIndex={handleCarouselChange}
                 />
             </View>
 
@@ -176,7 +195,6 @@ export default function HomeScreen() {
                     ))
                 ) : (
                     <FlatList
-                        style={{ gap: 12 }}
                         renderItem={({ item: a }) => (
                             <InvestCard
                                 key={a.id}

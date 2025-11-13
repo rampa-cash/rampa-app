@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 
 import { Palette } from '@/constants/theme';
 import { useTheme, useThemeMode } from '@/hooks/theme';
+import type { WalletCurrency } from '@/hooks/WalletProvider';
 import { Amount } from './amount';
 import { AmountSize, AmountTone } from './amount-variants';
 import Icon from './icons/Icon';
@@ -10,7 +11,7 @@ import { IconName } from './icons/icon-names';
 import { AppText } from './text';
 import { TextVariant } from './text-variants';
 
-type AssetType = 'EUR' | 'USD' | 'SOL';
+type AssetType = WalletCurrency;
 
 export type BalanceItem = {
     type: AssetType;
@@ -25,15 +26,21 @@ export type BalanceCarouselProps = {
 };
 
 const LABEL: Record<AssetType, string> = {
-    EUR: 'Euro',
-    USD: 'Dollar',
+    EURC: 'Euro',
+    USDC: 'Dollar',
     SOL: 'Solana',
 };
 
 const ACCOUNT_LABEL: Record<AssetType, string> = {
-    EUR: 'EUR ACCOUNT',
-    USD: 'USD ACCOUNT',
+    EURC: 'EURC ACCOUNT',
+    USDC: 'USDC ACCOUNT',
     SOL: 'SOL ACCOUNT',
+};
+
+const AMOUNT_CURRENCY: Record<AssetType, 'USD' | 'EUR'> = {
+    EURC: 'EUR',
+    USDC: 'USD',
+    SOL: 'USD',
 };
 
 export function BalanceCarousel({
@@ -52,9 +59,9 @@ export function BalanceCarousel({
 
     const headerIcon = useMemo(() => {
         switch (current.type) {
-            case 'USD':
+            case 'USDC':
                 return IconName.Property1CurrencyDollar;
-            case 'EUR':
+            case 'EURC':
                 return IconName.Property1Euro;
             case 'SOL':
             default:
@@ -103,7 +110,7 @@ export function BalanceCarousel({
                             variant={TextVariant.BodyMedium}
                             style={{ color: t.text.normal }}
                         >
-                            ◎
+                            SOL
                         </AppText>
                     )}
                 </View>
@@ -150,25 +157,15 @@ export function BalanceCarousel({
 
             {/* Amount */}
             <View style={{ marginTop: 8, alignItems: 'center' }}>
-                {current.type === 'SOL' ? (
-                    <Amount
-                        value={current.value}
-                        currency={'USD'}
-                        symbolOverride={'◎'}
-                        showCents
-                        size={AmountSize.Lg}
-                        tone={AmountTone.Accent}
-                    />
-                ) : (
-                    <Amount
-                        value={current.value}
-                        currency={current.type}
-                        showCents
-                        size={AmountSize.Lg}
-                        tone={AmountTone.Accent}
-                        useIcon={false}
-                    />
-                )}
+                <Amount
+                    value={current.value}
+                    currency={AMOUNT_CURRENCY[current.type]}
+                    symbolOverride={current.type === 'SOL' ? 'SOL' : undefined}
+                    showCents
+                    size={AmountSize.Lg}
+                    tone={AmountTone.Accent}
+                    useIcon={false}
+                />
             </View>
 
             {/* Dots */}

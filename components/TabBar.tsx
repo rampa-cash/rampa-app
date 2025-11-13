@@ -21,7 +21,7 @@ export default function CustomTabBar(
                 color="transparent"
                 activeColor={Palette.primary.flowAqua}
             />
-            <BottomTabBar {...props}   />
+            <BottomTabBar {...props} />
         </View>
     );
 }
