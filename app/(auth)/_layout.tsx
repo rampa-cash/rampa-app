@@ -10,6 +10,20 @@ export default function AuthLayout() {
                     headerShown: false,
                 }}
             />
+            <Stack.Screen
+                name="login-email"
+                options={{
+                    title: 'Login email',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="login-phone"
+                options={{
+                    title: 'Login phone',
+                    headerShown: false,
+                }}
+            />
         </Stack>
     );
 }

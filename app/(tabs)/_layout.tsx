@@ -1,63 +1,140 @@
-import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import CustomTabBar from '@/components/TabBar';
+import Icon from '@/components/ui/icons/Icon';
+import { IconName } from '@/components/ui/icons/icon-names';
+import { Palette } from '@/constants/theme';
+import { useTheme, useThemeMode } from '@/hooks/theme';
+import { View } from 'react-native';
 
 export default function TabLayout() {
-    const colorScheme = useColorScheme();
+    const { icon, background, primary, neutral, text } = useTheme();
+    const { isDark } = useThemeMode();
 
     return (
-        <Tabs
-            screenOptions={{
-                tabBarActiveTintColor:
-                    Colors[colorScheme === 'dark' ? 'dark' : 'light'].tint,
-                headerShown: false,
-                tabBarButton: HapticTab,
-            }}
-        >
-            <Tabs.Screen
-                name="home"
-                options={{
-                    title: 'Home',
-                    tabBarIcon: ({ color }) => (
-                        <MaterialIcons name="home" size={24} color={color} />
-                    ),
+        <View style={{ flex: 1 }}>
+            <Tabs
+                screenOptions={{
+                    tabBarActiveTintColor: Palette.primary.flowAqua,
+                    headerShown: false,
+                    tabBarShowLabel: false,
+
+                    tabBarButton: HapticTab,
+                    tabBarStyle: {
+                        minHeight: 80,
+                    },
+                    tabBarIconStyle: {
+                        height: '100%',
+                        width: '100%',
+                    },
                 }}
-            />
-            <Tabs.Screen
-                name="send"
-                options={{
-                    title: 'Send',
-                    tabBarIcon: ({ color }) => (
-                        <MaterialIcons name="send" size={24} color={color} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="learn"
-                options={{
-                    title: 'Learn',
-                    tabBarIcon: ({ color }) => (
-                        <MaterialIcons name="school" size={24} color={color} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="invest"
-                options={{
-                    title: 'Invest',
-                    tabBarIcon: ({ color }) => (
-                        <MaterialIcons
-                            name="trending-up"
-                            size={24}
-                            color={color}
-                        />
-                    ),
-                }}
-            />
-        </Tabs>
+                tabBar={props => (
+                    <CustomTabBar inactiveSteps={[2]} {...props} />
+                )}
+            >
+                <Tabs.Screen
+                    name="home"
+                    options={{
+                        title: 'Home',
+                        tabBarIcon: ({ color, focused }) => (
+                            <Icon
+                                name={
+                                    focused
+                                        ? IconName.Property1RampaSolid
+                                        : IconName.Property1RampaOutline
+                                }
+                                size={24}
+                                color={color}
+                            />
+                        ),
+                    }}
+                />
+
+                <Tabs.Screen
+                    name="wallet"
+                    options={{
+                        title: 'Wallet',
+                        tabBarIcon: ({ color, focused }) => (
+                            <Icon
+                                name={
+                                    focused
+                                        ? IconName.Property1Card
+                                        : IconName.Property1CardOutline
+                                }
+                                size={24}
+                                color={color}
+                            />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="send"
+                    options={{
+                        title: 'Send',
+                        tabBarIcon: ({ color, focused }) => (
+                            <Icon
+                                name={IconName.Property1Send}
+                                bordered={!isDark && !focused}
+                                size={24}
+                                bgColor={
+                                    focused
+                                        ? color
+                                        : isDark
+                                          ? neutral.graphiteGrey
+                                          : 'transparent'
+                                }
+                                label="Send"
+                                shape="circle"
+                                borderColor={icon.normal}
+                                color={
+                                    isDark
+                                        ? icon.normal
+                                        : focused
+                                          ? 'white'
+                                          : icon.normal
+                                }
+                            />
+                        ),
+                    }}
+                />
+
+                <Tabs.Screen
+                    name="invest"
+                    options={{
+                        title: 'Invest',
+                        tabBarIcon: ({ color, focused }) => (
+                            <Icon
+                                name={
+                                    focused
+                                        ? IconName.Property1Chart
+                                        : IconName.Property1ChartOutline
+                                }
+                                size={24}
+                                color={color}
+                            />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="explore"
+                    options={{
+                        title: 'Explore',
+                        tabBarIcon: ({ color, focused }) => (
+                            <Icon
+                                name={
+                                    focused
+                                        ? IconName.Property1Learn
+                                        : IconName.Property1LearnOutline
+                                }
+                                size={24}
+                                color={color}
+                            />
+                        ),
+                    }}
+                />
+            </Tabs>
+        </View>
     );
 }
