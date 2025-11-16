@@ -33,7 +33,7 @@ export function InvestCard({
 }: InvestCardProps) {
     const t = useTheme();
     const { isDark } = useThemeMode();
-    const bg = isDark ? t.background.onBase2 : t.background.onBase;
+    const bg = isDark ? t.background.onBase2 : t.background.secondary;
     const border = isDark ? t.outline.outline2 : t.outline.outline1;
 
     return (

@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import SplashScreen from '../components/ui/splash-screen';
+import { SignupProvider } from '../hooks/SignupProvider';
 import { ThemeProvider } from '../hooks/ThemeProvider';
 import { WalletProvider } from '../hooks/WalletProvider';
 import { queryClient } from '../src/lib/queryClient';
@@ -58,6 +59,8 @@ function AppLayout() {
                     name="(modals)"
                     options={{ presentation: 'modal', headerShown: false }}
                 />
+                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                <Stack.Screen name="(transactions)" options={{ headerShown: false }} />
             </Stack>
             <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
         </NavThemeProvider>
@@ -67,11 +70,13 @@ function AppLayout() {
 function RootLayout() {
     return (
         <ThemeProvider>
-            <WalletProvider>
-                <QueryClientProvider client={queryClient}>
-                    <AppLayout />
-                </QueryClientProvider>
-            </WalletProvider>
+            <SignupProvider>
+                <WalletProvider>
+                    <QueryClientProvider client={queryClient}>
+                        <AppLayout />
+                    </QueryClientProvider>
+                </WalletProvider>
+            </SignupProvider>
         </ThemeProvider>
     );
 }

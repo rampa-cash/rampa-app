@@ -1,3 +1,4 @@
+import { ConfirmContactModal } from '@/components/login/ConfirmContactModal';
 import { CountryItem, CountrySearchModal } from '@/components/modals/CountrySearchModal';
 import AppButton from '@/components/ui/buttons/button';
 import { IconButton } from '@/components/ui/buttons/IconButton';
@@ -8,6 +9,7 @@ import ScreenContainer from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
 import { useTheme } from '@/hooks/theme';
+import { useSignup } from '@/hooks/SignupProvider';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
@@ -33,6 +35,8 @@ export default function LoginPhoneScreen() {
   const [selectedCountry, setSelectedCountry] = useState<CountryItem>(COUNTRY_OPTIONS[0]);
   const [countryQuery, setCountryQuery] = useState('');
   const [countryModalVisible, setCountryModalVisible] = useState(false);
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const { setContact } = useSignup();
 
   const filteredCountries = useMemo(() => {
     const normalized = countryQuery.trim().toLowerCase();
@@ -57,6 +61,10 @@ export default function LoginPhoneScreen() {
   };
 
   const canContinue = phone.trim().length >= MIN_PHONE_LENGTH;
+  const formattedPhone = useMemo(
+    () => `${selectedCountry.dial}${phone.trim()}`,
+    [phone, selectedCountry.dial]
+  );
 
   return (
     <>
@@ -134,10 +142,25 @@ export default function LoginPhoneScreen() {
 
         <AppButton
           title="Get confirmation code"
-          onPress={() => router.push('/(auth)/login' as any)}
+          onPress={() => setConfirmVisible(true)}
           disabled={!canContinue}
         />
       </ScreenContainer>
+
+      <ConfirmContactModal
+        visible={confirmVisible}
+        contact={formattedPhone}
+        message="Is this phone number correct? We&apos;ll send you a confirmation code there"
+        onCancel={() => setConfirmVisible(false)}
+        onConfirm={() => {
+          setConfirmVisible(false);
+          setContact('phone', formattedPhone);
+          router.push({
+            pathname: '/(auth)/verify-code',
+            params: { method: 'phone', contact: formattedPhone },
+          } as any);
+        }}
+      />
 
       <Modal
         visible={countryModalVisible}

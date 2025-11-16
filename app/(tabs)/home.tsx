@@ -1,63 +1,39 @@
 import { BalanceCarousel } from '@/components/ui/balance-carousel';
+import { AppButton } from '@/components/ui/buttons/button';
 import { IconButton } from '@/components/ui/buttons/IconButton';
-import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import { InvestCard } from '@/components/ui/invest-card';
 import { ScreenContainer } from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
-import { Palette } from '@/constants/theme';
 import { useWallet, type WalletCurrency } from '@/hooks/WalletProvider';
+import { useSignup } from '@/hooks/SignupProvider';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo } from 'react';
-import {
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Modal, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
+
 import {
     useSafeAreaInsets
 } from 'react-native-safe-area-context';
-import { transactionApiClient } from '../../src/domain/transactions';
+// Use mock transactions instead of API
+import { ContactSearchModal, type ContactItem } from '@/components/modals/ContactSearchModal';
+import { TransactionList } from '@/components/transactions/TransactionList';
+import { contactService } from '../../src/domain/contacts';
+import { getMockTransactions } from '../../src/domain/transactions/mock';
 
 export default function HomeScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { setCurrency } = useWallet();
+    const [searchVisible, setSearchVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const { firstName, lastName } = useSignup();
+    const shouldPromptSetup = useMemo(() => !(firstName && lastName), [
+        firstName,
+        lastName,
+    ]);
+  
 
-    const assetsMock = [
-        {
-            id: 'btc',
-            symbol: 'EURC',
-            address: 'Today, 10:35 AM',
-            price: '€61.245',
-            changePositive: true,
-        },
-        {
-            id: 'eth',
-            symbol: 'EURC',
-            address: 'Today, 10:35 AM',
-            price: '€3.245',
-            changePositive: false,
-        },
-        {
-            id: 'btc1',
-            symbol: 'EURC',
-            address: 'Today, 10:35 AM',
-            price: '€61.245',
-            changePositive: true,
-        },
-        {
-            id: 'eth1',
-            symbol: 'EURC',
-            address: 'Today, 10:35 AM',
-            price: '€3.245',
-            changePositive: false,
-        },
-    ];
 
     const balances = useMemo<{ type: WalletCurrency; value: number }[]>(
         () => [
@@ -68,13 +44,28 @@ export default function HomeScreen() {
         []
     );
 
-    useEffect(() => {
-        setCurrency(balances[0].type);
-    }, [balances, setCurrency]);
     const { data: transactions, isLoading: transactionsLoading } = useQuery({
-        queryKey: ['transactions'],
-        queryFn: () => transactionApiClient.getTransactions({ limit: 5 }),
+        queryKey: ['transactions', 'mock', { limit: 5 }],
+        queryFn: () => getMockTransactions({ limit: 5 }),
     });
+
+    const { data: contacts = [] } = useQuery({
+        queryKey: ['contacts'],
+        queryFn: () => contactService.getContacts(),
+    });
+
+    const items: ContactItem[] = useMemo(() => {
+        const list = contacts.map(c => ({
+            id: c.id,
+            name: c.name,
+            phone: c.phone || c.email || c.blockchainAddress || '',
+        }));
+        if (!searchQuery.trim()) return list;
+        const q = searchQuery.toLowerCase();
+        return list.filter(
+            i => i.name.toLowerCase().includes(q) || i.phone.toLowerCase().includes(q)
+        );
+    }, [contacts, searchQuery]);
 
     const handleAddMoney = () => {
         router.push('/(modals)/add-funds' as any);
@@ -116,6 +107,7 @@ export default function HomeScreen() {
                     iconName={IconName.Property1Search}
                     shape="circle"
                     iconSize={16}
+                    onPress={() => setSearchVisible(true)}
                 />
             </View>
 
@@ -133,6 +125,8 @@ export default function HomeScreen() {
                     textPosition="outside"
                     iconSize={16}
                     onPress={handleAddMoney}
+                    bordered
+                    textStyle={{}}
                 />
                 <IconButton
                     iconName={IconName.Property1ArrowReceive}
@@ -140,17 +134,19 @@ export default function HomeScreen() {
                     textPosition="outside"
                     iconSize={16}
                     onPress={handleReceiveMoney}
+                    bordered
                 />
                 <IconButton
                     iconName={IconName.Property1ArrowSend}
                     title="Cash Out"
                     textPosition="outside"
                     iconSize={16}
+                    bordered
                     onPress={handleCashOut}
                 />
             </View>
 
-            <View style={styles.transactionsSection}>
+            <View style={[styles.transactionsSection, { flex: 1 }]}>
                 <View style={styles.titleSection}>
                     <AppText style={styles.sectionTitle}>
                         Recent Transactions
@@ -166,62 +162,47 @@ export default function HomeScreen() {
                             { fontSize: 12, padding: 2 },
                         ]}
                         style={{ padding: 0 }}
+                        onPress={() => router.push('/transactions' as any)}
                     />
                 </View>
-                {transactionsLoading ? (
-                    <AppText style={styles.loadingText}>
-                        Loading transactions...
-                    </AppText>
-                ) : transactions?.data?.length ? (
-                    transactions.data.map(transaction => (
-                        <View
-                            key={transaction.id}
-                            style={styles.transactionItem}
-                        >
-                            <View style={styles.transactionInfo}>
-                                <Text style={styles.transactionAmount}>
-                                    {transaction.amount} {transaction.currency}
-                                </Text>
-                                <Text style={styles.transactionStatus}>
-                                    {transaction.status}
-                                </Text>
-                            </View>
-                            <Text style={styles.transactionDate}>
-                                {new Date(
-                                    transaction.createdAt
-                                ).toLocaleDateString()}
-                            </Text>
-                        </View>
-                    ))
-                ) : (
-                    <FlatList
-                        renderItem={({ item: a }) => (
-                            <InvestCard
-                                key={a.id}
-                                symbol={a.symbol}
-                                address={a.address}
-                                price={a.price}
-                                changePositive={a.changePositive}
-                                style={{ marginBottom: 8 }}
-                                left={
-                                    <Icon
-                                        name={IconName.Property1CurrencyDollar}
-                                        size={34}
-                                        color={Palette.secondary.openBlue}
-                                    />
-                                }
-                                addressPrefix={
-                                    <Icon
-                                        name={IconName.Property1Variant25}
-                                        size={14}
-                                    />
-                                }
-                            />
-                        )}
-                        data={assetsMock}
-                    ></FlatList>
-                )}
+                <TransactionList
+                    data={(transactions?.data ?? []).slice(0, 5)}
+                    loading={transactionsLoading}
+                />
             </View>
+
+            {true ? (
+                <View style={[styles.setupReminder, { bottom: insets.bottom + 90 }]}>
+                    <AppButton
+                        title="Complete your setup"
+                        onPress={() => router.push('/(auth)/legal-name' as any)}
+                    />
+                </View>
+            ) : null}
+
+            <Modal
+                transparent
+                visible={searchVisible}
+                animationType="fade"
+                onRequestClose={() => setSearchVisible(false)}
+            >
+                <View style={styles.modalBackdrop}>
+                    <Pressable style={StyleSheet.absoluteFill} onPress={() => setSearchVisible(false)} />
+                    <View style={styles.modalCenter}>
+                        <ContactSearchModal
+                            title="Search for contact to send"
+                            query={searchQuery}
+                            onChangeQuery={setSearchQuery}
+                            onCancel={() => setSearchVisible(false)}
+                            contacts={items}
+                            onSelect={(id) => {
+                                setSearchVisible(false);
+                                router.push({ pathname: '/(modals)/send-amount', params: { contactId: id } } as never);
+                            }}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </ScreenContainer>
     );
 }
@@ -229,6 +210,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        position: 'relative',
     },
     header: {
         flexDirection: 'row',
@@ -293,7 +275,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 400,
+        fontWeight: 500,
     },
     transactionItem: {
         flexDirection: 'row',
@@ -329,5 +311,22 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#666',
         padding: 20,
+    },
+    modalBackdrop: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 16,
+    },
+    modalCenter: {
+        width: '92%',
+        maxWidth: 460,
+    },
+    setupReminder: {
+        position: 'absolute',
+        left: 16,
+        right: 16,
+        zIndex: 5,
     },
 });

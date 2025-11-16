@@ -1,10 +1,11 @@
-import AppButton from '@/components/ui/buttons/button';
+import { AppButton } from '@/components/ui/buttons/button';
 import { IconButton } from '@/components/ui/buttons/IconButton';
 import { IconName } from '@/components/ui/icons/icon-names';
 import { AppInput } from '@/components/ui/input';
-import ScreenContainer from '@/components/ui/screen-container';
+import { ScreenContainer } from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
+import { useSignup } from '@/hooks/SignupProvider';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -15,13 +16,15 @@ export default function LegalNameScreen() {
     const insets = useSafeAreaInsets();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const { setName } = useSignup();
 
     const canContinue =
         firstName.trim().length > 0 && lastName.trim().length > 0;
 
     const handleNext = useCallback(() => {
-        router.push('/(auth)/login-phone' as any);
-    }, [router]);
+        setName(firstName.trim(), lastName.trim());
+        router.replace('/(tabs)/home' as any);
+    }, [firstName, lastName, router, setName]);
 
     return (
         <ScreenContainer
@@ -101,7 +104,7 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     body: {
-        flex: 1,
+
         justifyContent: 'space-between',
         gap: 32,
     },

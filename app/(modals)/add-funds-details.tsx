@@ -2,8 +2,11 @@ import { AddFundsMethodModal } from '@/components/modals/AddFundsMethodModal';
 import { AppButton } from '@/components/ui/buttons/button';
 import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import { IconButton } from '@/components/ui/buttons/IconButton';
+import CurrencySelector from '@/components/ui/CurrencySelector';
+import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
 import { AppInput } from '@/components/ui/input';
+import ListCard from '@/components/ui/list-card';
 import { ScreenContainer } from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
@@ -83,48 +86,54 @@ export default function AddFundsDetailsScreen() {
                         onPress={() => router.back()}
                     />
                 </View>
-
+                <CurrencySelector onChange={() => { }} value='USD' />
                 <View style={styles.section}>
                     <AppText
                         variant={TextVariant.SecondaryMedium}
-                        color="lessEmphasis"
+                        color="normal"
                         style={styles.sectionLabel}
                     >
                         Select a method
                     </AppText>
 
-                    <View
+                    <ListCard
                         style={[
                             styles.methodCard,
                             {
                                 borderColor: t.outline.outline1,
-                                backgroundColor: t.background.onBase,
                             },
                         ]}
-                    >
-                        <View>
-                            <AppText
-                                variant={TextVariant.Caption}
-                                color="lessEmphasis"
-                            >
-                                Method
-                            </AppText>
-                            <AppText variant={TextVariant.BodyMedium}>
-                                {selectedMethod.title}
-                            </AppText>
-                        </View>
-                        <AppButton
+                        title='Method'
+
+                        description={selectedMethod.title}
+                        left={<Icon name={selectedMethod.icon}
+                            size={18}
+                            bgColor={
+                                t.isDark
+                                    ? t.background.dim
+                                    : t.background.base
+                            }
+                            style={{
+                                padding: 14,
+                                borderRadius: 28,
+                            }}
+                            color={
+                                t.isDark ? t.icon.variant : t.icon.normal
+                            } />}
+                        right={<AppButton
                             title="Change"
+                            color={'normal2'}
                             variant={ButtonVariant.Tertiary}
                             onPress={() => setMethodModalVisible(true)}
-                        />
-                    </View>
+                        />}
+                    />
+
                 </View>
 
                 <View style={styles.section}>
                     <AppText
                         variant={TextVariant.SecondaryMedium}
-                        color="lessEmphasis"
+                        color="normal"
                         style={styles.sectionLabel}
                     >
                         Amount to add
@@ -186,7 +195,7 @@ export default function AddFundsDetailsScreen() {
                 <AppButton
                     title="Add Fund"
                     disabled={!isAmountValid}
-                    onPress={() => {}}
+                    onPress={() => { }}
                 />
             </ScreenContainer>
 
@@ -261,5 +270,6 @@ const styles = StyleSheet.create({
     modalSheet: {
         borderRadius: 24,
         overflow: 'hidden',
+
     },
 });

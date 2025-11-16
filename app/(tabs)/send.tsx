@@ -1,306 +1,165 @@
+import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { contactService } from '@/src/domain/contacts';
+import { AppText } from '@/components/ui/text';
+import { TextVariant } from '@/components/ui/text-variants';
+import { IconButton } from '@/components/ui/buttons/IconButton';
+import Icon from '@/components/ui/icons/Icon';
+import { IconName } from '@/components/ui/icons/icon-names';
+import { ScreenContainer } from '@/components/ui/screen-container';
+import { AppInput } from '@/components/ui/input';
+import { InputVariant } from '@/components/ui/input-variants';
+import React, { useMemo, useState } from 'react';
+import { FlatList, Modal, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import {
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { transactionService } from '../../src/domain/transactions';
-import { SecurityUtils } from '../../src/shared/utils/securityUtils';
+import { ContactSearchModal, type ContactItem } from '@/components/modals/ContactSearchModal';
 
 export default function SendScreen() {
-    const [recipient, setRecipient] = useState('');
-    const [amount, setAmount] = useState('');
-    const [currency, setCurrency] = useState<'SOL' | 'USDC' | 'EURC'>('USDC');
+    const router = useRouter();
+    const insets = useSafeAreaInsets();
+    const [searchVisible, setSearchVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const handleSend = async () => {
-        if (!recipient.trim() || !amount.trim()) {
-            Alert.alert('Error', 'Please fill in all fields');
-            return;
-        }
+    const { data: contacts = [] } = useQuery({
+        queryKey: ['contacts'],
+        queryFn: () => contactService.getContacts(),
+    });
 
-        const numAmount = parseFloat(amount);
-        if (isNaN(numAmount) || numAmount <= 0) {
-            Alert.alert('Error', 'Please enter a valid amount');
-            return;
-        }
+    const topReceivers = useMemo(() => contacts.slice(0, 4), [contacts]);
 
-        if (!SecurityUtils.isValidSolanaAddress(recipient)) {
-            Alert.alert('Error', 'Please enter a valid Solana address');
-            return;
-        }
-
-        Alert.alert(
-            'Confirm Transaction',
-            `Send ${amount} ${currency} to ${recipient}?`,
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Send',
-                    onPress: async () => {
-                        try {
-                            const result =
-                                await transactionService.createTransaction({
-                                    recipientAddress: recipient.trim(),
-                                    amount: numAmount,
-                                    currency,
-                                });
-
-                            if (result.success) {
-                                Alert.alert(
-                                    'Success',
-                                    'Transaction created successfully!'
-                                );
-                                setRecipient('');
-                                setAmount('');
-                            } else {
-                                Alert.alert(
-                                    'Error',
-                                    result.error || 'Transaction failed'
-                                );
-                            }
-                        } catch (error) {
-                            Alert.alert('Error', 'Failed to send transaction');
-                        }
-                    },
-                },
-            ]
+    const items: ContactItem[] = useMemo(() => {
+        const list = contacts.map(c => ({
+            id: c.id,
+            name: c.name,
+            phone: c.phone || c.email || c.blockchainAddress || '',
+        }));
+        if (!searchQuery.trim()) return list;
+        const q = searchQuery.toLowerCase();
+        return list.filter(
+            i => i.name.toLowerCase().includes(q) || i.phone.toLowerCase().includes(q)
         );
+    }, [contacts, searchQuery]);
+
+    const handleSelect = (id: string) => {
+        setSearchVisible(false);
+        router.push({ pathname: '/(modals)/send-amount', params: { contactId: id } } as never);
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Send Money</Text>
+        <ScreenContainer padded style={styles.container}>
+            <View style={[styles.header, { paddingTop: insets.top }]}>
+                <TouchableOpacity onPress={() => router.push('/(modals)/user-details' as any)} style={styles.profileButton}>
+                    <MaterialIcons name="account-circle" size={42} color="#007AFF" />
+                </TouchableOpacity>
+                <IconButton
+                    iconName={IconName.Property1Search}
+                    shape="circle"
+                    iconSize={16}
+                    onPress={() => setSearchVisible(true)}
+                />
+            </View>
 
-            <View style={styles.form}>
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Recipient</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter email, phone, or address"
-                        value={recipient}
-                        onChangeText={setRecipient}
-                        autoCapitalize="none"
+            <View style={styles.content}>
+                <AppText variant={TextVariant.H1}>Send Funds</AppText>
+                <AppText variant={TextVariant.Secondary} color="lessEmphasis">
+                    Move money securely to enyone, anywhere, instantly on Solana
+                </AppText>
+
+                <View style={{ marginTop: 24 }}>
+                    <AppText variant={TextVariant.SecondaryMedium} color="lessEmphasis">
+                        Choose who you're sending to
+                    </AppText>
+                    <Pressable onPress={() => setSearchVisible(true)}>
+                        <AppInput
+                            editable={false}
+                            placeholder="Search for contact to send"
+                            variant={InputVariant.Filled}
+                            left={<Icon name={IconName.Property1Search} size={18} />}
+                            containerStyle={{ marginTop: 8 }}
+                        />
+                    </Pressable>
+                </View>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                    <MaterialIcons name="info" size={14} color="#777" />
+                    <AppText variant={TextVariant.Caption} color="lessEmphasis">
+                        If we want to put some comment in here
+                    </AppText>
+                </View>
+
+                <View style={{ marginTop: 20 }}>
+                    <AppText variant={TextVariant.SecondaryMedium}>Top Receivers</AppText>
+                    <FlatList
+                        data={topReceivers}
+                        keyExtractor={i => i.id}
+                        contentContainerStyle={{ gap: 12, paddingVertical: 12 }}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity style={styles.receiverRow} onPress={() => handleSelect(item.id)}>
+                                <View style={styles.receiverAvatar} />
+                                <View style={{ flex: 1 }}>
+                                    <AppText variant={TextVariant.BodyMedium}>{item.name}</AppText>
+                                    {Boolean(item.phone) && (
+                                        <AppText variant={TextVariant.Caption} color={'lessEmphasis' as any}>
+                                            {item.phone}
+                                        </AppText>
+                                    )}
+                                </View>
+                                <Icon name={IconName.Property1ArrowRight} size={16} />
+                            </TouchableOpacity>
+                        )}
                     />
                 </View>
+            </View>
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Amount</Text>
-                    <View style={styles.amountRow}>
-                        <TextInput
-                            style={[styles.input, styles.amountInput]}
-                            placeholder="0.00"
-                            value={amount}
-                            onChangeText={setAmount}
-                            keyboardType="numeric"
+            <Modal
+                transparent
+                visible={searchVisible}
+                animationType="fade"
+                onRequestClose={() => setSearchVisible(false)}
+            >
+                <View style={styles.modalBackdrop}>
+                    <Pressable style={StyleSheet.absoluteFill} onPress={() => setSearchVisible(false)} />
+                    <View style={styles.modalCenter}>
+                        <ContactSearchModal
+                            title="Search for contact to send"
+                            query={searchQuery}
+                            onChangeQuery={setSearchQuery}
+                            onCancel={() => setSearchVisible(false)}
+                            contacts={items}
+                            onSelect={handleSelect}
                         />
-                        <View style={styles.currencySelector}>
-                            <TouchableOpacity
-                                style={[
-                                    styles.currencyButton,
-                                    currency === 'SOL' &&
-                                        styles.currencyButtonActive,
-                                ]}
-                                onPress={() => setCurrency('SOL')}
-                            >
-                                <Text
-                                    style={[
-                                        styles.currencyText,
-                                        currency === 'SOL' &&
-                                            styles.currencyTextActive,
-                                    ]}
-                                >
-                                    SOL
-                                </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[
-                                    styles.currencyButton,
-                                    currency === 'USDC' &&
-                                        styles.currencyButtonActive,
-                                ]}
-                                onPress={() => setCurrency('USDC')}
-                            >
-                                <Text
-                                    style={[
-                                        styles.currencyText,
-                                        currency === 'USDC' &&
-                                            styles.currencyTextActive,
-                                    ]}
-                                >
-                                    USDC
-                                </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[
-                                    styles.currencyButton,
-                                    currency === 'EURC' &&
-                                        styles.currencyButtonActive,
-                                ]}
-                                onPress={() => setCurrency('EURC')}
-                            >
-                                <Text
-                                    style={[
-                                        styles.currencyText,
-                                        currency === 'EURC' &&
-                                            styles.currencyTextActive,
-                                    ]}
-                                >
-                                    EURC
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
                     </View>
                 </View>
-
-                <TouchableOpacity
-                    style={styles.sendButton}
-                    onPress={handleSend}
-                >
-                    <MaterialIcons name="send" size={20} color="#fff" />
-                    <Text style={styles.sendButtonText}>Send Money</Text>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.quickActions}>
-                <Text style={styles.quickActionsTitle}>Quick Actions</Text>
-                <View style={styles.quickActionsRow}>
-                    <TouchableOpacity style={styles.quickActionButton}>
-                        <MaterialIcons
-                            name="contacts"
-                            size={24}
-                            color="#007AFF"
-                        />
-                        <Text style={styles.quickActionText}>Contacts</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.quickActionButton}>
-                        <MaterialIcons
-                            name="qr-code-scanner"
-                            size={24}
-                            color="#007AFF"
-                        />
-                        <Text style={styles.quickActionText}>Scan QR</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.quickActionButton}>
-                        <MaterialIcons
-                            name="history"
-                            size={24}
-                            color="#007AFF"
-                        />
-                        <Text style={styles.quickActionText}>History</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </View>
+            </Modal>
+        </ScreenContainer>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
+    container: { flex: 1 },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        alignContent: 'center',
         padding: 20,
     },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        marginBottom: 24,
-        color: '#333',
-    },
-    form: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-        marginBottom: 24,
-    },
-    inputGroup: {
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 8,
-        color: '#333',
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        padding: 16,
-        fontSize: 16,
-        backgroundColor: '#f9f9f9',
-    },
-    amountRow: {
+    profileButton: { padding: 4 },
+    content: { paddingHorizontal: 20, gap: 8 },
+    receiverRow: {
         flexDirection: 'row',
         alignItems: 'center',
-    },
-    amountInput: {
-        flex: 1,
-        marginRight: 12,
-    },
-    currencySelector: {
-        flexDirection: 'row',
-        backgroundColor: '#f0f0f0',
-        borderRadius: 8,
-        padding: 4,
-    },
-    currencyButton: {
-        paddingHorizontal: 12,
+        gap: 12,
         paddingVertical: 8,
-        borderRadius: 6,
     },
-    currencyButtonActive: {
-        backgroundColor: '#007AFF',
-    },
-    currencyText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#666',
-    },
-    currencyTextActive: {
-        color: '#fff',
-    },
-    sendButton: {
-        backgroundColor: '#007AFF',
-        flexDirection: 'row',
-        alignItems: 'center',
+    receiverAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#EAEAEA' },
+    modalBackdrop: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.4)',
         justifyContent: 'center',
-        padding: 16,
-        borderRadius: 8,
-        marginTop: 8,
-    },
-    sendButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-        marginLeft: 8,
-    },
-    quickActions: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-    },
-    quickActionsTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        color: '#333',
-    },
-    quickActionsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
-    quickActionButton: {
         alignItems: 'center',
-        padding: 12,
+        padding: 16,
     },
-    quickActionText: {
-        marginTop: 8,
-        fontSize: 12,
-        color: '#007AFF',
-        textAlign: 'center',
-    },
+    modalCenter: { width: '92%', maxWidth: 460 },
 });

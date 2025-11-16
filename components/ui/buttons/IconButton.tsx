@@ -4,13 +4,14 @@ import React from 'react';
 import {
     Pressable,
     StyleSheet,
-    Text,
     TextStyle,
     View,
-    ViewStyle,
+    ViewStyle
 } from 'react-native';
 import Icon from '../icons/Icon';
 import { IconName } from '../icons/icon-names';
+import { AppText } from '../text';
+import { TextVariant } from '../text-variants';
 
 export type ButtonProps = {
     title?: string;
@@ -26,6 +27,7 @@ export type ButtonProps = {
     iconSize?: number;
     shape?: 'circle' | 'rounded';
     bordered?: boolean;
+    textVariant?: TextVariant
 };
 
 function resolveVariantColors(
@@ -59,13 +61,13 @@ export function IconButton({
     color,
     iconName,
     backgroundColor,
-    iconColor:iconColorOverride,
+    iconColor: iconColorOverride,
     style,
     textPosition,
     textStyle,
     iconSize = 24,
     shape = 'rounded',
-    bordered,
+    bordered, textVariant
 }: ButtonProps) {
     const t = useTheme();
     const { isDark, mode } = useThemeMode();
@@ -79,16 +81,17 @@ export function IconButton({
     const shapeStyle: ViewStyle =
         shape === 'circle'
             ? {
-                  minWidth: circleSize,
-                  minHeight: circleSize,
-                  borderRadius: circleSize,
-                  paddingVertical: 10, // Override base styles
-                  paddingHorizontal: 10, // Override base styles
-              }
+                minWidth: circleSize,
+                minHeight: circleSize,
+                borderRadius: circleSize,
+                paddingVertical: 10, // Override base styles
+                paddingHorizontal: 10, // Override base styles
+            }
             : {};
 
     const text = (
-        <Text
+        <AppText
+            variant={textVariant}
             style={[
                 styles.text,
                 {
@@ -99,11 +102,11 @@ export function IconButton({
             ]}
         >
             {title}
-        </Text>
+        </AppText>
     );
 
     return (
-        <View style={[styles.container, { borderWidth: bordered ? 1 : 0 }]}>
+        <View style={[styles.container,]}>
             <Pressable
                 onPress={onPress}
                 disabled={disabled}
@@ -116,6 +119,7 @@ export function IconButton({
                         opacity: disabled ? 0.7 : pressed ? 0.9 : 1,
                     },
                     style as any,
+                    { borderWidth: bordered ? 1 : 0 }
                 ]}
             >
                 {textPosition === 'left' && title && text}
@@ -143,7 +147,7 @@ const styles = StyleSheet.create({
 
     text: {
         fontSize: 16,
-        fontWeight: '400',
+        fontWeight: '500',
     },
     container: {
         alignItems: 'center',

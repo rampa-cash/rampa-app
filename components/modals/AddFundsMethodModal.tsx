@@ -30,7 +30,7 @@ export function AddFundsMethodModal({
     const t = useTheme();
     const isDark = useThemeMode();
     return (
-        <ModalScaffold>
+        <ModalScaffold >
             <AppText variant={TextVariant.H2}>{title}</AppText>
             <View style={{ gap: 10, marginTop: 12 }}>
                 {methods.map(m => (

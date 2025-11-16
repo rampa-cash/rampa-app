@@ -37,29 +37,34 @@ export function AuthEntry({ onEmail, onPhone }: AuthEntryProps) {
           disabled
           onPress={goEmail}
           left={<Icon name={IconName.Property1Apple} />}
+          style={{ padding: 14 }}
         />
         <ListCard
           title="Google"
           disabled
           onPress={goEmail}
           left={<Icon name={IconName.Property1Google} />}
+          style={{ padding: 14 }}
         />
 
         <ListCard
           title="Email"
           onPress={goEmail}
           left={<Icon name={IconName.Vector} />}
+          style={{ padding: 14 }}
         />
         <ListCard
           title="Wallet"
           disabled
           onPress={goEmail}
           left={<Icon name={IconName.Property1Card} />}
+          style={{ padding: 14 }}
         />
         <ListCard
           title="Phone"
           onPress={goPhone}
           left={<Icon name={IconName.Property1Phone} />}
+          style={{ padding: 14 }}
         />
       </View>
     </View>

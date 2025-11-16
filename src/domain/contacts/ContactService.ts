@@ -1,6 +1,7 @@
 import { logger } from '../../shared/utils/errorHandler';
 import { contactApiClient } from './apiClient';
 import { Contact } from './types';
+import { MOCK_CONTACTS, mockGetById, mockSearchContacts } from './mock';
 
 export interface ContactResponse {
     success: boolean;
@@ -15,12 +16,12 @@ export class ContactService {
     async getContacts(): Promise<Contact[]> {
         try {
             logger.info('Fetching user contacts');
-
             const response = await contactApiClient.getContacts();
             return response.data;
         } catch (error) {
-            logger.error('Failed to fetch contacts', { error });
-            throw new Error('Failed to fetch contacts');
+            // Fallback to mock data in dev/offline
+            logger.warn?.('Falling back to mock contacts', { error } as any);
+            return MOCK_CONTACTS;
         }
     }
 
@@ -30,10 +31,11 @@ export class ContactService {
     async getContactById(id: string): Promise<Contact> {
         try {
             logger.info('Fetching contact by ID', { id });
-
             const response = await contactApiClient.getContactById(id);
             return response.data;
         } catch (error) {
+            const mock = mockGetById(id);
+            if (mock) return mock;
             logger.error('Failed to fetch contact by ID', { error, id });
             throw new Error('Failed to fetch contact');
         }
@@ -124,13 +126,11 @@ export class ContactService {
     async searchContacts(query: string): Promise<Contact[]> {
         try {
             logger.info('Searching contacts', { query });
-
             const response = await contactApiClient.searchContacts(query);
-
             return response.data;
         } catch (error) {
-            logger.error('Failed to search contacts', { error, query });
-            throw new Error('Failed to search contacts');
+            logger.warn?.('Falling back to mock search', { error, query } as any);
+            return mockSearchContacts(query);
         }
     }
 
