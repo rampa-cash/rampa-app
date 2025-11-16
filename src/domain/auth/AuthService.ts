@@ -173,6 +173,7 @@ export class AuthService {
         try {
             // For OAuth, if stage is 'verify', register passkey; if 'login', login with passkey
             // The authState from signUpOrLogInWithOAuth contains the stage info
+            // Note: authState here is the AuthStateSignup object from Para SDK, not our AuthState wrapper
             if (authState?.stage === 'verify') {
                 // New user - register passkey
                 const result =

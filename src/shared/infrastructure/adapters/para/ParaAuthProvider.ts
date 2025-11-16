@@ -96,9 +96,10 @@ export class ParaAuthProvider implements AuthProvider {
         provider: 'google' | 'apple'
     ): Promise<AuthState> {
         try {
+            // Para SDK OAuth format - use type assertion as OAuth is not in the strict Auth type
             const authState = await this.paraClient.signUpOrLogIn({
                 auth: { oauth: { provider } },
-            });
+            } as any);
 
             // OAuth typically returns 'login' for existing users or 'verify' for new users
             if (authState?.stage === 'verify') {

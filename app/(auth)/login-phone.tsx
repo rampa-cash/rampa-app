@@ -11,6 +11,7 @@ import ScreenContainer from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
 import { useTheme } from '@/hooks/theme';
+import { useAuth } from '@/src/domain/auth/useAuth';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
@@ -31,8 +32,10 @@ export default function LoginPhoneScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const t = useTheme();
+    const { loginWithPhone, isLoading, clearError } = useAuth();
 
     const [phone, setPhone] = useState('');
+    const [error, setError] = useState<string | null>(null);
     const [selectedCountry, setSelectedCountry] = useState<CountryItem>(
         COUNTRY_OPTIONS[0]
     );
@@ -62,6 +65,55 @@ export default function LoginPhoneScreen() {
     };
 
     const canContinue = phone.trim().length >= MIN_PHONE_LENGTH;
+
+    const formatPhoneNumber = (
+        phoneNumber: string,
+        countryDial: string
+    ): string => {
+        // Remove all non-digit characters
+        const digits = phoneNumber.replace(/[^\d]/g, '');
+        // Combine country dial code with phone number
+        // Country dial already includes +, so we just append digits
+        return `${countryDial}${digits}`;
+    };
+
+    const handleContinue = async () => {
+        if (!phone.trim() || phone.trim().length < MIN_PHONE_LENGTH) {
+            setError('Please enter a valid phone number');
+            return;
+        }
+
+        clearError();
+        setError(null);
+
+        try {
+            // Format phone number to E.164 format: +{country code}{number}
+            const formattedPhone = formatPhoneNumber(
+                phone,
+                selectedCountry.dial
+            );
+
+            await loginWithPhone(formattedPhone);
+            // If successful and stage === 'login', user will be automatically redirected to home
+            // via the auth state change in app/index.tsx
+        } catch (err) {
+            const errorMessage =
+                err instanceof Error ? err.message : 'Failed to sign in';
+
+            // Check if verification is required
+            if (
+                errorMessage.includes('verification required') ||
+                errorMessage.includes('verification')
+            ) {
+                // Navigate to verification screen with phone parameter
+                router.push(
+                    `/(auth)/verify-phone?phone=${encodeURIComponent(formatPhoneNumber(phone, selectedCountry.dial))}` as any
+                );
+            } else {
+                setError(errorMessage);
+            }
+        }
+    };
 
     return (
         <>
@@ -146,11 +198,16 @@ export default function LoginPhoneScreen() {
                         <AppInput
                             placeholder="Enter your phone number"
                             value={phone}
-                            onChangeText={setPhone}
+                            onChangeText={text => {
+                                setPhone(text);
+                                if (error) setError(null);
+                            }}
                             keyboardType="phone-pad"
                             returnKeyType="done"
                             containerStyle={styles.phoneInput}
                             inputStyle={styles.phoneInputText}
+                            error={error || undefined}
+                            disabled={isLoading}
                         />
                     </View>
                 </View>
@@ -158,9 +215,9 @@ export default function LoginPhoneScreen() {
                 <View style={styles.flexSpacer} />
 
                 <AppButton
-                    title="Get confirmation code"
-                    onPress={() => router.push('/(auth)/login' as any)}
-                    disabled={!canContinue}
+                    title={isLoading ? 'Loading...' : 'Get confirmation code'}
+                    onPress={handleContinue}
+                    disabled={!canContinue || isLoading}
                 />
             </ScreenContainer>
 

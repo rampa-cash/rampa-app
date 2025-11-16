@@ -5,7 +5,8 @@
  * Integrates with Para SDK and backend session validation
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { logger } from '../../shared/utils/errorHandler';
 import { AuthService } from './AuthService';
 import { useAuthStore } from './authStore';
@@ -94,11 +95,28 @@ export function useAuth(): AuthState & AuthActions {
                     error instanceof Error
                         ? error.message
                         : 'Email login failed';
+
+                // Provide user-friendly error messages
+                let userFriendlyMessage = errorMessage;
+                if (
+                    errorMessage.includes('network') ||
+                    errorMessage.includes('fetch')
+                ) {
+                    userFriendlyMessage =
+                        'Network error. Please check your connection and try again.';
+                } else if (errorMessage.includes('timeout')) {
+                    userFriendlyMessage =
+                        'Request timed out. Please try again.';
+                } else if (errorMessage.includes('verification required')) {
+                    // This is expected - don't show as error, navigation handles it
+                    userFriendlyMessage = errorMessage;
+                }
+
                 logger.error('Email login failed', {
                     error: errorMessage,
                     email,
                 });
-                setError(errorMessage);
+                setError(userFriendlyMessage);
                 throw error;
             } finally {
                 setIsLoading(false);
@@ -155,11 +173,28 @@ export function useAuth(): AuthState & AuthActions {
                     error instanceof Error
                         ? error.message
                         : 'Phone login failed';
+
+                // Provide user-friendly error messages
+                let userFriendlyMessage = errorMessage;
+                if (
+                    errorMessage.includes('network') ||
+                    errorMessage.includes('fetch')
+                ) {
+                    userFriendlyMessage =
+                        'Network error. Please check your connection and try again.';
+                } else if (errorMessage.includes('timeout')) {
+                    userFriendlyMessage =
+                        'Request timed out. Please try again.';
+                } else if (errorMessage.includes('verification required')) {
+                    // This is expected - don't show as error, navigation handles it
+                    userFriendlyMessage = errorMessage;
+                }
+
                 logger.error('Phone login failed', {
                     error: errorMessage,
                     phoneNumber,
                 });
-                setError(errorMessage);
+                setError(userFriendlyMessage);
                 throw error;
             } finally {
                 setIsLoading(false);
@@ -209,10 +244,29 @@ export function useAuth(): AuthState & AuthActions {
                     error instanceof Error
                         ? error.message
                         : `${provider} login failed`;
+
+                // Provide user-friendly error messages
+                let userFriendlyMessage = errorMessage;
+                if (
+                    errorMessage.includes('network') ||
+                    errorMessage.includes('fetch')
+                ) {
+                    userFriendlyMessage =
+                        'Network error. Please check your connection and try again.';
+                } else if (errorMessage.includes('timeout')) {
+                    userFriendlyMessage =
+                        'Request timed out. Please try again.';
+                } else if (
+                    errorMessage.includes('cancelled') ||
+                    errorMessage.includes('canceled')
+                ) {
+                    userFriendlyMessage = 'Sign in was cancelled.';
+                }
+
                 logger.error(`${provider} login failed`, {
                     error: errorMessage,
                 });
-                setError(errorMessage);
+                setError(userFriendlyMessage);
                 throw error;
             } finally {
                 setIsLoading(false);
@@ -252,10 +306,33 @@ export function useAuth(): AuthState & AuthActions {
                     error instanceof Error
                         ? error.message
                         : 'Verification failed';
+
+                // Provide user-friendly error messages
+                let userFriendlyMessage = errorMessage;
+                if (
+                    errorMessage.includes('network') ||
+                    errorMessage.includes('fetch')
+                ) {
+                    userFriendlyMessage =
+                        'Network error. Please check your connection and try again.';
+                } else if (errorMessage.includes('timeout')) {
+                    userFriendlyMessage =
+                        'Request timed out. Please try again.';
+                } else if (
+                    errorMessage.includes('invalid') ||
+                    errorMessage.includes('incorrect')
+                ) {
+                    userFriendlyMessage =
+                        'Invalid verification code. Please try again.';
+                } else if (errorMessage.includes('expired')) {
+                    userFriendlyMessage =
+                        'Verification code has expired. Please request a new one.';
+                }
+
                 logger.error('Account verification failed', {
                     error: errorMessage,
                 });
-                setError(errorMessage);
+                setError(userFriendlyMessage);
                 throw error;
             } finally {
                 setIsLoading(false);
@@ -362,38 +439,84 @@ export function useAuth(): AuthState & AuthActions {
             setError(errorMessage);
 
             // If session refresh fails, logout user
-            await authService.logout();
+            // Don't throw error here - just log out silently
+            try {
+                await authService.logout();
+            } catch (logoutError) {
+                logger.error('Failed to logout after session refresh failure', {
+                    error:
+                        logoutError instanceof Error
+                            ? logoutError.message
+                            : 'Unknown error',
+                });
+            }
             storeLogout();
         } finally {
             setIsLoading(false);
         }
     }, [isAuthenticated, authService, storeLogin, storeLogout]);
 
+    // Track app state for background/foreground handling
+    const appState = useRef<AppStateStatus>(AppState.currentState);
+
     /**
-     * Auto-refresh session on app focus
+     * Handle app state changes (background/foreground)
+     */
+    useEffect(() => {
+        const subscription = AppState.addEventListener(
+            'change',
+            nextAppState => {
+                if (
+                    appState.current.match(/inactive|background/) &&
+                    nextAppState === 'active' &&
+                    isAuthenticated
+                ) {
+                    // App has come to the foreground - refresh session
+                    logger.info('App came to foreground, refreshing session');
+                    refreshSession().catch(error => {
+                        logger.error(
+                            'Failed to refresh session on foreground',
+                            {
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : 'Unknown error',
+                            }
+                        );
+                    });
+                }
+                appState.current = nextAppState;
+            }
+        );
+
+        return () => {
+            subscription.remove();
+        };
+    }, [isAuthenticated, refreshSession]);
+
+    /**
+     * Auto-refresh session periodically (every 30 minutes)
      */
     useEffect(() => {
         if (isAuthenticated && sessionToken) {
-            // Set up periodic session refresh (every 30 minutes)
+            // Set up periodic session refresh (every 30 minutes as per Para SDK best practices)
             const refreshInterval = setInterval(
                 () => {
-                    refreshSession();
+                    refreshSession().catch(error => {
+                        logger.error('Periodic session refresh failed', {
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : 'Unknown error',
+                        });
+                    });
                 },
-                30 * 60 * 1000
+                30 * 60 * 1000 // 30 minutes
             );
 
             return () => clearInterval(refreshInterval);
         }
     }, [isAuthenticated, sessionToken, refreshSession]);
-
-    /**
-     * Validate session on mount
-     */
-    useEffect(() => {
-        if (isAuthenticated && sessionToken) {
-            refreshSession();
-        }
-    }, []); // Only run on mount
 
     return {
         // State

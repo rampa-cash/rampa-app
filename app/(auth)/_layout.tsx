@@ -38,6 +38,13 @@ export default function AuthLayout() {
                     headerShown: false,
                 }}
             />
+            <Stack.Screen
+                name="verify-phone"
+                options={{
+                    title: 'Verify Phone',
+                    headerShown: false,
+                }}
+            />
         </Stack>
     );
 }

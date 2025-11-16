@@ -4,7 +4,9 @@ import { ListCard } from '@/components/ui/list-card';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
 import { useTheme, useThemeMode } from '@/hooks/theme';
+import { useAuth } from '@/src/domain/auth/useAuth';
 import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 export type AuthEntryProps = {
@@ -16,11 +18,27 @@ export function AuthEntry({ onEmail, onPhone }: AuthEntryProps) {
     const router = useRouter();
     const t = useTheme();
     const { isDark } = useThemeMode();
+    const { loginWithOAuth, isLoading } = useAuth();
+    const [oauthError, setOauthError] = useState<string | null>(null);
 
     const goEmail = () =>
         onEmail ? onEmail() : router.push('/(auth)/login-email' as any);
     const goPhone = () =>
         onPhone ? onPhone() : router.push('/(auth)/login-phone' as any);
+
+    const handleOAuth = async (provider: 'google' | 'apple') => {
+        setOauthError(null);
+        try {
+            await loginWithOAuth(provider);
+            // If successful, user will be automatically redirected to home
+            // via the auth state change in app/index.tsx
+        } catch (err) {
+            const errorMessage =
+                err instanceof Error ? err.message : `${provider} login failed`;
+            setOauthError(errorMessage);
+            console.error(`${provider} OAuth failed:`, err);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -50,14 +68,14 @@ export function AuthEntry({ onEmail, onPhone }: AuthEntryProps) {
             <View style={{ gap: 18 }}>
                 <ListCard
                     title="Apple"
-                    disabled
-                    onPress={goEmail}
+                    disabled={isLoading}
+                    onPress={() => handleOAuth('apple')}
                     left={<Icon name={IconName.Property1Apple} />}
                 />
                 <ListCard
                     title="Google"
-                    disabled
-                    onPress={goEmail}
+                    disabled={isLoading}
+                    onPress={() => handleOAuth('google')}
                     left={<Icon name={IconName.Property1Google} />}
                 />
 
