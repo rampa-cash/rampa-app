@@ -13,31 +13,32 @@ export type AuthEntryProps = {
 export function Header({ onEmail, onPhone }: AuthEntryProps) {
     const router = useRouter();
     const t = useTheme();
-    const { isDark } = useThemeMode()
+    const { isDark } = useThemeMode();
     const insets = useSafeAreaInsets();
 
     const goBack = () => (onEmail ? onEmail() : router.back());
-    const goHelp = () => (onPhone ? onPhone() : router.push('/(auth)/login-phone' as any));
+    const goHelp = () =>
+        onPhone ? onPhone() : router.push('/(auth)/login-phone' as any);
 
     return (
         <View style={[styles.container, { marginTop: insets.top + 16 }]}>
             <IconButton
                 iconSize={14}
                 bordered
-
-                shape='circle'
+                shape="circle"
                 iconName={IconName.Property1ArrowLeft}
                 iconColor={isDark ? 'variant' : 'normal'}
-                onPress={goBack} />
+                onPress={goBack}
+            />
 
             <IconButton
                 iconSize={14}
                 bordered
-                shape='circle'
+                shape="circle"
                 iconName={IconName.Property1Help}
                 iconColor={isDark ? 'variant' : 'normal'}
-
-                onPress={goHelp} />
+                onPress={goHelp}
+            />
         </View>
     );
 }
@@ -51,4 +52,3 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
 });
-

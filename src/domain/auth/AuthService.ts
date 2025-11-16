@@ -1,4 +1,6 @@
 import { AuthProvider, ProviderFactory } from '../../shared/infrastructure';
+import { authApiClient } from './apiClient';
+import { useAuthStore } from './authStore';
 import { User } from './types';
 
 export interface AuthResult {
@@ -26,9 +28,10 @@ export class AuthService {
      */
     async signUpOrLogInWithEmail(email: string): Promise<AuthResult> {
         try {
-            const authState = await this.authProvider.signUpOrLogInWithEmail(email);
+            const authState =
+                await this.authProvider.signUpOrLogInWithEmail(email);
             this.currentAuthState = authState.authState;
-            
+
             return {
                 stage: authState.stage,
                 needsVerification: authState.needsVerification,
@@ -45,9 +48,10 @@ export class AuthService {
      */
     async signUpOrLogInWithPhone(phoneNumber: string): Promise<AuthResult> {
         try {
-            const authState = await this.authProvider.signUpOrLogInWithPhone(phoneNumber);
+            const authState =
+                await this.authProvider.signUpOrLogInWithPhone(phoneNumber);
             this.currentAuthState = authState.authState;
-            
+
             return {
                 stage: authState.stage,
                 needsVerification: authState.needsVerification,
@@ -62,11 +66,14 @@ export class AuthService {
     /**
      * Sign up or log in user with OAuth provider
      */
-    async signUpOrLogInWithOAuth(provider: 'google' | 'apple'): Promise<AuthResult> {
+    async signUpOrLogInWithOAuth(
+        provider: 'google' | 'apple'
+    ): Promise<AuthResult> {
         try {
-            const authState = await this.authProvider.signUpOrLogInWithOAuth(provider);
+            const authState =
+                await this.authProvider.signUpOrLogInWithOAuth(provider);
             this.currentAuthState = authState.authState;
-            
+
             return {
                 stage: authState.stage,
                 needsVerification: authState.needsVerification,
@@ -75,6 +82,18 @@ export class AuthService {
         } catch (error) {
             console.error(`${provider} authentication failed:`, error);
             throw error;
+        }
+    }
+
+    /**
+     * Resend verification code (for email or phone)
+     */
+    async resendVerificationCode(): Promise<void> {
+        try {
+            await this.authProvider.resendVerificationCode();
+        } catch (error) {
+            console.error('Failed to resend verification code:', error);
+            throw new Error('Failed to resend verification code');
         }
     }
 
@@ -98,15 +117,22 @@ export class AuthService {
             this.currentAuthState = result.authState;
 
             // Register passkey for new user
-            const passkeyResult = await this.authProvider.registerPasskey(result.authState);
+            const passkeyResult = await this.authProvider.registerPasskey(
+                result.authState
+            );
 
             if (!passkeyResult.success) {
                 return { success: false };
             }
 
+            // Import session to backend to get backend session token and user info
+            const sessionImport =
+                await this.authProvider.importSessionToBackend();
+
             return {
                 success: true,
-                sessionToken: passkeyResult.sessionToken,
+                sessionToken: sessionImport.sessionToken,
+                user: sessionImport.user as User,
             };
         } catch (error) {
             console.error('Verification failed:', error);
@@ -125,9 +151,14 @@ export class AuthService {
                 return { success: false };
             }
 
+            // Import session to backend to get backend session token and user info
+            const sessionImport =
+                await this.authProvider.importSessionToBackend();
+
             return {
                 success: true,
-                sessionToken: result.sessionToken,
+                sessionToken: sessionImport.sessionToken,
+                user: sessionImport.user as User,
             };
         } catch (error) {
             console.error('Passkey login failed:', error);
@@ -144,13 +175,20 @@ export class AuthService {
             // The authState from signUpOrLogInWithOAuth contains the stage info
             if (authState?.stage === 'verify') {
                 // New user - register passkey
-                const result = await this.authProvider.registerPasskey(authState);
+                const result =
+                    await this.authProvider.registerPasskey(authState);
                 if (!result.success) {
                     return { success: false };
                 }
+
+                // Import session to backend to get backend session token and user info
+                const sessionImport =
+                    await this.authProvider.importSessionToBackend();
+
                 return {
                     success: true,
-                    sessionToken: result.sessionToken,
+                    sessionToken: sessionImport.sessionToken,
+                    user: sessionImport.user as User,
                 };
             } else {
                 // Existing user - login with passkey
@@ -163,7 +201,44 @@ export class AuthService {
     }
 
     /**
+     * Check if session is active
+     */
+    async isSessionActive(): Promise<boolean> {
+        try {
+            return await this.authProvider.isSessionActive();
+        } catch (error) {
+            console.error('Failed to check session status:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Keep session alive (extend active session)
+     */
+    async keepSessionAlive(): Promise<boolean> {
+        try {
+            return await this.authProvider.keepSessionAlive();
+        } catch (error) {
+            console.error('Failed to keep session alive:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Export session for server
+     */
+    exportSession(options?: { excludeSigners?: boolean }): string {
+        try {
+            return this.authProvider.exportSession(options);
+        } catch (error) {
+            console.error('Failed to export session:', error);
+            throw new Error('Failed to export session');
+        }
+    }
+
+    /**
      * Validate session with backend
+     * Uses backend /user endpoint to get current user info
      */
     async validateSessionWithBackend(): Promise<{
         user: User;
@@ -176,48 +251,28 @@ export class AuthService {
                 throw new Error('Session is not active');
             }
 
-            // Get user info from auth provider
-            const userId = await this.authProvider.getUserId();
-            const email = await this.authProvider.getEmail();
-            const phone = await this.authProvider.getPhone();
-            const sessionToken = await this.authProvider.getSessionToken();
+            // Get user info from backend /user endpoint
+            // The sessionToken is stored in auth store and will be used by authApiClient
+            const response = await authApiClient.getCurrentUser();
 
-            if (!userId || !sessionToken) {
-                throw new Error('Failed to retrieve user information');
+            if (!response.success || !response.data) {
+                throw new Error(
+                    'Failed to retrieve user information from backend'
+                );
             }
 
-            // Mock user data - replace with actual backend call
-            const user: User = {
-                id: userId,
-                email: email || 'user@example.com', // Fallback if email is null
-                firstName: 'John',
-                lastName: 'Doe',
-                country: 'US',
-                kycStatus: 'verified',
-                preferences: {
-                    currency: 'USD',
-                    language: 'en',
-                    notifications: {
-                        transactionUpdates: true,
-                        educationalContent: true,
-                        marketing: false,
-                        securityAlerts: true,
-                        pushEnabled: true,
-                        emailEnabled: true,
-                    },
-                    privacy: {
-                        dataSharing: false,
-                        analytics: true,
-                        crashReporting: true,
-                        marketingData: false,
-                    },
-                    theme: 'system',
-                },
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
+            // Get session token from auth store (set during login)
+            const state = useAuthStore.getState();
+            const sessionToken = state.sessionToken;
 
-            return { user, sessionToken };
+            if (!sessionToken) {
+                throw new Error('Session token not found');
+            }
+
+            return {
+                user: response.data,
+                sessionToken,
+            };
         } catch (error) {
             console.error('Session validation failed:', error);
             throw new Error('Session validation failed');

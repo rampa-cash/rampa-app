@@ -18,9 +18,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import {
-    useSafeAreaInsets
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { transactionApiClient } from '../../src/domain/transactions';
 
 export default function HomeScreen() {

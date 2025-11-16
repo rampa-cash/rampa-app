@@ -32,6 +32,8 @@ export const ADD_FUNDS_METHODS: AddFundsMethod[] = [
 
 export function getAddFundsMethod(id?: string) {
     if (!id) return ADD_FUNDS_METHODS[0];
-    return ADD_FUNDS_METHODS.find(method => method.id === id) ?? ADD_FUNDS_METHODS[0];
+    return (
+        ADD_FUNDS_METHODS.find(method => method.id === id) ??
+        ADD_FUNDS_METHODS[0]
+    );
 }
-

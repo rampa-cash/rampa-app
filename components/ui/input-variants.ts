@@ -5,4 +5,3 @@ export enum InputVariant {
 }
 
 export type InputVariantKeys = `${InputVariant}`;
-

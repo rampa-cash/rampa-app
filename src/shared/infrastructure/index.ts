@@ -5,7 +5,11 @@
  */
 
 // Ports (Interfaces)
-export type { AuthProvider, AuthState, VerificationResult } from './ports/AuthProvider';
+export type {
+    AuthProvider,
+    AuthState,
+    VerificationResult,
+} from './ports/AuthProvider';
 export type { WalletProvider } from './ports/WalletProvider';
 
 // Adapters - Para
@@ -21,7 +25,7 @@ export { MockWalletProvider } from './adapters/mock/MockWalletProvider';
 export { ProviderFactory } from './factory/ProviderFactory';
 export type {
     AuthProviderType,
-    WalletProviderType
+    WalletProviderType,
 } from './factory/ProviderFactory';
 
 // Adapters - Para (lazy exports to avoid loading Para SDK when using mock providers)

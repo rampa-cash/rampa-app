@@ -46,4 +46,3 @@ export enum IconName {
 }
 
 export type IconNameKeys = `${IconName}`;
-

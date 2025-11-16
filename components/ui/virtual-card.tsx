@@ -36,53 +36,77 @@ export function VirtualCard({
     gradient,
     style,
 }: VirtualCardProps) {
-    const t = useTheme( );
+    const t = useTheme();
     const colors = gradient ?? Palette.gradients.primary;
 
     // Try to use expo-linear-gradient if available, otherwise fallback to solid bg
     let LinearGradientImpl: any = null;
     try {
-         
         LinearGradientImpl = require('expo-linear-gradient').LinearGradient;
     } catch {}
 
     const CardBackground: React.ComponentType<any> = LinearGradientImpl ?? View;
     const backgroundProps = LinearGradientImpl
-        ? { colors: [colors[0], colors[1]], start: { x: 0, y: 0 }, end: { x: 1, y: 1 } }
+        ? {
+              colors: [colors[0], colors[1]],
+              start: { x: 0, y: 0 },
+              end: { x: 1, y: 1 },
+          }
         : { style: [{ backgroundColor: colors[0] }] };
 
     return (
         <View style={[styles.container, style as any]}>
             <CardBackground {...backgroundProps} style={styles.card}>
-                <AppText variant={TextVariant.Secondary} style={{ color: t.neutral.white }}>
+                <AppText
+                    variant={TextVariant.Secondary}
+                    style={{ color: t.neutral.white }}
+                >
                     {title}
                 </AppText>
 
                 {variant === 'balance' ? (
                     <View style={{ flex: 1, justifyContent: 'center' }}>
-                        <AppText variant={TextVariant.Caption} style={{ color: t.neutral.white }}>
+                        <AppText
+                            variant={TextVariant.Caption}
+                            style={{ color: t.neutral.white }}
+                        >
                             {balanceLabel}
                         </AppText>
-                        <AppText variant={TextVariant.NumH1} style={{ color: t.neutral.white }}>
+                        <AppText
+                            variant={TextVariant.NumH1}
+                            style={{ color: t.neutral.white }}
+                        >
                             {balance}
                         </AppText>
                     </View>
                 ) : (
                     <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-                        <AppText variant={TextVariant.BodyMedium} style={{ color: t.neutral.white }}>
+                        <AppText
+                            variant={TextVariant.BodyMedium}
+                            style={{ color: t.neutral.white }}
+                        >
                             {name}
                         </AppText>
-                        <AppText variant={TextVariant.Body} style={{ color: t.neutral.white }}>
+                        <AppText
+                            variant={TextVariant.Body}
+                            style={{ color: t.neutral.white }}
+                        >
                             {numberMasked}
                         </AppText>
                         <View style={{ flexDirection: 'row', gap: 16 }}>
                             {expiry ? (
-                                <AppText variant={TextVariant.Caption} style={{ color: t.neutral.white }}>
+                                <AppText
+                                    variant={TextVariant.Caption}
+                                    style={{ color: t.neutral.white }}
+                                >
                                     {expiry}
                                 </AppText>
                             ) : null}
                             {cvv ? (
-                                <AppText variant={TextVariant.Caption} style={{ color: t.neutral.white }}>
+                                <AppText
+                                    variant={TextVariant.Caption}
+                                    style={{ color: t.neutral.white }}
+                                >
                                     {cvv}
                                 </AppText>
                             ) : null}
@@ -91,7 +115,10 @@ export function VirtualCard({
                 )}
 
                 {footer ? (
-                    <AppText variant={TextVariant.Secondary} style={{ color: t.neutral.white }}>
+                    <AppText
+                        variant={TextVariant.Secondary}
+                        style={{ color: t.neutral.white }}
+                    >
                         {footer}
                     </AppText>
                 ) : null}

@@ -23,7 +23,7 @@ config.serializer.experimentalSerializerHook = (graph /*, delta */) => {
                 }
             }
         }
-    } catch { }
+    } catch {}
 };
 
 module.exports = config;

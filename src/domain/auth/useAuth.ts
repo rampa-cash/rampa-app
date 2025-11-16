@@ -23,6 +23,7 @@ export interface AuthActions {
     loginWithPhone: (phoneNumber: string) => Promise<void>;
     loginWithOAuth: (provider: 'google' | 'apple') => Promise<void>;
     verifyAccount: (verificationCode: string) => Promise<void>;
+    resendVerificationCode: () => Promise<void>;
     logout: () => Promise<void>;
     refreshSession: () => Promise<void>;
     clearError: () => void;
@@ -65,30 +66,38 @@ export function useAuth(): AuthState & AuthActions {
                     // Handle verification flow - this would typically show a verification screen
                     throw new Error('Account verification required');
                 } else if (result.stage === 'login') {
-                    logger.info('Existing user, proceeding with passkey login', { email });
+                    logger.info(
+                        'Existing user, proceeding with passkey login',
+                        { email }
+                    );
 
-                    // Login with passkey
+                    // Login with passkey (this now includes session import)
                     const passkeyResult = await authService.loginWithPasskey();
 
-                    if (!passkeyResult.success) {
+                    if (
+                        !passkeyResult.success ||
+                        !passkeyResult.user ||
+                        !passkeyResult.sessionToken
+                    ) {
                         throw new Error('Passkey login failed');
                     }
 
-                    // Validate session with backend
-                    const { user, sessionToken } =
-                        await authService.validateSessionWithBackend();
-
-                    // Store authentication state
-                    storeLogin(user, sessionToken);
+                    // Store authentication state (user and sessionToken come from session import)
+                    storeLogin(passkeyResult.user, passkeyResult.sessionToken);
 
                     logger.info('User authenticated successfully', {
-                        userId: user.id,
+                        userId: passkeyResult.user.id,
                     });
                 }
             } catch (error) {
                 const errorMessage =
-                    error instanceof Error ? error.message : 'Email login failed';
-                logger.error('Email login failed', { error: errorMessage, email });
+                    error instanceof Error
+                        ? error.message
+                        : 'Email login failed';
+                logger.error('Email login failed', {
+                    error: errorMessage,
+                    email,
+                });
                 setError(errorMessage);
                 throw error;
             } finally {
@@ -109,36 +118,47 @@ export function useAuth(): AuthState & AuthActions {
             try {
                 logger.info('Starting phone login process', { phoneNumber });
 
-                const result = await authService.signUpOrLogInWithPhone(phoneNumber);
+                const result =
+                    await authService.signUpOrLogInWithPhone(phoneNumber);
 
                 if (result.stage === 'verify') {
-                    logger.info('Account verification required', { phoneNumber });
+                    logger.info('Account verification required', {
+                        phoneNumber,
+                    });
                     throw new Error('Account verification required');
                 } else if (result.stage === 'login') {
-                    logger.info('Existing user, proceeding with passkey login', { phoneNumber });
+                    logger.info(
+                        'Existing user, proceeding with passkey login',
+                        { phoneNumber }
+                    );
 
-                    // Login with passkey
+                    // Login with passkey (this now includes session import)
                     const passkeyResult = await authService.loginWithPasskey();
 
-                    if (!passkeyResult.success) {
+                    if (
+                        !passkeyResult.success ||
+                        !passkeyResult.user ||
+                        !passkeyResult.sessionToken
+                    ) {
                         throw new Error('Passkey login failed');
                     }
 
-                    // Validate session with backend
-                    const { user, sessionToken } =
-                        await authService.validateSessionWithBackend();
-
-                    // Store authentication state
-                    storeLogin(user, sessionToken);
+                    // Store authentication state (user and sessionToken come from session import)
+                    storeLogin(passkeyResult.user, passkeyResult.sessionToken);
 
                     logger.info('User authenticated successfully', {
-                        userId: user.id,
+                        userId: passkeyResult.user.id,
                     });
                 }
             } catch (error) {
                 const errorMessage =
-                    error instanceof Error ? error.message : 'Phone login failed';
-                logger.error('Phone login failed', { error: errorMessage, phoneNumber });
+                    error instanceof Error
+                        ? error.message
+                        : 'Phone login failed';
+                logger.error('Phone login failed', {
+                    error: errorMessage,
+                    phoneNumber,
+                });
                 setError(errorMessage);
                 throw error;
             } finally {
@@ -159,30 +179,39 @@ export function useAuth(): AuthState & AuthActions {
             try {
                 logger.info(`Starting ${provider} OAuth login process`);
 
-                const result = await authService.signUpOrLogInWithOAuth(provider);
+                const result =
+                    await authService.signUpOrLogInWithOAuth(provider);
 
                 // Complete OAuth flow (register or login with passkey)
-                logger.info(`Completing ${provider} OAuth flow`, { stage: result.stage });
-                const passkeyResult = await authService.completeOAuth(result.authState);
+                logger.info(`Completing ${provider} OAuth flow`, {
+                    stage: result.stage,
+                });
+                const passkeyResult = await authService.completeOAuth(
+                    result.authState
+                );
 
-                if (!passkeyResult.success) {
+                if (
+                    !passkeyResult.success ||
+                    !passkeyResult.user ||
+                    !passkeyResult.sessionToken
+                ) {
                     throw new Error('OAuth completion failed');
                 }
 
-                // Validate session with backend
-                const { user, sessionToken } =
-                    await authService.validateSessionWithBackend();
-
-                // Store authentication state
-                storeLogin(user, sessionToken);
+                // Store authentication state (user and sessionToken come from session import)
+                storeLogin(passkeyResult.user, passkeyResult.sessionToken);
 
                 logger.info('User authenticated successfully', {
-                    userId: user.id,
+                    userId: passkeyResult.user.id,
                 });
             } catch (error) {
                 const errorMessage =
-                    error instanceof Error ? error.message : `${provider} login failed`;
-                logger.error(`${provider} login failed`, { error: errorMessage });
+                    error instanceof Error
+                        ? error.message
+                        : `${provider} login failed`;
+                logger.error(`${provider} login failed`, {
+                    error: errorMessage,
+                });
                 setError(errorMessage);
                 throw error;
             } finally {
@@ -206,18 +235,14 @@ export function useAuth(): AuthState & AuthActions {
                 const result =
                     await authService.verifyNewAccount(verificationCode);
 
-                if (result.success) {
+                if (result.success && result.user && result.sessionToken) {
                     logger.info('Account verification successful');
 
-                    // Validate session with backend
-                    const { user, sessionToken } =
-                        await authService.validateSessionWithBackend();
-
-                    // Store authentication state
-                    storeLogin(user, sessionToken);
+                    // Store authentication state (user and sessionToken come from session import)
+                    storeLogin(result.user, result.sessionToken);
 
                     logger.info('User account verified and authenticated', {
-                        userId: user.id,
+                        userId: result.user.id,
                     });
                 } else {
                     throw new Error('Verification failed');
@@ -238,6 +263,32 @@ export function useAuth(): AuthState & AuthActions {
         },
         [authService, storeLogin]
     );
+
+    /**
+     * Resend verification code
+     */
+    const resendVerificationCode = useCallback(async (): Promise<void> => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            logger.info('Resending verification code');
+            await authService.resendVerificationCode();
+            logger.info('Verification code resent successfully');
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to resend verification code';
+            logger.error('Failed to resend verification code', {
+                error: errorMessage,
+            });
+            setError(errorMessage);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    }, [authService]);
 
     /**
      * Logout user
@@ -265,6 +316,7 @@ export function useAuth(): AuthState & AuthActions {
 
     /**
      * Refresh session
+     * Uses keepSessionAlive() to extend active session, then validates with backend
      */
     const refreshSession = useCallback(async (): Promise<void> => {
         if (!isAuthenticated) {
@@ -277,6 +329,25 @@ export function useAuth(): AuthState & AuthActions {
         try {
             logger.info('Refreshing session');
 
+            // First check if session is still active
+            const isActive = await authService.isSessionActive();
+            if (!isActive) {
+                logger.warn('Session is not active, logging out');
+                await authService.logout();
+                storeLogout();
+                return;
+            }
+
+            // Try to keep session alive (extends session without full reauthentication)
+            const extended = await authService.keepSessionAlive();
+            if (!extended) {
+                logger.warn('Failed to extend session, logging out');
+                await authService.logout();
+                storeLogout();
+                return;
+            }
+
+            // Validate session with backend
             const { user, sessionToken } =
                 await authService.validateSessionWithBackend();
             storeLogin(user, sessionToken);
@@ -291,6 +362,7 @@ export function useAuth(): AuthState & AuthActions {
             setError(errorMessage);
 
             // If session refresh fails, logout user
+            await authService.logout();
             storeLogout();
         } finally {
             setIsLoading(false);
@@ -335,6 +407,7 @@ export function useAuth(): AuthState & AuthActions {
         loginWithPhone,
         loginWithOAuth,
         verifyAccount,
+        resendVerificationCode,
         logout,
         refreshSession,
         clearError,
@@ -362,14 +435,23 @@ export function useAuthStatus(): {
  * Hook for authentication actions only
  */
 export function useAuthActions(): AuthActions {
-    const { loginWithEmail, loginWithPhone, loginWithOAuth, verifyAccount, logout, refreshSession, clearError } =
-        useAuth();
+    const {
+        loginWithEmail,
+        loginWithPhone,
+        loginWithOAuth,
+        verifyAccount,
+        resendVerificationCode,
+        logout,
+        refreshSession,
+        clearError,
+    } = useAuth();
 
     return {
         loginWithEmail,
         loginWithPhone,
         loginWithOAuth,
         verifyAccount,
+        resendVerificationCode,
         logout,
         refreshSession,
         clearError,

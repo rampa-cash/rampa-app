@@ -21,4 +21,3 @@ export enum TextVariant {
 }
 
 export type TextVariantKeys = `${TextVariant}`;
-

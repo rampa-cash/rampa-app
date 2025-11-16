@@ -113,8 +113,8 @@ export const Theme = {
 
         background: {
             base: Palette.neutral.onyxBase, // main canvas
-            variant: '#151718',            // elevated surfaces
-            light: '#242629',              // lighter surface
+            variant: '#151718', // elevated surfaces
+            light: '#242629', // lighter surface
             primary: Palette.primary.signalViolet,
             onBase: Palette.neutral.onyxBase,
             onBase2: '#1B1D20',
