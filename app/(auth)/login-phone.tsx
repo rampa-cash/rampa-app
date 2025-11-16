@@ -94,8 +94,9 @@ export default function LoginPhoneScreen() {
             );
 
             await loginWithPhone(formattedPhone);
-            // If successful and stage === 'login', user will be automatically redirected to home
-            // via the auth state change in app/index.tsx
+            // Navigation will happen automatically via AuthLayout useEffect
+            // when isAuthenticated becomes true (if stage === 'login')
+            // If verification is required, we'll navigate to verify screen instead
         } catch (err) {
             const errorMessage =
                 err instanceof Error ? err.message : 'Failed to sign in';
@@ -216,7 +217,10 @@ export default function LoginPhoneScreen() {
 
                 <AppButton
                     title={isLoading ? 'Loading...' : 'Get confirmation code'}
-                    onPress={handleContinue}
+                    onPress={() => {
+                        console.log('Continue button pressed, phone:', phone, 'canContinue:', canContinue);
+                        handleContinue();
+                    }}
                     disabled={!canContinue || isLoading}
                 />
             </ScreenContainer>

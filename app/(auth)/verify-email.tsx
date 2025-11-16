@@ -36,8 +36,8 @@ export default function VerifyEmailScreen() {
 
         try {
             await verifyAccount(code);
-            // If successful, user will be automatically redirected to home
-            // via the auth state change in app/index.tsx
+            // Navigation will happen automatically via AuthLayout useEffect
+            // when isAuthenticated becomes true
         } catch (err) {
             // Error is already set in the hook
             console.error('Verification failed:', err);

@@ -99,10 +99,20 @@ export function AppButton({
         backgroundColor
     );
 
+    const handlePress = () => {
+        console.log('[AppButton] Pressed, disabled:', disabled, 'onPress exists:', !!onPress);
+        if (!disabled && onPress) {
+            onPress();
+        } else {
+            console.log('[AppButton] Press ignored - disabled:', disabled, 'onPress:', !!onPress);
+        }
+    };
+
     return (
         <Pressable
-            onPress={onPress}
+            onPress={handlePress}
             disabled={disabled}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             style={({ pressed }) => [
                 styles.base,
                 {

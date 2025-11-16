@@ -65,7 +65,11 @@ export function useAuth(): AuthState & AuthActions {
                 if (result.stage === 'verify') {
                     logger.info('Account verification required', { email });
                     // Handle verification flow - this would typically show a verification screen
-                    throw new Error('Account verification required');
+                    // This is not an error - it's the expected flow for new users
+                    // Throw a special error that will be caught and handled by navigation
+                    const verificationError = new Error('Account verification required');
+                    (verificationError as any).isVerificationRequired = true;
+                    throw verificationError;
                 } else if (result.stage === 'login') {
                     logger.info(
                         'Existing user, proceeding with passkey login',
@@ -96,6 +100,28 @@ export function useAuth(): AuthState & AuthActions {
                         ? error.message
                         : 'Email login failed';
 
+                // Check if this is a verification required flow (not an actual error)
+                const isVerificationRequired = 
+                    errorMessage.includes('verification required') ||
+                    (error as any)?.isVerificationRequired === true;
+
+                if (isVerificationRequired) {
+                    // This is expected flow for new users - log as info, not error
+                    logger.info('Account verification required for email login', {
+                        email,
+                    });
+                    // Don't set error state - navigation will handle it
+                    setIsLoading(false);
+                    throw error; // Re-throw for navigation handling
+                }
+
+                // Extract status code and error code from error if available
+                const statusCode = (error as any)?.statusCode || 
+                    (error as any)?.originalError?.status ||
+                    (error as any)?.originalError?.statusCode;
+                const errorCode = (error as any)?.errorCode || 
+                    (error as any)?.originalError?.code;
+
                 // Provide user-friendly error messages
                 let userFriendlyMessage = errorMessage;
                 if (
@@ -107,15 +133,38 @@ export function useAuth(): AuthState & AuthActions {
                 } else if (errorMessage.includes('timeout')) {
                     userFriendlyMessage =
                         'Request timed out. Please try again.';
-                } else if (errorMessage.includes('verification required')) {
-                    // This is expected - don't show as error, navigation handles it
-                    userFriendlyMessage = errorMessage;
+                } else if (statusCode === 500 || errorMessage.includes('Status: 500')) {
+                    userFriendlyMessage =
+                        'Server error. Please try again in a moment.';
+                } else if (statusCode === 400 || errorMessage.includes('Status: 400')) {
+                    userFriendlyMessage =
+                        'Invalid email address. Please check and try again.';
+                } else if (statusCode === 401 || errorMessage.includes('Status: 401')) {
+                    userFriendlyMessage =
+                        'Authentication failed. Please try again.';
+                } else if (statusCode === 403 || errorMessage.includes('Status: 403')) {
+                    userFriendlyMessage =
+                        'Access denied. Please contact support.';
                 }
 
-                logger.error('Email login failed', {
-                    error: errorMessage,
-                    email,
-                });
+                // Log error with full context (this is the only place we log email errors)
+                if (statusCode || errorCode) {
+                    const originalError = (error as any)?.originalError;
+                    logger.error('Email login failed', {
+                        statusCode,
+                        errorCode,
+                        userMessage: userFriendlyMessage,
+                        email,
+                        responseURL: originalError?.responseURL,
+                        originalMessage: originalError?.message,
+                    });
+                } else {
+                    logger.error('Email login failed', {
+                        error: errorMessage,
+                        userMessage: userFriendlyMessage,
+                        email,
+                    });
+                }
                 setError(userFriendlyMessage);
                 throw error;
             } finally {
@@ -143,7 +192,11 @@ export function useAuth(): AuthState & AuthActions {
                     logger.info('Account verification required', {
                         phoneNumber,
                     });
-                    throw new Error('Account verification required');
+                    // This is not an error - it's the expected flow for new users
+                    // Throw a special error that will be caught and handled by navigation
+                    const verificationError = new Error('Account verification required');
+                    (verificationError as any).isVerificationRequired = true;
+                    throw verificationError;
                 } else if (result.stage === 'login') {
                     logger.info(
                         'Existing user, proceeding with passkey login',
@@ -174,6 +227,28 @@ export function useAuth(): AuthState & AuthActions {
                         ? error.message
                         : 'Phone login failed';
 
+                // Check if this is a verification required flow (not an actual error)
+                const isVerificationRequired = 
+                    errorMessage.includes('verification required') ||
+                    (error as any)?.isVerificationRequired === true;
+
+                if (isVerificationRequired) {
+                    // This is expected flow for new users - log as info, not error
+                    logger.info('Account verification required for phone login', {
+                        phoneNumber,
+                    });
+                    // Don't set error state - navigation will handle it
+                    setIsLoading(false);
+                    throw error; // Re-throw for navigation handling
+                }
+
+                // Extract status code and error code from error if available
+                const statusCode = (error as any)?.statusCode || 
+                    (error as any)?.originalError?.status ||
+                    (error as any)?.originalError?.statusCode;
+                const errorCode = (error as any)?.errorCode || 
+                    (error as any)?.originalError?.code;
+
                 // Provide user-friendly error messages
                 let userFriendlyMessage = errorMessage;
                 if (
@@ -185,15 +260,38 @@ export function useAuth(): AuthState & AuthActions {
                 } else if (errorMessage.includes('timeout')) {
                     userFriendlyMessage =
                         'Request timed out. Please try again.';
-                } else if (errorMessage.includes('verification required')) {
-                    // This is expected - don't show as error, navigation handles it
-                    userFriendlyMessage = errorMessage;
+                } else if (statusCode === 500 || errorMessage.includes('Status: 500')) {
+                    userFriendlyMessage =
+                        'Server error. Please try again in a moment.';
+                } else if (statusCode === 400 || errorMessage.includes('Status: 400')) {
+                    userFriendlyMessage =
+                        'Invalid phone number. Please check and try again.';
+                } else if (statusCode === 401 || errorMessage.includes('Status: 401')) {
+                    userFriendlyMessage =
+                        'Authentication failed. Please try again.';
+                } else if (statusCode === 403 || errorMessage.includes('Status: 403')) {
+                    userFriendlyMessage =
+                        'Access denied. Please contact support.';
                 }
 
-                logger.error('Phone login failed', {
-                    error: errorMessage,
-                    phoneNumber,
-                });
+                // Log error with full context (this is the only place we log phone errors)
+                if (statusCode || errorCode) {
+                    const originalError = (error as any)?.originalError;
+                    logger.error('Phone login failed', {
+                        statusCode,
+                        errorCode,
+                        userMessage: userFriendlyMessage,
+                        phoneNumber,
+                        responseURL: originalError?.responseURL,
+                        originalMessage: originalError?.message,
+                    });
+                } else {
+                    logger.error('Phone login failed', {
+                        error: errorMessage,
+                        userMessage: userFriendlyMessage,
+                        phoneNumber,
+                    });
+                }
                 setError(userFriendlyMessage);
                 throw error;
             } finally {
@@ -245,6 +343,11 @@ export function useAuth(): AuthState & AuthActions {
                         ? error.message
                         : `${provider} login failed`;
 
+                // Extract status code from error if available
+                const statusCode = (error as any)?.statusCode || 
+                    (error as any)?.originalError?.status ||
+                    (error as any)?.originalError?.statusCode;
+
                 // Provide user-friendly error messages
                 let userFriendlyMessage = errorMessage;
                 if (
@@ -261,11 +364,37 @@ export function useAuth(): AuthState & AuthActions {
                     errorMessage.includes('canceled')
                 ) {
                     userFriendlyMessage = 'Sign in was cancelled.';
+                } else if (statusCode === 500 || errorMessage.includes('Status: 500') || errorMessage.includes('Internal Server Error')) {
+                    userFriendlyMessage =
+                        'Server error. Please try again in a moment.';
+                } else if (statusCode === 400 || errorMessage.includes('Status: 400') || errorMessage.includes('Bad Request')) {
+                    userFriendlyMessage =
+                        'Invalid request. Please check your information and try again.';
+                } else if (statusCode === 401 || errorMessage.includes('Status: 401') || errorMessage.includes('Unauthorized')) {
+                    userFriendlyMessage =
+                        'Authentication failed. Please try again.';
+                } else if (statusCode === 403 || errorMessage.includes('Status: 403') || errorMessage.includes('Forbidden')) {
+                    userFriendlyMessage =
+                        'Access denied. Please contact support.';
                 }
 
-                logger.error(`${provider} login failed`, {
-                    error: errorMessage,
-                });
+                // Log error with full context (this is the only place we log OAuth errors)
+                if (statusCode || (error as any)?.errorCode) {
+                    const originalError = (error as any)?.originalError;
+                    logger.error(`${provider} OAuth authentication failed`, {
+                        statusCode,
+                        errorCode: (error as any)?.errorCode,
+                        userMessage: userFriendlyMessage,
+                        responseURL: originalError?.responseURL,
+                        originalMessage: originalError?.message,
+                    });
+                } else {
+                    // Log generic errors too
+                    logger.error(`${provider} OAuth authentication failed`, {
+                        error: errorMessage,
+                        userMessage: userFriendlyMessage,
+                    });
+                }
                 setError(userFriendlyMessage);
                 throw error;
             } finally {

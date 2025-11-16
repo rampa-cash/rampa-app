@@ -3,9 +3,11 @@
  *
  * Implements AuthProvider interface using Para SDK
  * Based on Para SDK documentation: https://docs.getpara.com/v2/react-native/setup/expo
+ * OAuth implementation based on: https://docs.getpara.com/v2/react-native/guides/social-login
  */
 
 import { ParaMobile } from '@getpara/react-native-wallet';
+import * as WebBrowser from 'expo-web-browser';
 import { authApiClient } from '../../../../domain/auth/apiClient';
 import {
     AuthProvider,
@@ -14,6 +16,10 @@ import {
     VerificationResult,
 } from '../../ports/AuthProvider';
 import { para } from './paraClient';
+
+// App scheme for OAuth redirects (must match app.json scheme)
+const APP_SCHEME = 'rampaapp';
+const APP_SCHEME_REDIRECT_URL = `${APP_SCHEME}://para`;
 
 export class ParaAuthProvider implements AuthProvider {
     constructor(private paraClient: ParaMobile = para) {}
@@ -48,11 +54,33 @@ export class ParaAuthProvider implements AuthProvider {
             }
 
             throw new Error('Unexpected auth state from Para SDK');
-        } catch (error) {
-            console.error('Failed to sign up or log in with email:', error);
-            throw new Error(
-                `Email authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-            );
+        } catch (error: any) {
+            // Extract error information from Para SDK error
+            let errorMessage = 'Unknown error';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (error?.message) {
+                errorMessage = error.message;
+            }
+            
+            // Include status code and error code if available
+            const statusCode = error?.status || error?.statusCode;
+            const errorCode = error?.code;
+            
+            if (statusCode) {
+                errorMessage = `${errorMessage} (Status: ${statusCode})`;
+            }
+            if (errorCode) {
+                errorMessage = `${errorMessage} (Code: ${errorCode})`;
+            }
+            
+            // Create error with preserved context (don't log here - useAuth will log)
+            const authError = new Error(`Email authentication failed: ${errorMessage}`);
+            (authError as any).originalError = error;
+            (authError as any).statusCode = statusCode;
+            (authError as any).errorCode = errorCode;
+            
+            throw authError;
         }
     }
 
@@ -84,11 +112,33 @@ export class ParaAuthProvider implements AuthProvider {
             }
 
             throw new Error('Unexpected auth state from Para SDK');
-        } catch (error) {
-            console.error('Failed to sign up or log in with phone:', error);
-            throw new Error(
-                `Phone authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-            );
+        } catch (error: any) {
+            // Extract error information from Para SDK error
+            let errorMessage = 'Unknown error';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (error?.message) {
+                errorMessage = error.message;
+            }
+            
+            // Include status code and error code if available
+            const statusCode = error?.status || error?.statusCode;
+            const errorCode = error?.code;
+            
+            if (statusCode) {
+                errorMessage = `${errorMessage} (Status: ${statusCode})`;
+            }
+            if (errorCode) {
+                errorMessage = `${errorMessage} (Code: ${errorCode})`;
+            }
+            
+            // Create error with preserved context (don't log here - useAuth will log)
+            const authError = new Error(`Phone authentication failed: ${errorMessage}`);
+            (authError as any).originalError = error;
+            (authError as any).statusCode = statusCode;
+            (authError as any).errorCode = errorCode;
+            
+            throw authError;
         }
     }
 
@@ -96,35 +146,118 @@ export class ParaAuthProvider implements AuthProvider {
         provider: 'google' | 'apple'
     ): Promise<AuthState> {
         try {
-            // Para SDK OAuth format - use type assertion as OAuth is not in the strict Auth type
-            const authState = await this.paraClient.signUpOrLogIn({
-                auth: { oauth: { provider } },
-            } as any);
+            // Convert provider to Para SDK format (uppercase)
+            const oauthMethod = provider.toUpperCase() as 'GOOGLE' | 'APPLE';
 
-            // OAuth typically returns 'login' for existing users or 'verify' for new users
-            if (authState?.stage === 'verify') {
-                return {
-                    stage: 'verify',
-                    needsVerification: false, // OAuth doesn't need OTP verification
-                    authState,
-                };
-            } else if (authState?.stage === 'login') {
+            // Step 1: Get OAuth URL from Para SDK
+            const oauthUrl = await this.paraClient.getOAuthUrl({
+                method: oauthMethod,
+                appScheme: APP_SCHEME,
+            });
+
+            // Step 2: Open OAuth browser session
+            // This will redirect to the OAuth provider (Google/Apple) and back to the app
+            const result = await WebBrowser.openAuthSessionAsync(oauthUrl, APP_SCHEME, {
+                preferEphemeralSession: false,
+            });
+
+            // Check if user cancelled the OAuth flow
+            if (result.type === 'cancel') {
+                const cancelError = new Error('OAuth authentication was cancelled');
+                (cancelError as any).isCancelled = true;
+                throw cancelError;
+            }
+
+            // Step 3: Verify OAuth with Para SDK
+            // This completes the OAuth flow and returns the auth state
+            const verifiedAuthState = await this.paraClient.verifyOAuth({
+                method: oauthMethod,
+            });
+
+            if (!verifiedAuthState) {
+                throw new Error('OAuth verification returned no auth state');
+            }
+
+            // Handle different auth states
+            if (verifiedAuthState.stage === 'done') {
+                // User is already fully authenticated - session is active
+                // Just return 'login' stage so completeOAuth can import the session
                 return {
                     stage: 'login',
                     needsVerification: false,
-                    authState,
+                    authState: verifiedAuthState,
+                };
+            } else if (verifiedAuthState.stage === 'login') {
+                // Existing user - check if they use password or passkey
+                // Note: passwordUrl is only present for password-based users
+                if ((verifiedAuthState as any).passwordUrl) {
+                    // User has password-based security - open password URL
+                    await WebBrowser.openAuthSessionAsync(
+                        (verifiedAuthState as any).passwordUrl,
+                        APP_SCHEME_REDIRECT_URL,
+                        {
+                            preferEphemeralSession: false,
+                        }
+                    );
+                    // Wait for login to complete
+                    await this.paraClient.waitForLogin({});
+                }
+                // If no passwordUrl, user has passkey-based security (handled in completeOAuth)
+
+                return {
+                    stage: 'login',
+                    needsVerification: false,
+                    authState: verifiedAuthState,
+                };
+            } else if (verifiedAuthState.stage === 'signup') {
+                // New user - will need to register passkey (handled in completeOAuth)
+                return {
+                    stage: 'verify', // Map 'signup' to 'verify' for consistency
+                    needsVerification: false,
+                    authState: verifiedAuthState,
                 };
             }
 
-            throw new Error('Unexpected auth state from Para SDK');
-        } catch (error) {
-            console.error(
-                `Failed to sign up or log in with ${provider}:`,
-                error
+            throw new Error(`Unexpected auth state from Para SDK: ${(verifiedAuthState as any).stage}`);
+        } catch (error: any) {
+            // Handle cancellation separately
+            if (error?.isCancelled) {
+                throw error; // Re-throw cancellation errors as-is
+            }
+
+            // Extract error information from Para SDK error
+            let errorMessage = 'Unknown error';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (error?.message) {
+                errorMessage = error.message;
+            }
+            
+            // Include status code and error code if available
+            const statusCode = error?.status || error?.statusCode;
+            const errorCode = error?.code;
+            
+            // Build detailed error message for logging
+            let detailedMessage = errorMessage;
+            if (statusCode) {
+                detailedMessage = `${detailedMessage} (Status: ${statusCode})`;
+            }
+            if (errorCode) {
+                detailedMessage = `${detailedMessage} (Code: ${errorCode})`;
+            }
+            
+            // Create error with detailed message
+            const authError = new Error(
+                `${provider} authentication failed: ${detailedMessage}`
             );
-            throw new Error(
-                `${provider} authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-            );
+            // Preserve original error details for useAuth to handle
+            (authError as any).originalError = error;
+            (authError as any).statusCode = statusCode;
+            (authError as any).errorCode = errorCode;
+            
+            // Don't log here - let useAuth handle logging with proper context
+            // This prevents duplicate logs
+            throw authError;
         }
     }
 
@@ -152,11 +285,32 @@ export class ParaAuthProvider implements AuthProvider {
 
     async resendVerificationCode(): Promise<void> {
         try {
-            // Para SDK: para.resendVerificationCode()
-            await this.paraClient.resendVerificationCode();
-        } catch (error) {
+            // Para SDK: para.resendVerificationCode({ type?: 'SIGNUP' | 'LINK_ACCOUNT' | 'LOGIN' })
+            // For new account verification, we use 'SIGNUP'
+            await this.paraClient.resendVerificationCode({ type: 'SIGNUP' });
+        } catch (error: any) {
             console.error('Failed to resend verification code:', error);
-            throw new Error('Failed to resend verification code');
+            
+            // Extract error information from Para SDK error
+            let errorMessage = 'Failed to resend verification code';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (error?.message) {
+                errorMessage = error.message;
+            }
+            
+            // Include status code and error code if available
+            const statusCode = error?.status || error?.statusCode;
+            const errorCode = error?.code;
+            
+            if (statusCode) {
+                errorMessage = `${errorMessage} (Status: ${statusCode})`;
+            }
+            if (errorCode) {
+                errorMessage = `${errorMessage} (Code: ${errorCode})`;
+            }
+            
+            throw new Error(errorMessage);
         }
     }
 
@@ -239,15 +393,26 @@ export class ParaAuthProvider implements AuthProvider {
 
     async importSessionToBackend(): Promise<SessionImportResult> {
         try {
-            // 1. Export Para session
+            // 1. Verify session is active before exporting
+            const isActive = await this.isSessionActive();
+            if (!isActive) {
+                throw new Error('Cannot export session: session is not active');
+            }
+
+            // 2. Export Para session
             const serializedSession = this.exportSession({
                 excludeSigners: true,
             });
 
-            // 2. Import session to backend via API
+            // Validate exported session
+            if (!serializedSession || serializedSession.trim().length === 0) {
+                throw new Error('Exported session is empty or invalid');
+            }
+
+            // 3. Import session to backend via API
             const result = await authApiClient.importSession(serializedSession);
 
-            // 3. Return backend session token, user, and expiration
+            // 4. Return backend session token, user, and expiration
             return {
                 sessionToken: result.sessionToken,
                 user: result.user,
@@ -255,8 +420,23 @@ export class ParaAuthProvider implements AuthProvider {
             };
         } catch (error) {
             console.error('Failed to import session to backend:', error);
+            
+            // Extract more detailed error information
+            let errorMessage = 'Unknown error';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (error && typeof error === 'object' && 'message' in error) {
+                errorMessage = String(error.message);
+            }
+            
+            // Check if it's a 401 error specifically
+            const statusCode = (error as any)?.status || (error as any)?.statusCode;
+            if (statusCode === 401) {
+                errorMessage = `Session import unauthorized (401). The Para session may be invalid or expired. Original: ${errorMessage}`;
+            }
+            
             throw new Error(
-                `Session import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+                `Session import failed: ${errorMessage}`
             );
         }
     }

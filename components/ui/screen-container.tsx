@@ -73,6 +73,8 @@ export function ScreenContainer({
                     <ScrollView
                         contentContainerStyle={contentContainerStyle}
                         style={{ flex: 1 }}
+                        keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode="on-drag"
                     >
                         {children}
                     </ScrollView>
@@ -86,7 +88,11 @@ export function ScreenContainer({
     return (
         <Container
             style={baseStyle}
-            {...(scroll ? { contentContainerStyle } : {})}
+            {...(scroll ? { 
+                contentContainerStyle,
+                keyboardShouldPersistTaps: 'handled',
+                keyboardDismissMode: 'on-drag',
+            } : {})}
         >
             {children}
         </Container>

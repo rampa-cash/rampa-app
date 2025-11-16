@@ -30,13 +30,23 @@ export function AuthEntry({ onEmail, onPhone }: AuthEntryProps) {
         setOauthError(null);
         try {
             await loginWithOAuth(provider);
-            // If successful, user will be automatically redirected to home
-            // via the auth state change in app/index.tsx
+            // Navigation will happen automatically via AuthLayout useEffect
+            // when isAuthenticated becomes true
         } catch (err) {
+            // Error is already logged in useAuth hook and ParaAuthProvider
+            // Extract user-friendly message from error
             const errorMessage =
                 err instanceof Error ? err.message : `${provider} login failed`;
-            setOauthError(errorMessage);
-            console.error(`${provider} OAuth failed:`, err);
+            
+            // Show user-friendly message in UI
+            if (errorMessage.includes('Status: 500') || errorMessage.includes('Internal Server Error')) {
+                setOauthError('Server error. Please try again in a moment.');
+            } else if (errorMessage.includes('cancelled') || errorMessage.includes('canceled')) {
+                setOauthError('Sign in was cancelled.');
+            } else {
+                setOauthError(`Failed to sign in with ${provider}. Please try again.`);
+            }
+            // Don't log here - already logged in useAuth hook
         }
     };
 

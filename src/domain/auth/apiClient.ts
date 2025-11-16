@@ -37,9 +37,22 @@ export class AuthApiClient extends BaseApiClient {
         });
 
         if (!response.ok) {
-            throw new Error(
-                `Session import failed: ${response.status} ${response.statusText}`
+            // Try to get error details from response body
+            let errorDetails = '';
+            try {
+                const errorData = await response.json();
+                errorDetails = errorData.message || errorData.error || JSON.stringify(errorData);
+            } catch {
+                // If response is not JSON, use status text
+                errorDetails = response.statusText;
+            }
+
+            const error = new Error(
+                `Session import failed: ${response.status} ${errorDetails ? `- ${errorDetails}` : response.statusText}`
             );
+            (error as any).status = response.status;
+            (error as any).statusCode = response.status;
+            throw error;
         }
 
         const data = await response.json();

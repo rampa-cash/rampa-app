@@ -1,6 +1,18 @@
-import { Stack } from 'expo-router';
+import { useAuthStore } from '@/src/domain/auth/authStore';
+import { Stack, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 export default function AuthLayout() {
+    const router = useRouter();
+    const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+
+    // Automatically navigate to home when user becomes authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.replace('/(tabs)/home' as any);
+        }
+    }, [isAuthenticated, router]);
+
     return (
         <Stack>
             <Stack.Screen

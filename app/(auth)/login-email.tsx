@@ -35,8 +35,9 @@ export default function LoginEmailScreen() {
 
         try {
             await loginWithEmail(email);
-            // If successful and stage === 'login', user will be automatically redirected to home
-            // via the auth state change in app/index.tsx
+            // Navigation will happen automatically via AuthLayout useEffect
+            // when isAuthenticated becomes true (if stage === 'login')
+            // If verification is required, we'll navigate to verify screen instead
         } catch (err) {
             const errorMessage =
                 err instanceof Error ? err.message : 'Failed to sign in';
@@ -87,7 +88,10 @@ export default function LoginEmailScreen() {
                 </View>
                 <AppButton
                     title={isLoading ? 'Loading...' : 'Continue'}
-                    onPress={handleContinue}
+                    onPress={() => {
+                        console.log('Continue button pressed, email:', email);
+                        handleContinue();
+                    }}
                     disabled={isLoading || !email.trim()}
                     style={{ marginBottom: insets.bottom }}
                 />
@@ -105,6 +109,5 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'space-between',
         flex: 1,
-        height: '100%',
     },
 });

@@ -38,7 +38,7 @@ export class AuthService {
                 authState: authState.authState,
             };
         } catch (error) {
-            console.error('Email authentication failed:', error);
+            // Don't log here - let useAuth handle logging with proper context
             throw error;
         }
     }
@@ -58,7 +58,7 @@ export class AuthService {
                 authState: authState.authState,
             };
         } catch (error) {
-            console.error('Phone authentication failed:', error);
+            // Don't log here - let useAuth handle logging with proper context
             throw error;
         }
     }
@@ -80,7 +80,7 @@ export class AuthService {
                 authState: authState.authState,
             };
         } catch (error) {
-            console.error(`${provider} authentication failed:`, error);
+            // Don't log here - let useAuth handle logging with proper context
             throw error;
         }
     }
@@ -171,10 +171,28 @@ export class AuthService {
      */
     async completeOAuth(authState: any): Promise<VerificationResult> {
         try {
-            // For OAuth, if stage is 'verify', register passkey; if 'login', login with passkey
-            // The authState from signUpOrLogInWithOAuth contains the stage info
-            // Note: authState here is the AuthStateSignup object from Para SDK, not our AuthState wrapper
-            if (authState?.stage === 'verify') {
+            // For OAuth, handle different stages:
+            // - 'signup' or 'verify': New user - register passkey
+            // - 'login': Existing user - login with passkey
+            // - 'done': User already fully authenticated - just import session
+            if (authState?.stage === 'done') {
+                // User is already fully authenticated - session should be active
+                // Verify session is active before importing
+                const isActive = await this.authProvider.isSessionActive();
+                if (!isActive) {
+                    throw new Error('Session is not active after OAuth completion');
+                }
+                
+                // Import the session to backend to get backend session token and user info
+                const sessionImport =
+                    await this.authProvider.importSessionToBackend();
+
+                return {
+                    success: true,
+                    sessionToken: sessionImport.sessionToken,
+                    user: sessionImport.user as User,
+                };
+            } else if (authState?.stage === 'verify' || authState?.stage === 'signup') {
                 // New user - register passkey
                 const result =
                     await this.authProvider.registerPasskey(authState);
@@ -192,7 +210,7 @@ export class AuthService {
                     user: sessionImport.user as User,
                 };
             } else {
-                // Existing user - login with passkey
+                // Existing user (stage === 'login') - login with passkey
                 return await this.loginWithPasskey();
             }
         } catch (error) {
