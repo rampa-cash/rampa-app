@@ -21,7 +21,7 @@
     "dependencies": {
         "@craftzdog/react-native-buffer": "6.1.1",
         "@expo/vector-icons": "^15.0.3",
-        "@getpara/react-native-wallet": "^2.0.0-alpha.71",
+        "@getpara/react-native-wallet": "^2.0.0-alpha.72",
         "@react-native-async-storage/async-storage": "2.2.0",
         "@react-native-community/netinfo": "^11.4.1",
         "@react-navigation/bottom-tabs": "^7.4.0",

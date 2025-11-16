@@ -87,16 +87,33 @@ export function Amount({
         [currency, locale, showCents, useCurrencyFormat]
     );
 
-    const parts = formatter.formatToParts(value);
+    // Manual parsing since formatToParts() is not available in React Native
+    const formatted = formatter.format(value);
     const currencyPart = symbolOverride ?? CurrencySymbol[currency];
-    const integer = parts
-        .filter(p => p.type === 'integer' || p.type === 'group')
-        .map(p => p.value)
-        .join('');
-    const decimal = showCents
-        ? (parts.find(p => p.type === 'decimal')?.value ?? '.') +
-        (parts.find(p => p.type === 'fraction')?.value ?? '00')
-        : '';
+    
+    const { integer, decimal } = useMemo(() => {
+        // Remove currency symbol (handles both prefix "$123" and suffix "123€")
+        const numberStr = useCurrencyFormat
+            ? formatted.replace(new RegExp(CurrencySymbol[currency].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '').trim()
+            : formatted;
+        
+        // Find the last decimal separator (the one before the fractional digits)
+        const lastDot = numberStr.lastIndexOf('.');
+        const lastComma = numberStr.lastIndexOf(',');
+        const decimalIndex = lastDot > lastComma ? lastDot : lastComma;
+        
+        if (decimalIndex !== -1) {
+            return {
+                integer: numberStr.substring(0, decimalIndex).trim(),
+                decimal: showCents ? numberStr.substring(decimalIndex) : '',
+            };
+        }
+        
+        return {
+            integer: numberStr.trim() || '0',
+            decimal: showCents ? '.00' : '',
+        };
+    }, [formatted, useCurrencyFormat, currency, showCents]);
 
     const variant = resolveVariant(size);
 
