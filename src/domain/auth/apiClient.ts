@@ -64,10 +64,13 @@ export class AuthApiClient extends BaseApiClient {
 
     /**
      * Get current authenticated user
-     * GET /user
+     * GET /auth/me
+     *
+     * Note: Uses /auth/me endpoint (matching web frontend) instead of /user
+     * to get the authenticated user's profile.
      */
     async getCurrentUser() {
-        return this.request<User>('/user');
+        return this.request<User>('/auth/me');
     }
 
     /**

@@ -19,12 +19,15 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuthStore } from '../../src/domain/auth/authStore';
 import { transactionApiClient } from '../../src/domain/transactions';
 
 export default function HomeScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { setCurrency } = useWallet();
+    const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+    const sessionToken = useAuthStore(state => state.sessionToken);
 
     const assetsMock = [
         {
@@ -69,9 +72,12 @@ export default function HomeScreen() {
     useEffect(() => {
         setCurrency(balances[0].type);
     }, [balances, setCurrency]);
+
+    // Only fetch transactions when user is authenticated and has a valid session token
     const { data: transactions, isLoading: transactionsLoading } = useQuery({
         queryKey: ['transactions'],
         queryFn: () => transactionApiClient.getTransactions({ limit: 5 }),
+        enabled: isAuthenticated && !!sessionToken, // Only run query when authenticated
     });
 
     const handleAddMoney = () => {

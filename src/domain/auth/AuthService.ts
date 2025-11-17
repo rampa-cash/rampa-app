@@ -335,7 +335,7 @@ export class AuthService {
 
     /**
      * Validate session with backend
-     * Uses backend /user endpoint to get current user info
+     * Uses backend /auth/me endpoint to get current user info
      */
     async validateSessionWithBackend(): Promise<{
         user: User;
@@ -356,8 +356,9 @@ export class AuthService {
                 throw new Error('No session token found');
             }
 
-            // Get user info from backend /user endpoint
+            // Get user info from backend /auth/me endpoint
             // The sessionToken is stored in auth store and will be used by authApiClient
+            // Note: Backend returns User object directly (not wrapped in { success, data })
             let response;
             try {
                 response = await authApiClient.getCurrentUser();
@@ -374,22 +375,53 @@ export class AuthService {
                 );
             }
 
-            if (!response.success || !response.data) {
+            // Handle different response formats:
+            // 1. Wrapped format: { success: true, data: User }
+            // 2. Direct format: User (as per OpenAPI spec)
+            // 3. Array format: [User, ...] (backend bug, but handle gracefully)
+            let user: User | null = null;
+
+            if (response && typeof response === 'object') {
+                // Check if it's wrapped format
+                if (
+                    'success' in response &&
+                    'data' in response &&
+                    response.success
+                ) {
+                    user = response.data as User;
+                }
+                // Check if it's an array (backend bug - should return single user)
+                else if (Array.isArray(response)) {
+                    // Take first user from array (workaround for backend bug)
+                    console.warn(
+                        '[AuthService] Backend returned array instead of single user, using first element'
+                    );
+                    user = response[0] as User;
+                }
+                // Check if it's direct User object (expected format per OpenAPI spec)
+                else if ('id' in response && 'email' in response) {
+                    user = response as User;
+                }
+            }
+
+            if (!user || !user.id) {
                 console.error(
                     '[AuthService] Invalid response from getCurrentUser',
                     {
-                        success: response.success,
-                        hasData: !!response.data,
-                        response: JSON.stringify(response),
+                        responseType: Array.isArray(response)
+                            ? 'array'
+                            : typeof response,
+                        hasId: user?.id ? true : false,
+                        response: JSON.stringify(response).substring(0, 200),
                     }
                 );
                 throw new Error(
-                    `Failed to retrieve user information from backend: ${response.message || 'Invalid response format'}`
+                    'Failed to retrieve user information from backend: Invalid response format'
                 );
             }
 
             return {
-                user: response.data,
+                user,
                 sessionToken,
             };
         } catch (error) {
