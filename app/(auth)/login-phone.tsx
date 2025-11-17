@@ -8,21 +8,13 @@ import { AppInput } from '@/components/ui/input';
 import ScreenContainer from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
-import { useTheme } from '@/hooks/theme';
+import { COUNTRIES } from '@/constants/countries';
 import { useSignup } from '@/hooks/SignupProvider';
+import { useTheme } from '@/hooks/theme';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const COUNTRY_OPTIONS: CountryItem[] = [
-  { code: 'US', dial: '+1', name: 'United States', emoji: '🇺🇸' },
-  { code: 'CA', dial: '+1', name: 'Canada', emoji: '🇨🇦' },
-  { code: 'ES', dial: '+34', name: 'Spain', emoji: '🇪🇸' },
-  { code: 'GB', dial: '+44', name: 'United Kingdom', emoji: '🇬🇧' },
-  { code: 'DE', dial: '+49', name: 'Germany', emoji: '🇩🇪' },
-  { code: 'CO', dial: '+57', name: 'Colombia', emoji: '🇨🇴' },
-];
 
 const MIN_PHONE_LENGTH = 7;
 
@@ -32,7 +24,7 @@ export default function LoginPhoneScreen() {
   const t = useTheme();
 
   const [phone, setPhone] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState<CountryItem>(COUNTRY_OPTIONS[0]);
+  const [selectedCountry, setSelectedCountry] = useState<CountryItem>(COUNTRIES[0]);
   const [countryQuery, setCountryQuery] = useState('');
   const [countryModalVisible, setCountryModalVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -40,8 +32,8 @@ export default function LoginPhoneScreen() {
 
   const filteredCountries = useMemo(() => {
     const normalized = countryQuery.trim().toLowerCase();
-    if (!normalized) return COUNTRY_OPTIONS;
-    return COUNTRY_OPTIONS.filter(c => {
+    if (!normalized) return COUNTRIES;
+    return COUNTRIES.filter(c => {
       const target = `${c.name} ${c.dial} ${c.code}`.toLowerCase();
       return target.includes(normalized);
     });
@@ -53,7 +45,7 @@ export default function LoginPhoneScreen() {
   };
 
   const handleSelectCountry = (code: string) => {
-    const match = COUNTRY_OPTIONS.find(c => c.code === code);
+    const match = COUNTRIES.find(c => c.code === code);
     if (match) {
       setSelectedCountry(match);
     }
@@ -94,7 +86,7 @@ export default function LoginPhoneScreen() {
             Could you please provide your phone number?
           </AppText>
           <AppText variant={TextVariant.Secondary} color="lessEmphasis">
-            We'll send you a confirmation code there
+            We&apos;ll send you a confirmation code there
           </AppText>
         </View>
 
@@ -113,9 +105,15 @@ export default function LoginPhoneScreen() {
                 },
               ]}
             >
-              <AppText variant={TextVariant.Body} style={styles.countryEmoji}>
-                {selectedCountry.emoji ?? '🌐'}
-              </AppText>
+              <View style={styles.countryFlagWrapper}>
+                {selectedCountry.flag ? (
+                  <Image source={{ uri: selectedCountry.flag }} style={styles.countryFlagImage} resizeMode='center' />
+                ) : (
+                  <AppText variant={TextVariant.Body} style={styles.countryEmoji}>
+                    {selectedCountry.emoji ?? 'dYO?'}
+                  </AppText>
+                )}
+              </View>
               <AppText variant={TextVariant.BodyMedium} style={styles.countryDial}>
                 {selectedCountry.dial}
               </AppText>
@@ -203,7 +201,6 @@ const styles = StyleSheet.create({
     lineHeight: 36,
   },
   card: {
-    padding: 20,
     borderRadius: 20,
     gap: 16,
   },
@@ -215,11 +212,24 @@ const styles = StyleSheet.create({
   countryPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 9,
     paddingVertical: 10,
     borderRadius: 16,
     borderWidth: 1,
     gap: 6,
+  },
+  countryFlagWrapper: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+
+  },
+  countryFlagImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+
   },
   countryEmoji: {
     fontSize: 20,
@@ -250,4 +260,3 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 });
-

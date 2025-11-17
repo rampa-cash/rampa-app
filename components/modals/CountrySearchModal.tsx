@@ -1,9 +1,8 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppButton } from '@/components/ui/buttons/button';
 import { ButtonVariant } from '@/components/ui/buttons/button-variants';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
 import { AppInput } from '@/components/ui/input';
@@ -14,10 +13,11 @@ import { useTheme } from '@/hooks/theme';
 import { ModalScaffold } from './ModalScaffold';
 
 export type CountryItem = {
-  code: string; // ISO2
-  dial: string; // +1
-  name: string;
+  code?: string; // ISO2
+  dial?: string; // +1
+  name?: string;
   emoji?: string; // flag emoji
+  flag?: string; // flag image url
 };
 
 export type CountrySearchModalProps = {
@@ -52,7 +52,7 @@ export function CountrySearchModal({
           />
         </View>
         {onCancel ? (
-          <AppButton title="Cancel" variant={ButtonVariant.Tertiary} onPress={onCancel} />
+          <AppButton title="Cancel" variant={ButtonVariant.Tertiary} onPress={onCancel} color='normal' />
         ) : null}
       </View>
 
@@ -62,7 +62,7 @@ export function CountrySearchModal({
           return (
             <Pressable
               key={c.code}
-              onPress={() => onSelect?.(c.code)}
+              onPress={() => onSelect?.(c.code!)}
               disabled={!onSelect}
               style={({ pressed }) => [
                 styles.row,
@@ -73,15 +73,20 @@ export function CountrySearchModal({
                 },
               ]}
             >
-              <AppText variant={TextVariant.Body} style={{ width: 32, textAlign: 'center' }}>
-                {c.emoji ?? '🌐'}
-              </AppText>
+              <View style={styles.flagWrapper}>
+                {c.flag ? (
+                  <Image source={{ uri: c.flag }} style={styles.flagImage} resizeMode='center' />
+                ) : (
+                  <AppText variant={TextVariant.Body} style={{ textAlign: 'center' }}>
+                    {c.emoji ?? 'dYO?'}
+                  </AppText>
+                )}
+              </View>
               <AppText variant={TextVariant.BodyMedium} style={{ width: 48 }}>
                 {c.dial}
               </AppText>
               <AppText variant={TextVariant.Body}>{c.name}</AppText>
               <View style={{ flex: 1 }} />
-              <IconSymbol name={'chevron.right'} size={20} color={'#9BA1A6'} />
             </Pressable>
           );
         })}
@@ -103,6 +108,18 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 12,
     borderWidth: 1,
+  },
+  flagWrapper: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  flagImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+
   },
 });
 
