@@ -38,7 +38,7 @@ export class AuthService {
                 needsVerification: authState.needsVerification,
                 authState: authState.authState,
             };
-            
+
             // If browser flow completed, preserve user and sessionToken
             const authStateWithUser = authState as any;
             if (authStateWithUser.user && authStateWithUser.sessionToken) {
@@ -68,7 +68,7 @@ export class AuthService {
                 needsVerification: authState.needsVerification,
                 authState: authState.authState,
             };
-            
+
             // If browser flow completed, preserve user and sessionToken
             const authStateWithUser = authState as any;
             if (authStateWithUser.user && authStateWithUser.sessionToken) {
@@ -132,7 +132,11 @@ export class AuthService {
             // If result already has user and sessionToken (from loginWithPasskey fallback),
             // return it directly
             // Note: These properties may be added by ParaAuthProvider even though they're not in the port interface
-            if (result.success && (result as any).user && (result as any).sessionToken) {
+            if (
+                result.success &&
+                (result as any).user &&
+                (result as any).sessionToken
+            ) {
                 return {
                     success: true,
                     user: (result as any).user,
@@ -179,12 +183,16 @@ export class AuthService {
                 errorMessage.includes('already exists')
             ) {
                 // Try loginWithPasskey as fallback
-                console.log('[AuthService] Attempting loginWithPasskey as fallback');
+                console.log(
+                    '[AuthService] Attempting loginWithPasskey as fallback'
+                );
                 try {
-                    const passkeyResult = await this.authProvider.loginWithPasskey();
+                    const passkeyResult =
+                        await this.authProvider.loginWithPasskey();
                     if (passkeyResult.success) {
                         // Import session to get user and sessionToken
-                        const sessionImport = await this.authProvider.importSessionToBackend();
+                        const sessionImport =
+                            await this.authProvider.importSessionToBackend();
                         return {
                             success: true,
                             user: sessionImport.user as User,
@@ -192,9 +200,12 @@ export class AuthService {
                         };
                     }
                 } catch (passkeyError) {
-                    console.error('[AuthService] loginWithPasskey fallback also failed', {
-                        error: passkeyError,
-                    });
+                    console.error(
+                        '[AuthService] loginWithPasskey fallback also failed',
+                        {
+                            error: passkeyError,
+                        }
+                    );
                 }
             }
 
@@ -242,9 +253,11 @@ export class AuthService {
                 // Verify session is active before importing
                 const isActive = await this.authProvider.isSessionActive();
                 if (!isActive) {
-                    throw new Error('Session is not active after OAuth completion');
+                    throw new Error(
+                        'Session is not active after OAuth completion'
+                    );
                 }
-                
+
                 // Import the session to backend to get backend session token and user info
                 const sessionImport =
                     await this.authProvider.importSessionToBackend();
@@ -254,7 +267,10 @@ export class AuthService {
                     sessionToken: sessionImport.sessionToken,
                     user: sessionImport.user as User,
                 };
-            } else if (authState?.stage === 'verify' || authState?.stage === 'signup') {
+            } else if (
+                authState?.stage === 'verify' ||
+                authState?.stage === 'signup'
+            ) {
                 // New user - register passkey
                 const result =
                     await this.authProvider.registerPasskey(authState);
@@ -349,7 +365,9 @@ export class AuthService {
                 // If the request itself failed (network error, 401, etc.)
                 const statusCode = error?.status || error?.statusCode;
                 if (statusCode === 401 || statusCode === 403) {
-                    throw new Error('Session expired or invalid - please login again');
+                    throw new Error(
+                        'Session expired or invalid - please login again'
+                    );
                 }
                 throw new Error(
                     `Failed to retrieve user information: ${error?.message || 'Unknown error'}`
@@ -357,11 +375,14 @@ export class AuthService {
             }
 
             if (!response.success || !response.data) {
-                console.error('[AuthService] Invalid response from getCurrentUser', {
-                    success: response.success,
-                    hasData: !!response.data,
-                    response: JSON.stringify(response),
-                });
+                console.error(
+                    '[AuthService] Invalid response from getCurrentUser',
+                    {
+                        success: response.success,
+                        hasData: !!response.data,
+                        response: JSON.stringify(response),
+                    }
+                );
                 throw new Error(
                     `Failed to retrieve user information from backend: ${response.message || 'Invalid response format'}`
                 );

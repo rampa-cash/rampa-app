@@ -88,11 +88,13 @@ export function ScreenContainer({
     return (
         <Container
             style={baseStyle}
-            {...(scroll ? { 
-                contentContainerStyle,
-                keyboardShouldPersistTaps: 'handled',
-                keyboardDismissMode: 'on-drag',
-            } : {})}
+            {...(scroll
+                ? {
+                      contentContainerStyle,
+                      keyboardShouldPersistTaps: 'handled',
+                      keyboardDismissMode: 'on-drag',
+                  }
+                : {})}
         >
             {children}
         </Container>

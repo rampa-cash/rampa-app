@@ -37,14 +37,22 @@ export function AuthEntry({ onEmail, onPhone }: AuthEntryProps) {
             // Extract user-friendly message from error
             const errorMessage =
                 err instanceof Error ? err.message : `${provider} login failed`;
-            
+
             // Show user-friendly message in UI
-            if (errorMessage.includes('Status: 500') || errorMessage.includes('Internal Server Error')) {
+            if (
+                errorMessage.includes('Status: 500') ||
+                errorMessage.includes('Internal Server Error')
+            ) {
                 setOauthError('Server error. Please try again in a moment.');
-            } else if (errorMessage.includes('cancelled') || errorMessage.includes('canceled')) {
+            } else if (
+                errorMessage.includes('cancelled') ||
+                errorMessage.includes('canceled')
+            ) {
                 setOauthError('Sign in was cancelled.');
             } else {
-                setOauthError(`Failed to sign in with ${provider}. Please try again.`);
+                setOauthError(
+                    `Failed to sign in with ${provider}. Please try again.`
+                );
             }
             // Don't log here - already logged in useAuth hook
         }

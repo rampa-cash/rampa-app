@@ -64,7 +64,10 @@ export default function LoginPhoneScreen() {
         dismissCountryModal();
     };
 
-    const canContinue = useMemo(() => phone.trim().length >= MIN_PHONE_LENGTH, [phone]);
+    const canContinue = useMemo(
+        () => phone.trim().length >= MIN_PHONE_LENGTH,
+        [phone]
+    );
 
     const formatPhoneNumber = (
         phoneNumber: string,
@@ -72,21 +75,21 @@ export default function LoginPhoneScreen() {
     ): string => {
         // Remove all non-digit characters from the phone number input
         const digits = phoneNumber.replace(/[^\d]/g, '');
-        
+
         // Check if the phone number already starts with the country code
         // This prevents duplication (e.g., if user enters "+491231234" and country is "+49")
         const countryCodeDigits = countryDial.replace(/[^\d]/g, '');
         let phoneDigits = digits;
-        
+
         // If phone number starts with country code, remove it to avoid duplication
         if (digits.startsWith(countryCodeDigits)) {
             phoneDigits = digits.substring(countryCodeDigits.length);
         }
-        
+
         // Combine country dial code with phone number
         // Country dial already includes +, so we just append digits
         const formatted = `${countryDial}${phoneDigits}`;
-        
+
         console.log('[LoginPhone] Formatting phone number', {
             original: phoneNumber,
             countryDial,
@@ -95,7 +98,7 @@ export default function LoginPhoneScreen() {
             phoneDigits,
             formatted,
         });
-        
+
         return formatted;
     };
 
@@ -246,9 +249,20 @@ export default function LoginPhoneScreen() {
 
                 <View style={{ paddingBottom: insets.bottom }}>
                     <AppButton
-                        title={isLoading ? 'Loading...' : 'Get confirmation code'}
+                        title={
+                            isLoading ? 'Loading...' : 'Get confirmation code'
+                        }
                         onPress={() => {
-                            console.log('[PhoneLogin] Button pressed - phone:', phone, 'length:', phone.length, 'canContinue:', canContinue, 'isLoading:', isLoading);
+                            console.log(
+                                '[PhoneLogin] Button pressed - phone:',
+                                phone,
+                                'length:',
+                                phone.length,
+                                'canContinue:',
+                                canContinue,
+                                'isLoading:',
+                                isLoading
+                            );
                             handleContinue();
                         }}
                         disabled={!canContinue || isLoading}

@@ -41,7 +41,10 @@ export class AuthApiClient extends BaseApiClient {
             let errorDetails = '';
             try {
                 const errorData = await response.json();
-                errorDetails = errorData.message || errorData.error || JSON.stringify(errorData);
+                errorDetails =
+                    errorData.message ||
+                    errorData.error ||
+                    JSON.stringify(errorData);
             } catch {
                 // If response is not JSON, use status text
                 errorDetails = response.statusText;

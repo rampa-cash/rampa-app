@@ -101,17 +101,25 @@ export class Logger {
             const hasContext = context && Object.keys(context).length > 0;
             switch (level) {
                 case LogLevel.DEBUG:
-                    hasContext ? console.debug(logMessage, context) : console.debug(logMessage);
+                    hasContext
+                        ? console.debug(logMessage, context)
+                        : console.debug(logMessage);
                     break;
                 case LogLevel.INFO:
-                    hasContext ? console.info(logMessage, context) : console.info(logMessage);
+                    hasContext
+                        ? console.info(logMessage, context)
+                        : console.info(logMessage);
                     break;
                 case LogLevel.WARN:
-                    hasContext ? console.warn(logMessage, context) : console.warn(logMessage);
+                    hasContext
+                        ? console.warn(logMessage, context)
+                        : console.warn(logMessage);
                     break;
                 case LogLevel.ERROR:
                 case LogLevel.CRITICAL:
-                    hasContext ? console.error(logMessage, context) : console.error(logMessage);
+                    hasContext
+                        ? console.error(logMessage, context)
+                        : console.error(logMessage);
                     break;
             }
         }
