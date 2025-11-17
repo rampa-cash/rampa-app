@@ -139,6 +139,26 @@ export class MockAuthProvider implements AuthProvider {
         };
     }
 
+    async touchSession(): Promise<void> {
+        // Mock: touch session always succeeds
+        // In real implementation, this would restore/refresh the session
+    }
+
+    async waitForLogin(): Promise<void> {
+        // Mock: wait for login always succeeds
+        // In real implementation, this would wait for browser-based login to complete
+    }
+
+    async waitForSignup(): Promise<void> {
+        // Mock: wait for signup always succeeds
+        // In real implementation, this would wait for browser-based signup to complete
+    }
+
+    async waitForWalletCreation(): Promise<void> {
+        // Mock: wait for wallet creation always succeeds
+        // In real implementation, this would wait for password creation in browser to complete
+    }
+
     async logout(): Promise<void> {
         this.mockUserId = null;
         this.mockEmail = null;

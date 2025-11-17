@@ -32,11 +32,21 @@ export class AuthService {
                 await this.authProvider.signUpOrLogInWithEmail(email);
             this.currentAuthState = authState.authState;
 
-            return {
+            // Preserve user and sessionToken if present (from browser flow)
+            const result: AuthResult = {
                 stage: authState.stage,
                 needsVerification: authState.needsVerification,
                 authState: authState.authState,
             };
+            
+            // If browser flow completed, preserve user and sessionToken
+            const authStateWithUser = authState as any;
+            if (authStateWithUser.user && authStateWithUser.sessionToken) {
+                (result as any).user = authStateWithUser.user;
+                (result as any).sessionToken = authStateWithUser.sessionToken;
+            }
+
+            return result;
         } catch (error) {
             // Don't log here - let useAuth handle logging with proper context
             throw error;
@@ -52,11 +62,21 @@ export class AuthService {
                 await this.authProvider.signUpOrLogInWithPhone(phoneNumber);
             this.currentAuthState = authState.authState;
 
-            return {
+            // Preserve user and sessionToken if present (from browser flow)
+            const result: AuthResult = {
                 stage: authState.stage,
                 needsVerification: authState.needsVerification,
                 authState: authState.authState,
             };
+            
+            // If browser flow completed, preserve user and sessionToken
+            const authStateWithUser = authState as any;
+            if (authStateWithUser.user && authStateWithUser.sessionToken) {
+                (result as any).user = authStateWithUser.user;
+                (result as any).sessionToken = authStateWithUser.sessionToken;
+            }
+
+            return result;
         } catch (error) {
             // Don't log here - let useAuth handle logging with proper context
             throw error;
@@ -109,6 +129,17 @@ export class AuthService {
                 this.currentAuthState
             );
 
+            // If result already has user and sessionToken (from loginWithPasskey fallback),
+            // return it directly
+            // Note: These properties may be added by ParaAuthProvider even though they're not in the port interface
+            if (result.success && (result as any).user && (result as any).sessionToken) {
+                return {
+                    success: true,
+                    user: (result as any).user,
+                    sessionToken: (result as any).sessionToken,
+                };
+            }
+
             if (!result.success) {
                 return { success: false };
             }
@@ -134,8 +165,39 @@ export class AuthService {
                 sessionToken: sessionImport.sessionToken,
                 user: sessionImport.user as User,
             };
-        } catch (error) {
-            console.error('Verification failed:', error);
+        } catch (error: any) {
+            const errorMessage = error?.message || 'Unknown error';
+            console.error('[AuthService] Verification failed', {
+                error: errorMessage,
+                fullError: error,
+            });
+
+            // If error is "Account already exists", the ParaAuthProvider should have
+            // already tried loginWithPasskey, but if it didn't work, re-throw
+            if (
+                errorMessage.includes('Account already exists') ||
+                errorMessage.includes('already exists')
+            ) {
+                // Try loginWithPasskey as fallback
+                console.log('[AuthService] Attempting loginWithPasskey as fallback');
+                try {
+                    const passkeyResult = await this.authProvider.loginWithPasskey();
+                    if (passkeyResult.success) {
+                        // Import session to get user and sessionToken
+                        const sessionImport = await this.authProvider.importSessionToBackend();
+                        return {
+                            success: true,
+                            user: sessionImport.user as User,
+                            sessionToken: sessionImport.sessionToken,
+                        };
+                    }
+                } catch (passkeyError) {
+                    console.error('[AuthService] loginWithPasskey fallback also failed', {
+                        error: passkeyError,
+                    });
+                }
+            }
+
             throw new Error('Verification failed');
         }
     }
@@ -270,22 +332,39 @@ export class AuthService {
                 throw new Error('Session is not active');
             }
 
-            // Get user info from backend /user endpoint
-            // The sessionToken is stored in auth store and will be used by authApiClient
-            const response = await authApiClient.getCurrentUser();
-
-            if (!response.success || !response.data) {
-                throw new Error(
-                    'Failed to retrieve user information from backend'
-                );
-            }
-
             // Get session token from auth store (set during login)
             const state = useAuthStore.getState();
             const sessionToken = state.sessionToken;
 
             if (!sessionToken) {
-                throw new Error('Session token not found');
+                throw new Error('No session token found');
+            }
+
+            // Get user info from backend /user endpoint
+            // The sessionToken is stored in auth store and will be used by authApiClient
+            let response;
+            try {
+                response = await authApiClient.getCurrentUser();
+            } catch (error: any) {
+                // If the request itself failed (network error, 401, etc.)
+                const statusCode = error?.status || error?.statusCode;
+                if (statusCode === 401 || statusCode === 403) {
+                    throw new Error('Session expired or invalid - please login again');
+                }
+                throw new Error(
+                    `Failed to retrieve user information: ${error?.message || 'Unknown error'}`
+                );
+            }
+
+            if (!response.success || !response.data) {
+                console.error('[AuthService] Invalid response from getCurrentUser', {
+                    success: response.success,
+                    hasData: !!response.data,
+                    response: JSON.stringify(response),
+                });
+                throw new Error(
+                    `Failed to retrieve user information from backend: ${response.message || 'Invalid response format'}`
+                );
             }
 
             return {

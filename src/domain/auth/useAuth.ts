@@ -71,12 +71,25 @@ export function useAuth(): AuthState & AuthActions {
                     (verificationError as any).isVerificationRequired = true;
                     throw verificationError;
                 } else if (result.stage === 'login') {
-                    logger.info(
-                        'Existing user, proceeding with passkey login',
-                        { email }
-                    );
+                    logger.info('Login stage reached for email - proceeding with authentication', {
+                        email,
+                        stage: result.stage,
+                        note: 'Could be existing user, completed OTP via web, or portal URL authentication',
+                    });
 
-                    // Login with passkey (this now includes session import)
+                    // Check if user and sessionToken already provided (from browser flow)
+                    if ((result as any).user && (result as any).sessionToken) {
+                        // Direct login from browser flow - no need to call loginWithPasskey
+                        logger.info('User authenticated via browser flow', {
+                            userId: (result as any).user.id,
+                            email,
+                        });
+                        storeLogin((result as any).user, (result as any).sessionToken);
+                        return;
+                    }
+
+                    // Standard native passkey login (no browser flow)
+                    logger.info('Proceeding with native passkey login for email', { email });
                     const passkeyResult = await authService.loginWithPasskey();
 
                     if (
@@ -189,8 +202,17 @@ export function useAuth(): AuthState & AuthActions {
                     await authService.signUpOrLogInWithPhone(phoneNumber);
 
                 if (result.stage === 'verify') {
-                    logger.info('Account verification required', {
+                    // Check if loginUrl was opened (BASIC_LOGIN flow)
+                    // If loginUrl was opened, the result.stage would be 'login' after OTP verification
+                    // So if we get 'verify' here, it means no loginUrl was present (standard SMS flow)
+                    logger.info('Account verification required - SMS should be sent automatically by Para', {
                         phoneNumber,
+                        stage: result.stage,
+                        hasAuthState: !!result.authState,
+                    });
+                    console.log('[useAuth] Verification stage reached - Para should have sent SMS', {
+                        phoneNumber,
+                        authState: result.authState,
                     });
                     // This is not an error - it's the expected flow for new users
                     // Throw a special error that will be caught and handled by navigation
@@ -198,12 +220,38 @@ export function useAuth(): AuthState & AuthActions {
                     (verificationError as any).isVerificationRequired = true;
                     throw verificationError;
                 } else if (result.stage === 'login') {
-                    logger.info(
-                        'Existing user, proceeding with passkey login',
-                        { phoneNumber }
-                    );
+                    // This can happen in multiple scenarios:
+                    // 1. Existing user - proceed with passkey login
+                    // 2. New user who completed OTP verification via loginUrl (BASIC_LOGIN flow) - already logged in
+                    // 3. User authenticated via portal URL (passkeyUrl, passwordUrl, pinUrl) - already logged in
+                    logger.info('Login stage reached - proceeding with authentication', {
+                        phoneNumber,
+                        stage: result.stage,
+                        note: 'Could be existing user, completed OTP via web, or portal URL authentication',
+                    });
 
-                    // Login with passkey (this now includes session import)
+                    // Check if user and sessionToken already provided (from browser flow)
+                    // This happens when loginUrl or portal URLs were used
+                    const resultWithUser = result as any;
+                    console.log('[useAuth] Checking for user and sessionToken in result', {
+                        hasUser: !!resultWithUser.user,
+                        hasSessionToken: !!resultWithUser.sessionToken,
+                        userId: resultWithUser.user?.id,
+                        resultKeys: Object.keys(resultWithUser),
+                    });
+                    
+                    if (resultWithUser.user && resultWithUser.sessionToken) {
+                        // Direct login from browser flow - no need to call loginWithPasskey
+                        logger.info('User authenticated via browser flow', {
+                            userId: resultWithUser.user.id,
+                            phoneNumber,
+                        });
+                        storeLogin(resultWithUser.user, resultWithUser.sessionToken);
+                        return;
+                    }
+
+                    // Standard native passkey login (no browser flow)
+                    logger.info('Proceeding with native passkey login', { phoneNumber });
                     const passkeyResult = await authService.loginWithPasskey();
 
                     if (
@@ -436,9 +484,20 @@ export function useAuth(): AuthState & AuthActions {
                         ? error.message
                         : 'Verification failed';
 
+                // Check if it's a configuration error (app identifier not registered)
+                const isConfigurationError = (error as any)?.isConfigurationError;
+                
                 // Provide user-friendly error messages
                 let userFriendlyMessage = errorMessage;
-                if (
+                if (isConfigurationError) {
+                    // Configuration error - show helpful message
+                    userFriendlyMessage =
+                        'App configuration issue. Please contact support. The app identifier needs to be registered with Para.';
+                    logger.error('Account verification failed - configuration issue', {
+                        error: errorMessage,
+                        note: 'App identifier not registered with Para',
+                    });
+                } else if (
                     errorMessage.includes('network') ||
                     errorMessage.includes('fetch')
                 ) {
@@ -456,10 +515,18 @@ export function useAuth(): AuthState & AuthActions {
                 } else if (errorMessage.includes('expired')) {
                     userFriendlyMessage =
                         'Verification code has expired. Please request a new one.';
+                } else if (
+                    errorMessage.includes('Account already exists') ||
+                    errorMessage.includes('already exists')
+                ) {
+                    // Account exists but can't login - likely configuration issue
+                    userFriendlyMessage =
+                        'Account already exists but login failed. This may be a configuration issue. Please contact support.';
                 }
 
                 logger.error('Account verification failed', {
                     error: errorMessage,
+                    isConfigurationError,
                 });
                 setError(userFriendlyMessage);
                 throw error;
@@ -479,13 +546,20 @@ export function useAuth(): AuthState & AuthActions {
 
         try {
             logger.info('Resending verification code');
+            console.log('[useAuth] Calling resendVerificationCode');
             await authService.resendVerificationCode();
             logger.info('Verification code resent successfully');
+            console.log('[useAuth] Verification code resend completed successfully');
         } catch (error) {
             const errorMessage =
                 error instanceof Error
                     ? error.message
                     : 'Failed to resend verification code';
+            console.error('[useAuth] Failed to resend verification code', {
+                error,
+                errorMessage,
+                fullError: JSON.stringify(error, null, 2),
+            });
             logger.error('Failed to resend verification code', {
                 error: errorMessage,
             });

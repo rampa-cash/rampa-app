@@ -64,17 +64,39 @@ export default function LoginPhoneScreen() {
         dismissCountryModal();
     };
 
-    const canContinue = phone.trim().length >= MIN_PHONE_LENGTH;
+    const canContinue = useMemo(() => phone.trim().length >= MIN_PHONE_LENGTH, [phone]);
 
     const formatPhoneNumber = (
         phoneNumber: string,
         countryDial: string
     ): string => {
-        // Remove all non-digit characters
+        // Remove all non-digit characters from the phone number input
         const digits = phoneNumber.replace(/[^\d]/g, '');
+        
+        // Check if the phone number already starts with the country code
+        // This prevents duplication (e.g., if user enters "+491231234" and country is "+49")
+        const countryCodeDigits = countryDial.replace(/[^\d]/g, '');
+        let phoneDigits = digits;
+        
+        // If phone number starts with country code, remove it to avoid duplication
+        if (digits.startsWith(countryCodeDigits)) {
+            phoneDigits = digits.substring(countryCodeDigits.length);
+        }
+        
         // Combine country dial code with phone number
         // Country dial already includes +, so we just append digits
-        return `${countryDial}${digits}`;
+        const formatted = `${countryDial}${phoneDigits}`;
+        
+        console.log('[LoginPhone] Formatting phone number', {
+            original: phoneNumber,
+            countryDial,
+            digits,
+            countryCodeDigits,
+            phoneDigits,
+            formatted,
+        });
+        
+        return formatted;
     };
 
     const handleContinue = async () => {
@@ -92,6 +114,13 @@ export default function LoginPhoneScreen() {
                 phone,
                 selectedCountry.dial
             );
+
+            console.log('[LoginPhone] Attempting login with formatted phone', {
+                originalPhone: phone,
+                formattedPhone,
+                countryCode: selectedCountry.dial,
+                countryName: selectedCountry.name,
+            });
 
             await loginWithPhone(formattedPhone);
             // Navigation will happen automatically via AuthLayout useEffect
@@ -215,14 +244,16 @@ export default function LoginPhoneScreen() {
 
                 <View style={styles.flexSpacer} />
 
-                <AppButton
-                    title={isLoading ? 'Loading...' : 'Get confirmation code'}
-                    onPress={() => {
-                        console.log('Continue button pressed, phone:', phone, 'canContinue:', canContinue);
-                        handleContinue();
-                    }}
-                    disabled={!canContinue || isLoading}
-                />
+                <View style={{ paddingBottom: insets.bottom }}>
+                    <AppButton
+                        title={isLoading ? 'Loading...' : 'Get confirmation code'}
+                        onPress={() => {
+                            console.log('[PhoneLogin] Button pressed - phone:', phone, 'length:', phone.length, 'canContinue:', canContinue, 'isLoading:', isLoading);
+                            handleContinue();
+                        }}
+                        disabled={!canContinue || isLoading}
+                    />
+                </View>
             </ScreenContainer>
 
             <Modal

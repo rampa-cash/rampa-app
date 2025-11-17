@@ -88,10 +88,7 @@ export default function LoginEmailScreen() {
                 </View>
                 <AppButton
                     title={isLoading ? 'Loading...' : 'Continue'}
-                    onPress={() => {
-                        console.log('Continue button pressed, email:', email);
-                        handleContinue();
-                    }}
+                    onPress={handleContinue}
                     disabled={isLoading || !email.trim()}
                     style={{ marginBottom: insets.bottom }}
                 />

@@ -100,11 +100,8 @@ export function AppButton({
     );
 
     const handlePress = () => {
-        console.log('[AppButton] Pressed, disabled:', disabled, 'onPress exists:', !!onPress);
         if (!disabled && onPress) {
             onPress();
-        } else {
-            console.log('[AppButton] Press ignored - disabled:', disabled, 'onPress:', !!onPress);
         }
     };
 

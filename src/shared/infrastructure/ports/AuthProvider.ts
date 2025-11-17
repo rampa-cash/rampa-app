@@ -99,6 +99,30 @@ export interface AuthProvider {
     importSessionToBackend(): Promise<SessionImportResult>;
 
     /**
+     * Restore/refresh session after browser-based authentication flows
+     * Should be called after waitForLogin() or waitForSignup()
+     */
+    touchSession(): Promise<void>;
+
+    /**
+     * Wait for login to complete after browser-based authentication
+     * Used after opening portal URLs (passkeyUrl, passwordUrl, pinUrl) or loginUrl
+     */
+    waitForLogin(): Promise<void>;
+
+    /**
+     * Wait for signup to complete after browser-based authentication
+     * Used after opening loginUrl for new user signup
+     */
+    waitForSignup(): Promise<void>;
+
+    /**
+     * Wait for wallet creation to complete after password creation in browser
+     * Used after opening passwordUrl for password-based account creation
+     */
+    waitForWalletCreation(): Promise<void>;
+
+    /**
      * Logout current user
      */
     logout(): Promise<void>;

@@ -21,6 +21,14 @@ export function redirectSystemPath({
         return '/(auth)/login';
     }
 
+    // Handle Para phone OTP redirects
+    // Para might redirect to rampaapp://para or rampaapp:// after OTP verification
+    if ((path.includes('rampaapp://para') || path === 'rampaapp://') && !initial) {
+        // Redirect to auth entry point - the phone OTP flow will handle the rest
+        // The waitForLogin() call in ParaAuthProvider will complete the authentication
+        return '/(auth)/login';
+    }
+
     // Return original path for all other deeplinks
     return path;
 }
