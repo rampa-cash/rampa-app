@@ -3,7 +3,6 @@ import { IconName } from '@/components/ui/icons/icon-names';
 import { InvestCard } from '@/components/ui/invest-card';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
-import { Palette } from '@/constants/theme';
 import type { Transaction } from '@/src/domain/transactions';
 import React, { useMemo } from 'react';
 import { FlatList, StyleSheet, View, ViewStyle } from 'react-native';
@@ -79,12 +78,12 @@ export function TransactionList({
                         address={formatWhen(item.createdAt)}
                         price={amountText}
                         changePositive={isPositive}
-                        style={{ marginBottom: 10 }}
+                        style={{ marginBottom: 12, padding: 6 }}
                         left={
                             <Icon
-                                name={IconName.Property1CurrencyDollar}
-                                size={34}
-                                color={Palette.secondary.openBlue}
+                                name={IconName.Usdc}
+                                size={44}
+                                color={"#3E73C4"}
                             />
                         }
                         

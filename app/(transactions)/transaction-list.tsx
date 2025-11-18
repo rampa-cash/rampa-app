@@ -1,4 +1,4 @@
-import TransactionList from '@/components/transactions/TransactionList';
+import { TransactionList } from '@/components/transactions/TransactionList';
 import { IconButton } from '@/components/ui/buttons/IconButton';
 import { IconName } from '@/components/ui/icons/icon-names';
 import { ScreenContainer } from '@/components/ui/screen-container';
@@ -23,6 +23,7 @@ export default function RecentTransactionsScreen() {
                     iconName={IconName.Property1ArrowLeft}
                     shape="circle"
                     iconSize={16}
+                    bordered
                     onPress={() => router.back()}
                 />
                 <AppText style={styles.title}>Recent Transactions</AppText>
@@ -41,6 +42,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 12,
+        paddingVertical: 14,
         marginBottom: 6,
     },
     title: {

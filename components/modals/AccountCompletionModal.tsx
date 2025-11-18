@@ -5,10 +5,11 @@ import { useTheme } from '@/hooks/theme';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
 import { ListCard } from '@/components/ui/list-card';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
 import ModalScaffold from './ModalScaffold';
+import { AppButton } from '@/components/ui/buttons/button';
+import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 
 export type StepStatus = 'done' | 'current' | 'pending';
 
@@ -18,6 +19,8 @@ export type CompletionStep = {
   subtitle?: string;
   status: StepStatus;
   onPress?: () => void;
+  actionLabel?: string;
+  actionDisabled?: boolean;
 };
 
 export type AccountCompletionModalProps = {
@@ -41,8 +44,8 @@ export function AccountCompletionModal({
 
   return (
     <ModalScaffold>
-      <AppText variant={TextVariant.BodyMedium}>{title}</AppText>
-      <AppText variant={TextVariant.Secondary} color={'lessEmphasis' as any}>
+      <AppText variant={TextVariant.H3}>{title}</AppText>
+      <AppText variant={TextVariant.Secondary} color={'lessEmphasis' as any} style={{ marginTop: -4 }}>
         {description}
       </AppText>
 
@@ -57,6 +60,7 @@ export function AccountCompletionModal({
             title={s.title}
             description={s.subtitle}
             onPress={s.onPress}
+            showChevron={!s.actionLabel}
             left={
               s.status === 'done' ? (
                 <Icon name={IconName.Property1Verify} />
@@ -64,7 +68,16 @@ export function AccountCompletionModal({
                 <View style={[styles.bullet, { borderColor: t.outline.outline2, backgroundColor: s.status === 'current' ? t.primary.signalViolet : 'transparent' }]} />
               )
             }
-            right={s.status === 'done' ? undefined : undefined}
+            right={
+              s.actionLabel ? (
+                <AppButton
+                  title={s.actionLabel}
+                  variant={ButtonVariant.Tertiary}
+                  onPress={s.onPress}
+                  disabled={s.actionDisabled}
+                />
+              ) : undefined
+            }
           />
         ))}
       </View>

@@ -27,6 +27,7 @@ export type CountrySearchModalProps = {
   countries: CountryItem[];
   onSelect?: (code: string) => void;
   selectedCode?: string;
+  showDial?: boolean;
 };
 
 export function CountrySearchModal({
@@ -36,6 +37,7 @@ export function CountrySearchModal({
   countries,
   onSelect,
   selectedCode,
+  showDial = true,
 }: CountrySearchModalProps) {
   const t = useTheme();
 
@@ -82,9 +84,11 @@ export function CountrySearchModal({
                   </AppText>
                 )}
               </View>
-              <AppText variant={TextVariant.BodyMedium} style={{ width: 48 }}>
-                {c.dial}
-              </AppText>
+              {showDial ? (
+                <AppText variant={TextVariant.BodyMedium} style={{ width: 48 }}>
+                  {c.dial}
+                </AppText>
+              ) : null}
               <AppText variant={TextVariant.Body}>{c.name}</AppText>
               <View style={{ flex: 1 }} />
             </Pressable>

@@ -3,7 +3,7 @@ import { Stack } from 'expo-router';
 export default function TransactionsLayout() {
     return (
         <Stack
-            initialRouteName="index"
+            initialRouteName="transaction-list"
             screenOptions={{ headerShown: false }}
         />
     );

@@ -62,7 +62,7 @@ export default function TabLayout() {
                             <Icon
                                 name={
                                     focused
-                                        ? IconName.Property1Card
+                                        ? IconName.Property1Wallet
                                         : IconName.Property1CardOutline
                                 }
                                 size={24}

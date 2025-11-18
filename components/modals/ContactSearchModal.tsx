@@ -1,24 +1,15 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
+import { ContactListItem, type ContactItem } from '@/components/contacts/ContactListItem';
 import { AppButton } from '@/components/ui/buttons/button';
 import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
 import { AppInput } from '@/components/ui/input';
 import { InputVariant } from '@/components/ui/input-variants';
-import { AppText } from '@/components/ui/text';
-import { TextVariant } from '@/components/ui/text-variants';
 import { useTheme } from '@/hooks/theme';
-import ModalScaffold from './ModalScaffold';
-
-export type ContactItem = {
-  id: string;
-  name: string;
-  phone: string;
-  avatarUri?: string;
-  invite?: boolean; // if true, show Invite action on trailing
-};
+import { ModalScaffold } from './ModalScaffold';
 
 export type ContactSearchModalProps = {
   title?: string;
@@ -33,7 +24,7 @@ export type ContactSearchModalProps = {
 
 export function ContactSearchModal({
   title = 'Search for contact to send',
-  placeholder = 'Search',
+  placeholder = 'Search for contact to send',
   query,
   onChangeQuery,
   onCancel,
@@ -41,7 +32,16 @@ export function ContactSearchModal({
   onInvite,
   onSelect,
 }: ContactSearchModalProps) {
+
   const t = useTheme();
+  const sortedContacts = React.useMemo(
+    () =>
+      [...contacts].sort((a, b) => {
+        if (a.invite === b.invite) return 0;
+        return a.invite ? 1 : -1;
+      }),
+    [contacts]
+  );
 
   return (
     <ModalScaffold>
@@ -50,37 +50,28 @@ export function ContactSearchModal({
           <AppInput
             value={query}
             onChangeText={onChangeQuery}
-            placeholder={title}
+            placeholder={placeholder || title}
             variant={InputVariant.Filled}
-            left={<Icon name={IconName.Property1Search} size={18} />}
+            left={<Icon name={IconName.Property1Search} size={20} color={t.icon.normal} />}
             containerStyle={{ marginBottom: 0 }}
+            backgroundColor={t.background.base}
+            inputStyle={{ height: 58 , fontSize: 18}}
           />
         </View>
         {onCancel ? (
-          <AppButton title="Cancel" variant={ButtonVariant.Tertiary} onPress={onCancel} />
+          <AppButton title="Cancel" variant={ButtonVariant.Tertiary} onPress={onCancel} color='normal' />
         ) : null}
       </View>
 
-      <ScrollView style={{ maxHeight: 420 }} contentContainerStyle={{ gap: 8 }}>
-        {contacts.map(c => (
-          <View key={c.id} style={styles.row}>
-            {c.avatarUri ? (
-              <Image source={{ uri: c.avatarUri }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, { backgroundColor: t.background.light }] } />
-            )}
-            <View style={{ flex: 1 }}>
-              <AppText variant={TextVariant.BodyMedium}>{c.name}</AppText>
-              <AppText variant={TextVariant.Caption} color={'lessEmphasis' as any}>
-                {c.phone}
-              </AppText>
-            </View>
-            {c.invite ? (
-              <AppButton title="Invite" variant={ButtonVariant.Tertiary} onPress={() => onInvite?.(c.id)} />
-            ) : (
-              <AppButton title="Send" variant={ButtonVariant.PrimaryContrast} onPress={() => onSelect?.(c.id)} />
-            )}
-          </View>
+      <ScrollView style={{ maxHeight: 520, borderColor: t.background.dim, borderWidth: 1, borderRadius: 14, padding: 12, backgroundColor: t.background.base }} contentContainerStyle={{ gap: 8 }}>
+        {sortedContacts.map(c => (
+          <ContactListItem
+            key={c.id}
+            contact={c}
+            onPress={onSelect}
+            onInvite={onInvite}
+            showInvite
+          />
         ))}
       </ScrollView>
     </ModalScaffold>
@@ -92,18 +83,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 10,
-    borderRadius: 12,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
   },
 });
 

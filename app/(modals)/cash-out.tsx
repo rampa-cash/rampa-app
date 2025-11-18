@@ -1,424 +1,301 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import React, { useMemo, useState } from 'react';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import {
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { offRampService } from '../../src/domain/offRamp';
-import { SecurityUtils } from '../../src/shared/utils/securityUtils';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { CountrySearchModal, type CountryItem } from '@/components/modals/CountrySearchModal';
+import { AmountInput } from '@/components/ui/amount-input';
+import AppButton from '@/components/ui/buttons/button';
+import { ButtonVariant } from '@/components/ui/buttons/button-variants';
+import { IconButton } from '@/components/ui/buttons/IconButton';
+import Icon from '@/components/ui/icons/Icon';
+import { IconName } from '@/components/ui/icons/icon-names';
+import { ScreenContainer } from '@/components/ui/screen-container';
+import { AppText } from '@/components/ui/text';
+import { TextVariant } from '@/components/ui/text-variants';
+import { COUNTRIES } from '@/constants/countries';
+import { Palette } from '@/constants/theme';
+import { useTheme } from '@/hooks/theme';
+
+type BankOption = { id: string; name: string; icon: IconName };
+
+const QUICK_AMOUNTS = [50, 100, 500];
+const BANKS: BankOption[] = [
+  { id: 'boa', name: 'Bank of America', icon: IconName.Property1Bank },
+  { id: 'chase', name: 'Chase', icon: IconName.Property1Card },
+  { id: 'revolut', name: 'Revolut', icon: IconName.Property1Wallet },
+  { id: 'wise', name: 'Wise', icon: IconName.Property1ATMCard },
+];
 
 export default function CashOutScreen() {
-    const router = useRouter();
-    const [tokenAmount, setTokenAmount] = useState('');
-    const [selectedToken, setSelectedToken] = useState<'SOL' | 'USDC' | 'EURC'>(
-        'USDC'
-    );
-    const [currency, setCurrency] = useState('USD');
-    const [bankDetails, setBankDetails] = useState({
-        accountNumber: '',
-        accountName: '',
-        bankName: '',
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const t = useTheme();
+
+  const [amount, setAmount] = useState('');
+  const [country, setCountry] = useState<CountryItem>(COUNTRIES[0]);
+  const [bank, setBank] = useState<BankOption>(BANKS[0]);
+  const [countryModalVisible, setCountryModalVisible] = useState(false);
+  const [bankModalVisible, setBankModalVisible] = useState(false);
+  const [countryQuery, setCountryQuery] = useState('');
+
+  const availableBalance = 374.1;
+
+  const isAmountValid = useMemo(() => {
+    const parsed = Number.parseFloat(amount.replace(',', '.'));
+    return Number.isFinite(parsed) && parsed > 0;
+  }, [amount]);
+
+  const filteredCountries = useMemo(() => {
+    const normalized = countryQuery.trim().toLowerCase();
+    if (!normalized) return COUNTRIES;
+    return COUNTRIES.filter(c => {
+      const target = `${c.name} ${c.dial} ${c.code}`.toLowerCase();
+      return target.includes(normalized);
     });
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [selectedMethod, setSelectedMethod] = useState('bank');
+  }, [countryQuery]);
 
-    const withdrawalMethods = [
-        {
-            id: 'bank',
-            name: 'Bank Transfer',
-            icon: 'account-balance',
-            fee: 'Free',
-        },
-        { id: 'card', name: 'Debit Card', icon: 'credit-card', fee: '$2.99' },
-        { id: 'paypal', name: 'PayPal', icon: 'payment', fee: '3.5%' },
-    ];
+  const handleUseMax = () => {
+    setAmount(availableBalance.toFixed(2));
+  };
 
-    const handleCashOut = async () => {
-        if (!tokenAmount.trim()) {
-            Alert.alert('Error', 'Please enter an amount');
-            return;
-        }
+  const handleSelectCountry = (code: string) => {
+    const match = COUNTRIES.find(c => c.code === code);
+    if (match) setCountry(match);
+    setCountryModalVisible(false);
+    setCountryQuery('');
+  };
 
-        const numAmount = parseFloat(tokenAmount);
-        if (isNaN(numAmount) || numAmount <= 0) {
-            Alert.alert('Error', 'Please enter a valid amount');
-            return;
-        }
+  const handleSelectBank = (id: string) => {
+    const match = BANKS.find(b => b.id === id);
+    if (match) setBank(match);
+    setBankModalVisible(false);
+  };
 
-        if (!SecurityUtils.isValidAmount(numAmount)) {
-            Alert.alert('Error', 'Amount exceeds maximum limit');
-            return;
-        }
-
-        if (
-            !bankDetails.accountNumber ||
-            !bankDetails.accountName ||
-            !bankDetails.bankName
-        ) {
-            Alert.alert('Error', 'Please enter all bank account details');
-            return;
-        }
-
-        setIsProcessing(true);
-
-        try {
-            const result = await offRampService.initiateOffRamp({
-                tokenType: selectedToken,
-                tokenAmount: numAmount,
-                currency,
-                bankDetails,
-            });
-
-            if (result.success) {
-                Alert.alert(
-                    'Success',
-                    'Off-ramp transaction initiated successfully!'
-                );
-                router.back();
-            } else {
-                Alert.alert(
-                    'Error',
-                    result.error || 'Failed to initiate off-ramp transaction'
-                );
-            }
-        } catch (error) {
-            Alert.alert('Error', 'Failed to cash out. Please try again.');
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity
-                    onPress={() => router.back()}
-                    style={styles.closeButton}
-                >
-                    <MaterialIcons name="close" size={24} color="#333" />
-                </TouchableOpacity>
-                <Text style={styles.title}>Cash Out</Text>
-                <View style={styles.placeholder} />
-            </View>
-
-            <View style={styles.content}>
-                <View style={styles.amountSection}>
-                    <Text style={styles.label}>Amount</Text>
-                    <View style={styles.amountInputContainer}>
-                        <Text style={styles.currencySymbol}>$</Text>
-                        <TextInput
-                            style={styles.amountInput}
-                            placeholder="0.00"
-                            value={tokenAmount}
-                            onChangeText={setTokenAmount}
-                            keyboardType="numeric"
-                            placeholderTextColor="#999"
-                        />
-                    </View>
-                </View>
-
-                <View style={styles.methodSection}>
-                    <Text style={styles.label}>Withdrawal Method</Text>
-                    {withdrawalMethods.map(method => (
-                        <TouchableOpacity
-                            key={method.id}
-                            style={[
-                                styles.methodCard,
-                                selectedMethod === method.id &&
-                                    styles.methodCardSelected,
-                            ]}
-                            onPress={() => setSelectedMethod(method.id as any)}
-                        >
-                            <MaterialIcons
-                                name={method.icon as any}
-                                size={24}
-                                color={
-                                    selectedMethod === method.id
-                                        ? '#007AFF'
-                                        : '#666'
-                                }
-                            />
-                            <View style={styles.methodInfo}>
-                                <Text
-                                    style={[
-                                        styles.methodName,
-                                        selectedMethod === method.id &&
-                                            styles.methodNameSelected,
-                                    ]}
-                                >
-                                    {method.name}
-                                </Text>
-                                <Text style={styles.methodFee}>
-                                    Fee: {method.fee}
-                                </Text>
-                            </View>
-                            {selectedMethod === method.id && (
-                                <MaterialIcons
-                                    name="check-circle"
-                                    size={20}
-                                    color="#007AFF"
-                                />
-                            )}
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                {selectedMethod === 'bank' && (
-                    <View style={styles.bankDetailsSection}>
-                        <Text style={styles.label}>Bank Account Details</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Account Number"
-                            value={bankDetails.accountNumber}
-                            onChangeText={text =>
-                                setBankDetails(prev => ({
-                                    ...prev,
-                                    accountNumber: text,
-                                }))
-                            }
-                            keyboardType="numeric"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Routing Number"
-                            value={bankDetails.routingNumber}
-                            onChangeText={text =>
-                                setBankDetails(prev => ({
-                                    ...prev,
-                                    routingNumber: text,
-                                }))
-                            }
-                            keyboardType="numeric"
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Account Holder Name"
-                            value={bankDetails.accountName}
-                            onChangeText={text =>
-                                setBankDetails(prev => ({
-                                    ...prev,
-                                    accountName: text,
-                                }))
-                            }
-                        />
-                    </View>
-                )}
-
-                <View style={styles.summarySection}>
-                    <Text style={styles.label}>Withdrawal Summary</Text>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Amount</Text>
-                        <Text style={styles.summaryValue}>
-                            ${tokenAmount || '0.00'}
-                        </Text>
-                    </View>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Fee</Text>
-                        <Text style={styles.summaryValue}>
-                            {
-                                withdrawalMethods.find(
-                                    m => m.id === selectedMethod
-                                )?.fee
-                            }
-                        </Text>
-                    </View>
-                    <View style={[styles.summaryRow, styles.summaryTotal]}>
-                        <Text style={styles.summaryLabel}>Total</Text>
-                        <Text style={styles.summaryValue}>
-                            ${tokenAmount || '0.00'}
-                        </Text>
-                    </View>
-                </View>
-
-                <TouchableOpacity
-                    style={styles.cashOutButton}
-                    onPress={handleCashOut}
-                >
-                    <Text style={styles.cashOutButtonText}>Cash Out</Text>
-                </TouchableOpacity>
-
-                <View style={styles.infoSection}>
-                    <Text style={styles.infoTitle}>Processing Time</Text>
-                    <Text style={styles.infoText}>
-                        • Bank Transfer: 1-3 business days{'\n'}• Debit Card:
-                        Instant to 24 hours{'\n'}• PayPal: Instant to 1 hour
-                    </Text>
-                </View>
-            </View>
+  return (
+    <>
+      <ScreenContainer
+        padded
+        scroll
+        contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + 24 }]}
+      >
+        <View style={[styles.nav, { paddingTop: insets.top }]}>
+          <IconButton
+            iconName={IconName.Property1ArrowLeft}
+            shape="circle"
+            iconSize={14}
+            bordered
+            onPress={() => router.back()}
+          />
         </View>
-    );
+
+        <View style={styles.header}>
+          <AppText variant={TextVariant.H1}>Cash out</AppText>
+          <AppText variant={TextVariant.Secondary} color="lessEmphasis">
+            Withdraw your balance to a bank account
+          </AppText>
+        </View>
+
+        <AmountInput
+          label="Amount"
+          value={amount}
+          onChange={setAmount}
+          currencySymbol="$"
+          quickOptions={QUICK_AMOUNTS}
+          helperText={`Available Balance $${availableBalance.toFixed(2)}`}
+        />
+        <View style={styles.quickRow}>
+          <Pressable style={[styles.quickChip, { backgroundColor: t.background.onBase2 }]} onPress={handleUseMax}>
+            <AppText variant={TextVariant.Secondary}>Use Max</AppText>
+          </Pressable>
+        </View>
+
+        <View style={styles.selectSection}>
+          <AppText variant={TextVariant.SecondaryMedium} color="lessEmphasis">
+            Select your payout country
+          </AppText>
+          <Pressable
+            onPress={() => setCountryModalVisible(true)}
+            style={[
+              styles.pill,
+              { backgroundColor: t.background.onBase2, borderColor: t.outline.outline1 },
+            ]}
+          >
+            <View style={styles.pillContent}>
+              <Icon name={IconName.Property1Location} size={18} color={t.icon.normal} />
+              <AppText variant={TextVariant.BodyMedium} style={{ flex: 1 }}>
+                {country.name}
+              </AppText>
+            </View>
+            <MaterialIcons name="keyboard-arrow-down" size={20} color={t.icon.lessEmphasis} />
+          </Pressable>
+        </View>
+
+        <View style={styles.selectSection}>
+          <AppText variant={TextVariant.SecondaryMedium} color="lessEmphasis">
+            Bank
+          </AppText>
+          <Pressable
+            onPress={() => setBankModalVisible(true)}
+            style={[
+              styles.pill,
+              { backgroundColor: t.background.onBase2, borderColor: t.outline.outline1 },
+            ]}
+          >
+            <View style={styles.pillContent}>
+              <Icon name={bank.icon} size={18} color={t.icon.normal} />
+              <AppText variant={TextVariant.BodyMedium} style={{ flex: 1 }}>
+                {bank.name}
+              </AppText>
+            </View>
+            <MaterialIcons name="keyboard-arrow-down" size={20} color={t.icon.lessEmphasis} />
+          </Pressable>
+        </View>
+
+        <View style={[styles.feeCard, { backgroundColor: t.background.onBase2 }]}>
+          <AppText variant={TextVariant.Secondary} color="lessEmphasis">
+            Fees:
+          </AppText>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <AppText variant={TextVariant.Secondary} style={{ color: Palette.primary.flowAqua }}>
+              0.05%
+            </AppText>
+            <AppText variant={TextVariant.Secondary}>$0.00</AppText>
+          </View>
+        </View>
+
+        <View style={{ flex: 1 }} />
+
+        <AppButton title="Cash out" variant={ButtonVariant.Primary} disabled={!isAmountValid} />
+      </ScreenContainer>
+
+      <Modal
+        visible={countryModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCountryModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setCountryModalVisible(false)} />
+          <View style={styles.modalSheet}>
+            <CountrySearchModal
+              query={countryQuery}
+              onChangeQuery={setCountryQuery}
+              onCancel={() => setCountryModalVisible(false)}
+              countries={filteredCountries}
+              onSelect={handleSelectCountry}
+              selectedCode={country.code}
+              showDial={false}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={bankModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setBankModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setBankModalVisible(false)} />
+          <View style={styles.modalSheet}>
+            <View style={{ padding: 16, gap: 12, backgroundColor: t.background.onBase }}>
+              <AppText variant={TextVariant.BodyMedium}>Choose a bank</AppText>
+              {BANKS.map(option => (
+                <Pressable
+                  key={option.id}
+                  onPress={() => handleSelectBank(option.id)}
+                  style={[
+                    styles.bankRow,
+                    {
+                      borderColor:
+                        option.id === bank.id ? t.primary.signalViolet : t.outline.outline1,
+                      backgroundColor:
+                        option.id === bank.id ? t.background.secondary : t.background.onBase,
+                    },
+                  ]}
+                >
+                  <Icon name={option.icon} size={18} color={t.icon.normal} />
+                  <AppText variant={TextVariant.Body}>{option.name}</AppText>
+                  <View style={{ flex: 1 }} />
+                  {option.id === bank.id ? (
+                    <MaterialIcons name="check" size={18} color={t.primary.signalViolet} />
+                  ) : null}
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 20,
-        backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-    },
-    closeButton: {
-        padding: 4,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    placeholder: {
-        width: 32,
-    },
-    content: {
-        flex: 1,
-        padding: 20,
-    },
-    amountSection: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 12,
-    },
-    amountInputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        paddingHorizontal: 16,
-    },
-    currencySymbol: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-        marginRight: 8,
-    },
-    amountInput: {
-        flex: 1,
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-        paddingVertical: 16,
-    },
-    methodSection: {
-        marginBottom: 20,
-    },
-    methodCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        padding: 16,
-        borderRadius: 8,
-        marginBottom: 8,
-        borderWidth: 1,
-        borderColor: '#ddd',
-    },
-    methodCardSelected: {
-        borderColor: '#007AFF',
-        backgroundColor: '#f0f8ff',
-    },
-    methodInfo: {
-        flex: 1,
-        marginLeft: 12,
-    },
-    methodName: {
-        fontSize: 16,
-        color: '#333',
-        fontWeight: '500',
-    },
-    methodNameSelected: {
-        color: '#007AFF',
-        fontWeight: '600',
-    },
-    methodFee: {
-        fontSize: 14,
-        color: '#666',
-        marginTop: 2,
-    },
-    bankDetailsSection: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-        marginBottom: 20,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        padding: 16,
-        fontSize: 16,
-        backgroundColor: '#f9f9f9',
-        marginBottom: 12,
-    },
-    summarySection: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-        marginBottom: 20,
-    },
-    summaryRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 8,
-    },
-    summaryTotal: {
-        borderTopWidth: 1,
-        borderTopColor: '#eee',
-        marginTop: 8,
-        paddingTop: 16,
-    },
-    summaryLabel: {
-        fontSize: 16,
-        color: '#333',
-    },
-    summaryValue: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-    },
-    cashOutButton: {
-        backgroundColor: '#007AFF',
-        padding: 16,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    cashOutButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    infoSection: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-    },
-    infoTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 8,
-    },
-    infoText: {
-        fontSize: 14,
-        color: '#666',
-        lineHeight: 20,
-    },
+  container: {
+    flexGrow: 1,
+    gap: 20,
+  },
+  nav: {
+    alignItems: 'flex-start',
+  },
+  header: {
+    gap: 10,
+  },
+  quickRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  quickChip: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+  },
+  selectSection: {
+    gap: 8,
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  pillContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  feeCard: {
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+    padding: 16,
+  },
+  modalSheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: 'hidden',
+  },
+  bankRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
 });

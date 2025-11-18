@@ -43,6 +43,7 @@ export enum IconName {
     Property1Verify = 'Property-1Verify',
     Property1Wallet = 'Property-1Wallet',
     Vector = 'Vector',
+    Usdc = 'USDC',
 }
 
 export type IconNameKeys = `${IconName}`;

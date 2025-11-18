@@ -1,19 +1,20 @@
-import { useRouter } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { contactService } from '@/src/domain/contacts';
-import { AppText } from '@/components/ui/text';
-import { TextVariant } from '@/components/ui/text-variants';
+import ContactSearchModal from '@/components/modals/ContactSearchModal';
+import { ContactListItem, type ContactItem } from '@/components/contacts/ContactListItem';
 import { IconButton } from '@/components/ui/buttons/IconButton';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import { ScreenContainer } from '@/components/ui/screen-container';
 import { AppInput } from '@/components/ui/input';
 import { InputVariant } from '@/components/ui/input-variants';
+import { ScreenContainer } from '@/components/ui/screen-container';
+import { AppText } from '@/components/ui/text';
+import { TextVariant } from '@/components/ui/text-variants';
+import { contactService } from '@/src/domain/contacts';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { ContactSearchModal, type ContactItem } from '@/components/modals/ContactSearchModal';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SendScreen() {
     const router = useRouter();
@@ -33,6 +34,7 @@ export default function SendScreen() {
             id: c.id,
             name: c.name,
             phone: c.phone || c.email || c.blockchainAddress || '',
+            invite: Math.random() < 0.5,
         }));
         if (!searchQuery.trim()) return list;
         const q = searchQuery.toLowerCase();
@@ -95,18 +97,12 @@ export default function SendScreen() {
                         keyExtractor={i => i.id}
                         contentContainerStyle={{ gap: 12, paddingVertical: 12 }}
                         renderItem={({ item }) => (
-                            <TouchableOpacity style={styles.receiverRow} onPress={() => handleSelect(item.id)}>
-                                <View style={styles.receiverAvatar} />
-                                <View style={{ flex: 1 }}>
-                                    <AppText variant={TextVariant.BodyMedium}>{item.name}</AppText>
-                                    {Boolean(item.phone) && (
-                                        <AppText variant={TextVariant.Caption} color={'lessEmphasis' as any}>
-                                            {item.phone}
-                                        </AppText>
-                                    )}
-                                </View>
-                                <Icon name={IconName.Property1ArrowRight} size={16} />
-                            </TouchableOpacity>
+                            <ContactListItem
+                                contact={item}
+                                onPress={handleSelect}
+                                showInvite={false}
+                                rightAccessory={<Icon name={IconName.Property1ArrowRight} size={16} />}
+                            />
                         )}
                     />
                 </View>
@@ -147,13 +143,6 @@ const styles = StyleSheet.create({
     },
     profileButton: { padding: 4 },
     content: { paddingHorizontal: 20, gap: 8 },
-    receiverRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        paddingVertical: 8,
-    },
-    receiverAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#EAEAEA' },
     modalBackdrop: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.4)',

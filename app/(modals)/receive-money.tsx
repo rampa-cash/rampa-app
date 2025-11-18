@@ -1,30 +1,30 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import AppButton from '@/components/ui/buttons/button';
+import { ModalScaffold } from '@/components/modals/ModalScaffold';
+import { AppButton } from '@/components/ui/buttons/button';
 import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import { IconButton } from '@/components/ui/buttons/IconButton';
+import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
 import { ListCard } from '@/components/ui/list-card';
-import ScreenContainer from '@/components/ui/screen-container';
+import { ScreenContainer } from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
 import { useTheme } from '@/hooks/theme';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ModalScaffold } from '@/components/modals/ModalScaffold';
 
 type ReceiveCurrency = 'USD' | 'EUR' | 'SOL';
 
-const CURRENCY_OPTIONS: Array<{
+const CURRENCY_OPTIONS: {
   id: ReceiveCurrency;
   label: string;
   description: string;
-}> = [
-  { id: 'USD', label: 'USD', description: 'US Dollar' },
-  { id: 'EUR', label: 'EUR', description: 'Euro' },
-  { id: 'SOL', label: 'SOL', description: 'Solana' },
-];
+  icon: IconName;
+}[] = [
+    { id: 'USD', label: 'USD', description: 'USD', icon: IconName.Usdc },
+  ];
 
 const MOCK_WALLET_ADDRESS = '78393993....ckdd';
 
@@ -91,11 +91,11 @@ export default function ReceiveMoneyScreen() {
             ]}
           >
             <View style={styles.currencyPickerContent}>
-              <View style={[styles.currencyBadge, { backgroundColor: t.background.onBase2 }]}>
-                <AppText variant={TextVariant.BodyMedium}>{selectedCurrency}</AppText>
+              <View style={[styles.currencyBadge]}>
+                <Icon name={selectedCurrencyMeta?.icon!} size={44} color={'#3E73C4'} />
               </View>
               <AppText variant={TextVariant.Body}>{selectedCurrencyMeta?.description}</AppText>
-          </View>
+            </View>
             <MaterialIcons name="keyboard-arrow-down" size={20} color={t.icon.lessEmphasis} />
           </Pressable>
         </View>
@@ -127,9 +127,10 @@ export default function ReceiveMoneyScreen() {
         </View>
 
         <View style={styles.actions}>
-          <AppButton title="Share" onPress={handleShare} />
+          <AppButton title="Share" onPress={handleShare} style={{ padding: 16 }} />
           <AppButton
             title="Done"
+            style={{ padding: 16 }}
             variant={ButtonVariant.PrimaryContrast}
             onPress={() => router.back()}
           />
@@ -157,10 +158,10 @@ export default function ReceiveMoneyScreen() {
                     style={
                       option.id === selectedCurrency
                         ? [
-                            {
-                              borderColor: t.primary.signalViolet,
-                            },
-                          ]
+                          {
+                            borderColor: t.primary.signalViolet,
+                          },
+                        ]
                         : undefined
                     }
                     right={
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -211,8 +212,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   currencyBadge: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
     borderRadius: 14,
   },
   qrCard: {

@@ -2,10 +2,9 @@ import { AddFundsMethodModal } from '@/components/modals/AddFundsMethodModal';
 import { AppButton } from '@/components/ui/buttons/button';
 import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import { IconButton } from '@/components/ui/buttons/IconButton';
-import CurrencySelector from '@/components/ui/CurrencySelector';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import { AppInput } from '@/components/ui/input';
+import { AmountInput } from '@/components/ui/amount-input';
 import ListCard from '@/components/ui/list-card';
 import { ScreenContainer } from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
@@ -59,10 +58,6 @@ export default function AddFundsDetailsScreen() {
         [handleSelectFromModal, selectedMethod.id]
     );
 
-    const handleQuickAmount = (value: number) => {
-        setAmount(value.toFixed(2));
-    };
-
     const parsedAmount = Number.parseFloat(amount.replace(',', '.'));
     const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount > 0;
 
@@ -86,7 +81,6 @@ export default function AddFundsDetailsScreen() {
                         onPress={() => router.back()}
                     />
                 </View>
-                <CurrencySelector onChange={() => { }} value='USD' />
                 <View style={styles.section}>
                     <AppText
                         variant={TextVariant.SecondaryMedium}
@@ -131,63 +125,13 @@ export default function AddFundsDetailsScreen() {
                 </View>
 
                 <View style={styles.section}>
-                    <AppText
-                        variant={TextVariant.SecondaryMedium}
-                        color="normal"
-                        style={styles.sectionLabel}
-                    >
-                        Amount to add
-                    </AppText>
-                    <AppInput
-                        placeholder="0.00"
-                        keyboardType="decimal-pad"
+                    <AmountInput
+                        label="Amount to add"
                         value={amount}
-                        onChangeText={setAmount}
-                        left={
-                            <AppText
-                                variant={TextVariant.BodyMedium}
-                                style={{ color: t.text.normal }}
-                            >
-                                {currencySymbol}
-                            </AppText>
-                        }
+                        onChange={setAmount}
+                        currencySymbol={currencySymbol}
+                        quickOptions={QUICK_AMOUNTS}
                     />
-
-                    <View style={styles.quickRow}>
-                        {QUICK_AMOUNTS.map(value => {
-                            const isActive =
-                                Number.parseFloat(amount) === value;
-                            return (
-                                <Pressable
-                                    key={value}
-                                    onPress={() => handleQuickAmount(value)}
-                                    style={[
-                                        styles.quickChip,
-                                        {
-                                            borderColor: isActive
-                                                ? t.primary.signalViolet
-                                                : t.outline.outline2,
-                                            backgroundColor: isActive
-                                                ? t.background.secondary
-                                                : 'transparent',
-                                        },
-                                    ]}
-                                >
-                                    <AppText
-                                        variant={TextVariant.BodyMedium}
-                                        style={{
-                                            color: isActive
-                                                ? t.primary.signalViolet
-                                                : t.text.normal,
-                                        }}
-                                    >
-                                        {currencySymbol}
-                                        {value}
-                                    </AppText>
-                                </Pressable>
-                            );
-                        })}
-                    </View>
                 </View>
 
                 <View style={styles.flexSpacer} />
@@ -246,16 +190,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 16,
         borderRadius: 16,
-        borderWidth: 1,
-    },
-    quickRow: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    quickChip: {
-        paddingVertical: 10,
-        paddingHorizontal: 18,
-        borderRadius: 999,
         borderWidth: 1,
     },
     flexSpacer: {

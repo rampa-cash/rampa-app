@@ -74,4 +74,3 @@ export function useWallet() {
 }
 
 export { WALLET_META };
-

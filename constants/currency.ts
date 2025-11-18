@@ -19,4 +19,3 @@ export function formatCurrency(
   });
   return nf.format(value);
 }
-

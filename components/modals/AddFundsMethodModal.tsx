@@ -31,24 +31,32 @@ export function AddFundsMethodModal({
     const isDark = useThemeMode();
     return (
         <ModalScaffold >
-            <AppText variant={TextVariant.H2}>{title}</AppText>
-            <View style={{ gap: 10, marginTop: 12 }}>
+            <AppText variant={TextVariant.H2} style={{ gap: 10, marginTop: 20, padding: 10 }}>{title}</AppText>
+            <View style={{ gap: 10, marginTop: 12, marginBottom: 20 }}>
                 {methods.map(m => (
                     <ListCard
                         key={m.id}
                         title={m.title}
                         description={m.subtitle}
                         onPress={m.onPress}
+                        style={{ padding: 10 }}
                         left={
                             <Icon
+                                bgColor={t.background.base}
+                                size={16}
+                                style={{ color: isDark.isDark ? t.icon.variant : t.icon.normal }}
                                 name={m.icon}
-                                color={isDark ? t.icon.variant : undefined}
+                                shape='circle'
+                                containerStyle={{ padding: 22, borderRadius: 22 }}
+                                bordered
+                                borderColor={t.outline.outline2}
                             />
                         }
                     />
                 ))}
             </View>
             <AppButton
+                style={{ marginTop: 20 }}
                 title="Done"
                 variant={ButtonVariant.PrimaryContrast}
                 onPress={onDone}

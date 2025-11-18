@@ -67,7 +67,7 @@ export function InvestCard({
 
             <View style={styles.trailing}>
                 <AppText
-                    variant={TextVariant.BodyMedium}
+                    variant={TextVariant.NumBody}
                     style={{
                         color: changePositive ? t.text.success : t.text.error,
                     }}
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     side: {
-        marginRight: 10,
+        marginRight: 2,
     },
     body: {
         justifyContent: 'center',
@@ -116,6 +116,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
         justifyContent: 'center',
         gap: 2,
+        marginRight: 8,
     },
 });
 

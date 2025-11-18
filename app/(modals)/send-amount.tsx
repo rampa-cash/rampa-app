@@ -1,5 +1,5 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,8 +13,7 @@ import AppButton from '@/components/ui/buttons/button';
 import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import { contactService } from '@/src/domain/contacts';
 import { CurrencySelector, type CurrencyCode } from '@/components/ui/CurrencySelector';
-import { Amount } from '@/components/ui/amount';
-import { AmountSize, AmountTone } from '@/components/ui/amount-variants';
+import { AmountInput } from '@/components/ui/amount-input';
 import { Palette } from '@/constants/theme';
 
 export default function SendAmountScreen() {
@@ -23,7 +22,6 @@ export default function SendAmountScreen() {
   const { contactId } = useLocalSearchParams<{ contactId?: string }>();
   const [currency, setCurrency] = useState<CurrencyCode>('EUR');
   const [amount, setAmount] = useState('');
-  const inputRef = useRef<TextInput>(null);
 
   const { data: contact } = useQuery({
     queryKey: ['contact', contactId],
@@ -68,41 +66,16 @@ export default function SendAmountScreen() {
 
       <CurrencySelector value={currency} onChange={setCurrency} />
 
-      <Pressable onPress={() => inputRef.current?.focus()} style={styles.amountBox}>
-        {/* Visual amount using same component/style as Home */}
-        <View style={{ alignItems: 'center' }}>
-          <Amount
-            value={Number.parseFloat(amount || '0')}
-            currency={currency === 'USD' ? 'USD' : 'EUR'}
-            symbolOverride={currency === 'SOL' ? 'SOL' : undefined}
-            showCents={false}
-            size={AmountSize.Lg}
-            tone={AmountTone.Default}
-          />
-        </View>
-        <AppText
-          variant={TextVariant.Caption}
-          style={{ marginTop: 8, textAlign: 'center', color: Palette.primary.flowAqua }}
-        >
-          Available Balance {currency === 'EUR' ? '€' : currency === 'USD' ? '$' : 'SOL'}374.10
-        </AppText>
-        {/* Invisible input capturing numeric entry */}
-        <TextInput
-          ref={inputRef}
-          value={amount}
-          onChangeText={txt => setAmount(txt.replace(/[^0-9.,]/g, ''))}
-          keyboardType="decimal-pad"
-          placeholder="0"
-          style={styles.hiddenInput}
-        />
-      </Pressable>
-
+      <AmountInput
+        label="Amount to send"
+        value={amount}
+        onChange={setAmount}
+        currencySymbol={symbol}
+        quickOptions={[50, 100, 500]}
+        helperText={`Available Balance ${symbol}374.10`}
+        containerStyle={{ marginTop: 8 }}
+      />
       <View style={styles.quickRow}>
-        {([50, 100, 500] as const).map(v => (
-          <Pressable key={v} style={styles.quickChip} onPress={() => setAmount(String(v))}>
-            <AppText variant={TextVariant.Secondary}>€{v}</AppText>
-          </Pressable>
-        ))}
         <Pressable style={styles.quickChip} onPress={() => setAmount('374.10')}>
           <AppText variant={TextVariant.Secondary}>Use Max</AppText>
         </Pressable>
@@ -129,13 +102,6 @@ const styles = StyleSheet.create({
   container: { flexGrow: 1, gap: 20 },
   nav: { alignItems: 'flex-start' },
   header: { gap: 12 },
-  amountBox: { marginTop: 8 },
-  hiddenInput: {
-    position: 'absolute',
-    opacity: 0,
-    width: 1,
-    height: 1,
-  },
   recipientRow: {
     flexDirection: 'row',
     alignItems: 'center',
