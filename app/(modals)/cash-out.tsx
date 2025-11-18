@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CountrySearchModal, type CountryItem } from '@/components/modals/CountrySearchModal';
-import { AmountInput } from '@/components/ui/amount-input';
+import { UsdAmountInput } from '@/components/ui/usd-amount-input';
 import AppButton from '@/components/ui/buttons/button';
 import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import { IconButton } from '@/components/ui/buttons/IconButton';
@@ -21,6 +21,7 @@ import { useTheme } from '@/hooks/theme';
 type BankOption = { id: string; name: string; icon: IconName };
 
 const QUICK_AMOUNTS = [50, 100, 500];
+const formatAmount = (v: number) => v.toFixed(2);
 const BANKS: BankOption[] = [
   { id: 'boa', name: 'Bank of America', icon: IconName.Property1Bank },
   { id: 'chase', name: 'Chase', icon: IconName.Property1Card },
@@ -97,15 +98,31 @@ export default function CashOutScreen() {
           </AppText>
         </View>
 
-        <AmountInput
-          label="Amount"
+        <UsdAmountInput
           value={amount}
           onChange={setAmount}
-          currencySymbol="$"
-          quickOptions={QUICK_AMOUNTS}
+          placeholder="0.00"
           helperText={`Available Balance $${availableBalance.toFixed(2)}`}
         />
         <View style={styles.quickRow}>
+          {QUICK_AMOUNTS.map(option => {
+            const isActive = Number.parseFloat(amount) === option;
+            return (
+              <Pressable
+                key={option}
+                style={[
+                  styles.quickChip,
+                  {
+                    backgroundColor: isActive ? t.background.secondary : t.background.onBase2,
+                    borderColor: isActive ? t.primary.signalViolet : t.outline.outline1,
+                  },
+                ]}
+                onPress={() => setAmount(formatAmount(option))}
+              >
+                <AppText variant={TextVariant.Secondary}>${option}</AppText>
+              </Pressable>
+            );
+          })}
           <Pressable style={[styles.quickChip, { backgroundColor: t.background.onBase2 }]} onPress={handleUseMax}>
             <AppText variant={TextVariant.Secondary}>Use Max</AppText>
           </Pressable>
@@ -252,6 +269,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 18,
+    borderWidth: 1,
   },
   selectSection: {
     gap: 8,

@@ -14,7 +14,6 @@ import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import { contactService } from '@/src/domain/contacts';
 import { CurrencySelector, type CurrencyCode } from '@/components/ui/CurrencySelector';
 import { AmountInput } from '@/components/ui/amount-input';
-import { Palette } from '@/constants/theme';
 
 export default function SendAmountScreen() {
   const router = useRouter();

@@ -37,7 +37,7 @@ function formatWhen(date: Date | string) {
 export function TransactionList({
     data = [],
     loading,
-    emptyText = 'No transactions found',
+    emptyText = 'No transactions yet.',
     contentContainerStyle,
 }: TransactionListProps) {
     const items = useMemo(() => data ?? [], [data]);
@@ -107,4 +107,3 @@ const styles = StyleSheet.create({
 });
 
 export default TransactionList;
-
