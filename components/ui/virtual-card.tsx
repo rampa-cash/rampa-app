@@ -54,9 +54,11 @@ export function VirtualCard({
     return (
         <View style={[styles.container, style as any]}>
             <CardBackground {...backgroundProps} style={styles.card}>
-                <AppText variant={TextVariant.Secondary} style={{ color: t.neutral.white }}>
-                    {title}
-                </AppText>
+                {title ? (
+                    <AppText variant={TextVariant.Secondary} style={{ color: t.neutral.white }}>
+                        {title}
+                    </AppText>
+                ) : null}
 
                 {variant === 'balance' ? (
                     <View style={{ flex: 1, justifyContent: 'center' }}>
@@ -102,12 +104,13 @@ export function VirtualCard({
 
 const styles = StyleSheet.create({
     container: {
-        width: '100%',
+         
     },
     card: {
         borderRadius: 16,
         padding: 16,
-        height: 180,
+        height: 224,
+        width:358,
         overflow: 'hidden',
     },
 });

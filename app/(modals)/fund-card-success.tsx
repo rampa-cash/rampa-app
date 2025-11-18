@@ -16,13 +16,14 @@ import { Palette } from '@/constants/theme';
 export default function FundCardSuccessScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
-    const { amount = '0', currency = 'EUR' } =
-        useLocalSearchParams<{ amount?: string; currency?: 'USD' | 'EUR' | 'SOL' }>();
+    const { amount = '0', currency = 'EUR', mode = 'fund' } =
+        useLocalSearchParams<{ amount?: string; currency?: 'USD' | 'EUR' | 'SOL'; mode?: 'fund' | 'withdraw' }>();
 
     const numericAmount = Number.parseFloat(String(amount));
     const effectiveAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
     const symbolOverride = currency === 'SOL' ? 'SOL' : undefined;
     const curr = currency === 'USD' ? 'USD' : 'EUR';
+    const isWithdraw = mode === 'withdraw';
 
     return (
         <ScreenContainer
@@ -39,12 +40,12 @@ export default function FundCardSuccessScreen() {
                 </View>
 
                 <AppText variant={TextVariant.Body} style={{ marginTop: 12 }}>
-                    Card funded
+                    {isWithdraw ? 'Withdrawal requested' : 'Card funded'}
                 </AppText>
 
                 <View style={{ marginTop: 6 }}>
                     <Amount
-                        value={effectiveAmount}
+                        value={isWithdraw ? -effectiveAmount : effectiveAmount}
                         currency={curr}
                         symbolOverride={symbolOverride}
                         showCents
@@ -59,7 +60,9 @@ export default function FundCardSuccessScreen() {
                     align="center"
                     style={{ marginTop: 8 }}
                 >
-                    Card was successfully funded
+                    {isWithdraw
+                        ? 'Your withdrawal request was submitted'
+                        : 'Card was successfully funded'}
                 </AppText>
 
                 <Pressable onPress={() => { }}>
@@ -93,4 +96,3 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 });
-

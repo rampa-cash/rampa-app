@@ -16,10 +16,12 @@ export default function FundCardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { meta } = useWallet();
-  const params = useLocalSearchParams<{ suggested?: string }>();
+  const params = useLocalSearchParams<{ suggested?: string; mode?: 'withdraw' | 'fund' }>();
 
   const initialAmount = useMemo(() => params?.suggested ?? '50', [params?.suggested]);
   const [amount, setAmount] = useState(initialAmount);
+  const mode = params?.mode === 'withdraw' ? 'withdraw' : 'fund';
+  const isWithdraw = mode === 'withdraw';
 
   const parsedAmount = Number.parseFloat(String(amount).replace(',', '.'));
   const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount > 0;
@@ -31,6 +33,7 @@ export default function FundCardScreen() {
       params: {
         amount: String(parsedAmount),
         currency: meta.isoCurrency ?? 'USD',
+        mode,
       },
     } as never);
   };
@@ -64,7 +67,12 @@ export default function FundCardScreen() {
         />
       </View>
 
-      <AppButton title="Fund my card" disabled={!isAmountValid} onPress={handleSubmit} />
+      <AppButton
+        title={isWithdraw ? 'Withdraw' : 'Fund my card'}
+        disabled={!isAmountValid}
+        onPress={handleSubmit}
+        style={styles.footerButton}
+      />
     </ScreenContainer>
   );
 }
@@ -72,7 +80,6 @@ export default function FundCardScreen() {
 const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
-    justifyContent: 'space-between',
   },
   nav: {
     alignItems: 'flex-start',
@@ -80,6 +87,10 @@ const styles = StyleSheet.create({
   center: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 48,
+  },
+  footerButton: {
+    width: '100%',
   },
 });

@@ -1,8 +1,8 @@
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import { InvestCard } from '@/components/ui/invest-card';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
+import { useTheme, useThemeMode } from '@/hooks/theme';
 import type { Transaction } from '@/src/domain/transactions';
 import React, { useMemo } from 'react';
 import { FlatList, StyleSheet, View, ViewStyle } from 'react-native';
@@ -26,12 +26,28 @@ function formatAmount(amount: number, currency: Transaction['currency']) {
 function formatWhen(date: Date | string) {
     const d = new Date(date);
     const now = new Date();
-    const isToday =
-        d.getDate() === now.getDate() &&
-        d.getMonth() === now.getMonth() &&
-        d.getFullYear() === now.getFullYear();
-    const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    return `${isToday ? 'TODAY' : d.toLocaleDateString()}, ${time}`;
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfYesterday = new Date(startOfToday);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
+    const time = d.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+
+    if (d >= startOfToday) {
+        return `TODAY, ${time}`;
+    }
+    if (d >= startOfYesterday) {
+        return `YESTERDAY, ${time}`;
+    }
+
+    const dayLabel = d.toLocaleDateString(undefined, {
+        month: 'long',
+        day: 'numeric',
+    });
+
+    return `${dayLabel.toUpperCase()}, ${time}`;
 }
 
 export function TransactionList({
@@ -40,6 +56,8 @@ export function TransactionList({
     emptyText = 'No transactions yet.',
     contentContainerStyle,
 }: TransactionListProps) {
+    const t = useTheme();
+    const { isDark } = useThemeMode();
     const items = useMemo(() => data ?? [], [data]);
 
     if (loading) {
@@ -67,28 +85,75 @@ export function TransactionList({
             data={items}
             keyExtractor={(t) => t.id}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={[{ paddingHorizontal: 20 }, contentContainerStyle as any]}
+            contentContainerStyle={[
+                { paddingHorizontal: 16, paddingBottom: 20 },
+                contentContainerStyle as any,
+            ]}
             renderItem={({ item }) => {
                 const amountText = formatAmount(item.amount, item.currency);
                 const isPositive = item.amount >= 0;
+                const cardBg = isDark ? t.background.onBase2 : t.background.onBase;
+                const cardBorder = isDark ? t.outline.outline2 : t.outline.outline1;
+
                 return (
-                    <InvestCard
+                    <View
                         key={item.id}
-                        symbol={item.notes || 'Transfer'}
-                        address={formatWhen(item.createdAt)}
-                        price={amountText}
-                        changePositive={isPositive}
-                        style={{ marginBottom: 12, padding: 6 }}
-                        left={
+                        style={[
+                            styles.row,
+                            {
+                                backgroundColor: cardBg,
+                                borderColor: cardBorder,
+                            },
+                        ]}
+                    >
+                        <View
+                            style={[
+                                styles.leftIcon,
+                                {
+                                    backgroundColor: isDark ? t.background.onBase : '#F7F8FA',
+                                    borderColor: cardBorder,
+                                },
+                            ]}
+                        >
                             <Icon
-                                name={IconName.Usdc}
-                                size={44}
-                                color={"#3E73C4"}
+                                name={IconName.Property1Plus}
+                                size={14}
+                                color={t.text.normal}
                             />
-                        }
-                        
-                        addressPrefix={<Icon name={IconName.Property1Variant25} size={14} />}
-                    />
+                        </View>
+
+                        <View style={{ flex: 1, gap: 4 }}>
+                            <AppText
+                                variant={TextVariant.BodyMedium}
+                                style={{ color: t.text.normal, fontWeight: '700' }}
+                            >
+                                {(item.notes || 'Transfer').toUpperCase()}
+                            </AppText>
+                            <View style={styles.subRow}>
+                                <Icon
+                                    name={IconName.Property1Variant25}
+                                    size={14}
+                                    color={t.text.lessEmphasis}
+                                />
+                                <AppText
+                                    variant={TextVariant.Secondary}
+                                    style={{ color: t.text.lessEmphasis }}
+                                >
+                                    {formatWhen(item.createdAt)}
+                                </AppText>
+                            </View>
+                        </View>
+
+                        <AppText
+                            variant={TextVariant.BodyMedium}
+                            style={{
+                                color: isPositive ? t.text.success : t.text.error,
+                                fontWeight: '700',
+                            }}
+                        >
+                            {amountText}
+                        </AppText>
+                    </View>
                 );
             }}
         />
@@ -103,6 +168,29 @@ const styles = StyleSheet.create({
     },
     muted: {
         color: '#666',
+    },
+    row: {
+        minHeight: 62,
+        borderRadius: 12,
+        borderWidth: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        marginBottom: 12,
+        gap: 12,
+    },
+    leftIcon: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        borderWidth: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    subRow: {
+        flexDirection: 'row',
+        gap: 6,
+        alignItems: 'center',
     },
 });
 

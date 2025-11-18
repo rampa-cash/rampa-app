@@ -125,7 +125,7 @@ function BalanceCard({
                             onPress={onAddFunds}
                         />
                         <IconButton
-                            iconName={IconName.Property1ArrowDown}
+                            iconName={IconName.Property1ArrowReceive}
                             title="Receive Money"
                             textPosition="outside"
                             textVariant={TextVariant.Secondary}

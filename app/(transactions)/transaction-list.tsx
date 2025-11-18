@@ -26,7 +26,7 @@ export default function RecentTransactionsScreen() {
                     bordered
                     onPress={() => router.back()}
                 />
-                <AppText style={styles.title}>Recent Transactions</AppText>
+                <AppText style={styles.title}>Recent Transaction</AppText>
                 <View style={{ width: 40 }} />
             </View>
 

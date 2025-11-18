@@ -19,7 +19,7 @@ export type ButtonProps = {
     onPress?: () => void;
     disabled?: boolean;
     color?: keyof typeof Theme.light.text; // Optional text color override
-    iconColor?: keyof typeof Theme.light.icon; // Optional text color override
+    iconColor?: keyof typeof Theme.light.icon | string; // Optional icon color override
     backgroundColor?: string; // Optional background override
     style?: ViewStyle | ViewStyle[];
     textPosition?: 'left' | 'right' | 'top' | 'bottom' | 'outside';
@@ -35,7 +35,7 @@ function resolveVariantColors(
     isDark: boolean,
     disabled?: boolean,
     colorOverride?: keyof typeof Theme.light.text,
-    colorIconOverride?: keyof typeof Theme.light.icon,
+    colorIconOverride?: keyof typeof Theme.light.icon | string,
     bgOverride?: string
 ) {
     if (disabled) {
@@ -47,9 +47,16 @@ function resolveVariantColors(
         };
     }
 
+    const resolvedIconColor =
+        typeof colorIconOverride === 'string'
+            ? colorIconOverride
+            : colorIconOverride
+                ? t.icon[colorIconOverride]
+                : t.icon.variant;
+
     return {
         background: bgOverride ?? (isDark ? t.background.dim : '#FAF9F6'),
-        color: colorIconOverride ? t.icon[colorIconOverride] : t.icon.variant,
+        color: resolvedIconColor,
         foreground: colorOverride ? t.text[colorOverride] : t.text.normal,
     };
 }
@@ -124,7 +131,7 @@ export function IconButton({
             >
                 {textPosition === 'left' && title && text}
                 {iconName && (
-                    <Icon name={iconName} size={iconSize} color={iconColor} />
+                    <Icon name={iconName} size={iconSize} color={iconColor as any} />
                 )}
                 {textPosition === 'right' && title && text}
             </Pressable>
