@@ -4,72 +4,124 @@ import { ListCard } from '@/components/ui/list-card';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
 import { useTheme, useThemeMode } from '@/hooks/theme';
+import { useAuth } from '@/src/domain/auth/useAuth';
 import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 export type AuthEntryProps = {
-  onEmail?: () => void;
-  onPhone?: () => void;
+    onEmail?: () => void;
+    onPhone?: () => void;
 };
 
 export function AuthEntry({ onEmail, onPhone }: AuthEntryProps) {
-  const router = useRouter();
-  const t = useTheme();
-  const { isDark } = useThemeMode()
+    const router = useRouter();
+    const t = useTheme();
+    const { isDark } = useThemeMode();
+    const { loginWithOAuth, isLoading } = useAuth();
+    const [oauthError, setOauthError] = useState<string | null>(null);
 
-  const goEmail = () => (onEmail ? onEmail() : router.push('/(auth)/login-email' as any));
-  const goPhone = () => (onPhone ? onPhone() : router.push('/(auth)/login-phone' as any));
+    const goEmail = () =>
+        onEmail ? onEmail() : router.push('/(auth)/login-email' as any);
+    const goPhone = () =>
+        onPhone ? onPhone() : router.push('/(auth)/login-phone' as any);
 
-  return (
-    <View style={styles.container}>
-      <View style={{ gap: 8, flexDirection: 'row', alignItems: 'center' }} >
-        <Icon name={IconName.Property1RampaSolid} color={isDark ? t.icon.variant : t.icon.normal} />
-        <AppText variant={TextVariant.Secondary} >Connect your way</AppText>
-      </View>
+    const handleOAuth = async (provider: 'google' | 'apple') => {
+        setOauthError(null);
+        try {
+            await loginWithOAuth(provider);
+            // Navigation will happen automatically via AuthLayout useEffect
+            // when isAuthenticated becomes true
+        } catch (err) {
+            // Error is already logged in useAuth hook and ParaAuthProvider
+            // Extract user-friendly message from error
+            const errorMessage =
+                err instanceof Error ? err.message : `${provider} login failed`;
 
-      <AppText variant={TextVariant.H1} style={{ color: t.text.normal, marginTop: 24, marginBottom: 42 }}>
-        Choose how you’d like to join Rampa
-      </AppText>
+            // Show user-friendly message in UI
+            if (
+                errorMessage.includes('Status: 500') ||
+                errorMessage.includes('Internal Server Error')
+            ) {
+                setOauthError('Server error. Please try again in a moment.');
+            } else if (
+                errorMessage.includes('cancelled') ||
+                errorMessage.includes('canceled')
+            ) {
+                setOauthError('Sign in was cancelled.');
+            } else {
+                setOauthError(
+                    `Failed to sign in with ${provider}. Please try again.`
+                );
+            }
+            // Don't log here - already logged in useAuth hook
+        }
+    };
 
-      <View style={{ gap: 18 }}>
-        <ListCard
-          title="Apple"
-          disabled
-          onPress={goEmail}
-          left={<Icon name={IconName.Property1Apple} />}
-        />
-        <ListCard
-          title="Google"
-          disabled
-          onPress={goEmail}
-          left={<Icon name={IconName.Property1Google} />}
-        />
+    return (
+        <View style={styles.container}>
+            <View
+                style={{ gap: 8, flexDirection: 'row', alignItems: 'center' }}
+            >
+                <Icon
+                    name={IconName.Property1RampaSolid}
+                    color={isDark ? t.icon.variant : t.icon.normal}
+                />
+                <AppText variant={TextVariant.Secondary}>
+                    Connect your way
+                </AppText>
+            </View>
 
-        <ListCard
-          title="Email"
-          onPress={goEmail}
-          left={<Icon name={IconName.Vector} />}
-        />
-        <ListCard
-          title="Wallet"
-          disabled
-          onPress={goEmail}
-          left={<Icon name={IconName.Property1Card} />}
-        />
-        <ListCard
-          title="Phone"
-          onPress={goPhone}
-          left={<Icon name={IconName.Property1Phone} />}
-        />
-      </View>
-    </View>
-  );
+            <AppText
+                variant={TextVariant.H1}
+                style={{
+                    color: t.text.normal,
+                    marginTop: 24,
+                    marginBottom: 42,
+                }}
+            >
+                Choose how you’d like to join Rampa
+            </AppText>
+
+            <View style={{ gap: 18 }}>
+                <ListCard
+                    title="Apple"
+                    disabled={isLoading}
+                    onPress={() => handleOAuth('apple')}
+                    left={<Icon name={IconName.Property1Apple} />}
+                />
+                <ListCard
+                    title="Google"
+                    disabled={isLoading}
+                    onPress={() => handleOAuth('google')}
+                    left={<Icon name={IconName.Property1Google} />}
+                />
+
+                <ListCard
+                    title="Email"
+                    onPress={goEmail}
+                    left={<Icon name={IconName.Vector} />}
+                />
+                <ListCard
+                    title="Wallet"
+                    disabled
+                    onPress={goEmail}
+                    left={<Icon name={IconName.Property1Card} />}
+                />
+                <ListCard
+                    title="Phone"
+                    onPress={goPhone}
+                    left={<Icon name={IconName.Property1Phone} />}
+                />
+            </View>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
+    container: {
+        width: '100%',
+    },
 });
 
 export default AuthEntry;

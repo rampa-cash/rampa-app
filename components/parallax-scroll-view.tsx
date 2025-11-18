@@ -59,7 +59,9 @@ export default function ParallaxScrollView({
                     styles.header,
                     {
                         backgroundColor:
-                            headerBackgroundColor[colorScheme === 'dark' ? 'dark' : 'light'],
+                            headerBackgroundColor[
+                                colorScheme === 'dark' ? 'dark' : 'light'
+                            ],
                     },
                     headerAnimatedStyle,
                 ]}

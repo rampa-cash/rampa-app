@@ -26,7 +26,7 @@ export function TransactionCard({
     right,
     style,
 }: TransactionCardProps) {
-    const t = useTheme( );
+    const t = useTheme();
     const { isDark } = useThemeMode();
     const bg = isDark ? t.background.onBase2 : t.background.onBase;
     const border = isDark ? t.outline.outline2 : t.outline.outline1;

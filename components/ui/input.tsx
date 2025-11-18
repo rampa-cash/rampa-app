@@ -17,7 +17,10 @@ import { TextVariant } from './text-variants';
 
 type Mode = keyof typeof Theme; // 'light' | 'dark'
 
-export type AppInputProps = Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
+export type AppInputProps = Omit<
+    TextInputProps,
+    'style' | 'placeholderTextColor'
+> & {
     label?: string;
     helperText?: string;
     error?: boolean | string;
@@ -38,7 +41,6 @@ function resolveColors(
     hasError: boolean,
     disabled?: boolean
 ) {
-
     const baseText = disabled ? t.text.lessEmphasis : t.text.normal;
     const placeholder = t.text.lessEmphasis;
 
@@ -69,13 +71,20 @@ function resolveColors(
     const labelColor = hasError
         ? t.text.error
         : focused
-        ? Palette.primary.signalViolet
-        : t.text.lessEmphasis;
+          ? Palette.primary.signalViolet
+          : t.text.lessEmphasis;
 
     // Helper color
     const helperColor = hasError ? t.text.error : t.text.lessEmphasis;
 
-    return { bg, text: baseText, placeholder, borderColor, labelColor, helperColor } as const;
+    return {
+        bg,
+        text: baseText,
+        placeholder,
+        borderColor,
+        labelColor,
+        helperColor,
+    } as const;
 }
 
 export function AppInput({
@@ -102,7 +111,15 @@ export function AppInput({
 
     const hasError = Boolean(error);
     const scheme = useMemo(
-        () => resolveColors(t, isDark, variant, focused, hasError, disabled || editable === false),
+        () =>
+            resolveColors(
+                t,
+                isDark,
+                variant,
+                focused,
+                hasError,
+                disabled || editable === false
+            ),
         [t, isDark, variant, focused, hasError, disabled, editable]
     );
 
@@ -110,12 +127,12 @@ export function AppInput({
 
     const effectiveSecure = showToggle ? !reveal : Boolean(secureTextEntry);
 
-    const handleFocus: TextInputProps['onFocus'] = (e) => {
+    const handleFocus: TextInputProps['onFocus'] = e => {
         setFocused(true);
         onFocus?.(e);
     };
 
-    const handleBlur: TextInputProps['onBlur'] = (e) => {
+    const handleBlur: TextInputProps['onBlur'] = e => {
         setFocused(false);
         onBlur?.(e);
     };
@@ -163,10 +180,13 @@ export function AppInput({
                 {showToggle ? (
                     <Pressable
                         accessibilityRole="button"
-                        onPress={() => setReveal((s) => !s)}
+                        onPress={() => setReveal(s => !s)}
                         style={styles.side}
                     >
-                        <AppText variant={TextVariant.Secondary} color="lessEmphasis">
+                        <AppText
+                            variant={TextVariant.Secondary}
+                            color="lessEmphasis"
+                        >
                             {reveal ? 'Ocultar' : 'Mostrar'}
                         </AppText>
                     </Pressable>
@@ -175,7 +195,7 @@ export function AppInput({
                 ) : null}
             </View>
 
-            {(helperText || typeof error === 'string') ? (
+            {helperText || typeof error === 'string' ? (
                 <AppText
                     variant={TextVariant.Caption}
                     style={{ marginTop: 6, color: scheme.helperColor }}

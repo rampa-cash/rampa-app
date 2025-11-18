@@ -1,10 +1,5 @@
 import { SupportedCurrency } from '@/constants/currency';
-import React, {
-    createContext,
-    useContext,
-    useMemo,
-    useState,
-} from 'react';
+import React, { createContext, useContext, useMemo, useState } from 'react';
 
 export type WalletCurrency = 'EURC' | 'USDC' | 'SOL';
 
@@ -42,9 +37,7 @@ type WalletContextValue = {
     meta: WalletMeta;
 };
 
-const WalletContext = createContext<WalletContextValue | undefined>(
-    undefined
-);
+const WalletContext = createContext<WalletContextValue | undefined>(undefined);
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
     const [currency, setCurrency] = useState<WalletCurrency>('EURC');
@@ -74,4 +67,3 @@ export function useWallet() {
 }
 
 export { WALLET_META };
-

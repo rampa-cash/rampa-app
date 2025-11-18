@@ -83,7 +83,11 @@ export default function LegalNameScreen() {
             </View>
 
             <View style={styles.footer}>
-                <AppButton title="Next" onPress={handleNext} disabled={!canContinue} />
+                <AppButton
+                    title="Next"
+                    onPress={handleNext}
+                    disabled={!canContinue}
+                />
             </View>
         </ScreenContainer>
     );
@@ -115,4 +119,3 @@ const styles = StyleSheet.create({
         marginTop: 32,
     },
 });
-

@@ -1,16 +1,60 @@
-/**
- * Para Authentication Provider (Adapter)
- *
- * Implements AuthProvider interface using Para SDK
- * Based on Para SDK documentation: https://docs.getpara.com/v2/react-native/setup/expo
- */
-
 import { ParaMobile } from '@getpara/react-native-wallet';
-import { AuthProvider, AuthState, VerificationResult } from '../../ports/AuthProvider';
+import {
+    AuthProvider,
+    AuthState,
+    SessionImportResult,
+    VerificationResult,
+} from '../../ports/AuthProvider';
 import { para } from './paraClient';
+import { BrowserAuthService } from './services/BrowserAuthService';
+import { ParaErrorHandler } from './services/ErrorHandler';
+import { PasskeyService } from './services/PasskeyService';
+import { SessionService } from './services/SessionService';
+import { VerificationService } from './services/VerificationService';
+import { EmailAuthStrategy } from './strategies/EmailAuthStrategy';
+import { OAuthAuthStrategy } from './strategies/OAuthAuthStrategy';
+import { PhoneAuthStrategy } from './strategies/PhoneAuthStrategy';
 
 export class ParaAuthProvider implements AuthProvider {
-    constructor(private paraClient: ParaMobile = para) {}
+    private emailStrategy: EmailAuthStrategy;
+    private phoneStrategy: PhoneAuthStrategy;
+    private oauthStrategy: OAuthAuthStrategy;
+    private browserAuth: BrowserAuthService;
+    private sessionService: SessionService;
+    private verificationService: VerificationService;
+    private passkeyService: PasskeyService;
+
+    constructor(private paraClient: ParaMobile = para) {
+        // Initialize services
+        this.browserAuth = new BrowserAuthService(paraClient);
+        this.sessionService = new SessionService(paraClient);
+        this.passkeyService = new PasskeyService(
+            paraClient,
+            this.sessionService
+        );
+        this.verificationService = new VerificationService(
+            paraClient,
+            this.sessionService,
+            this.passkeyService
+        );
+
+        // Initialize strategies with shared services
+        this.emailStrategy = new EmailAuthStrategy(
+            paraClient,
+            this.browserAuth,
+            this.sessionService
+        );
+        this.phoneStrategy = new PhoneAuthStrategy(
+            paraClient,
+            this.browserAuth,
+            this.sessionService
+        );
+        this.oauthStrategy = new OAuthAuthStrategy(
+            paraClient,
+            this.browserAuth,
+            this.sessionService
+        );
+    }
 
     async initialize(): Promise<void> {
         try {
@@ -22,213 +66,104 @@ export class ParaAuthProvider implements AuthProvider {
     }
 
     async signUpOrLogInWithEmail(email: string): Promise<AuthState> {
-        try {
-            const authState = await this.paraClient.signUpOrLogIn({ 
-                auth: { email } 
-            });
-            
-            if (authState?.stage === 'verify') {
-                return { 
-                    stage: 'verify', 
-                    needsVerification: true,
-                    authState 
-                };
-            } else if (authState?.stage === 'login') {
-                return { 
-                    stage: 'login', 
-                    needsVerification: false,
-                    authState 
-                };
-            }
-            
-            throw new Error('Unexpected auth state from Para SDK');
-        } catch (error) {
-            console.error('Failed to sign up or log in with email:', error);
-            throw new Error(`Email authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+        return this.emailStrategy.signUpOrLogIn(email);
     }
 
     async signUpOrLogInWithPhone(phoneNumber: string): Promise<AuthState> {
-        try {
-            const authState = await this.paraClient.signUpOrLogIn({ 
-                auth: { phone: phoneNumber } 
-            });
-            
-            if (authState?.stage === 'verify') {
-                return { 
-                    stage: 'verify', 
-                    needsVerification: true,
-                    authState 
-                };
-            } else if (authState?.stage === 'login') {
-                return { 
-                    stage: 'login', 
-                    needsVerification: false,
-                    authState 
-                };
-            }
-            
-            throw new Error('Unexpected auth state from Para SDK');
-        } catch (error) {
-            console.error('Failed to sign up or log in with phone:', error);
-            throw new Error(`Phone authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+        return this.phoneStrategy.signUpOrLogIn(phoneNumber);
     }
 
-    async signUpOrLogInWithOAuth(provider: 'google' | 'apple'): Promise<AuthState> {
-        try {
-            const authState = await this.paraClient.signUpOrLogIn({ 
-                auth: { oauth: { provider } } 
-            });
-            
-            // OAuth typically returns 'login' for existing users or 'verify' for new users
-            if (authState?.stage === 'verify') {
-                return { 
-                    stage: 'verify', 
-                    needsVerification: false, // OAuth doesn't need OTP verification
-                    authState 
-                };
-            } else if (authState?.stage === 'login') {
-                return { 
-                    stage: 'login', 
-                    needsVerification: false,
-                    authState 
-                };
-            }
-            
-            throw new Error('Unexpected auth state from Para SDK');
-        } catch (error) {
-            console.error(`Failed to sign up or log in with ${provider}:`, error);
-            throw new Error(`${provider} authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+    async signUpOrLogInWithOAuth(
+        provider: 'google' | 'apple'
+    ): Promise<AuthState> {
+        return this.oauthStrategy.signUpOrLogIn(provider);
     }
 
-    async verifyNewAccount(verificationCode: string, authState?: any): Promise<VerificationResult> {
+    async verifyNewAccount(
+        verificationCode: string,
+        authState?: any
+    ): Promise<VerificationResult> {
+        return this.verificationService.verifyNewAccount(
+            verificationCode,
+            authState
+        );
+    }
+
+    async resendVerificationCode(): Promise<void> {
         try {
-            const verifiedAuthState = await this.paraClient.verifyNewAccount({ 
-                verificationCode 
+            console.log('[ParaAuthProvider] Resending verification code', {
+                type: 'SIGNUP',
             });
-            
-            return {
-                success: true,
-                authState: verifiedAuthState, // This will be used for passkey registration
-            };
-        } catch (error) {
-            console.error('Failed to verify new account:', error);
-            return {
-                success: false,
-            };
+
+            // Para SDK: para.resendVerificationCode({ type?: 'SIGNUP' | 'LINK_ACCOUNT' | 'LOGIN' })
+            // For new account verification, we use 'SIGNUP'
+            await this.paraClient.resendVerificationCode({ type: 'SIGNUP' });
+
+            console.log(
+                '[ParaAuthProvider] Verification code resend completed successfully'
+            );
+        } catch (error: any) {
+            console.error(
+                '[ParaAuthProvider] Failed to resend verification code',
+                {
+                    error,
+                    errorMessage: error?.message,
+                    errorStack: error?.stack,
+                    statusCode: error?.status || error?.statusCode,
+                    errorCode: error?.code,
+                }
+            );
+
+            // Use ErrorHandler to extract and format error
+            const errorInfo = ParaErrorHandler.extractErrorInfo(error);
+            const errorMessage = ParaErrorHandler.buildErrorMessage(errorInfo);
+
+            throw new Error(
+                `Failed to resend verification code: ${errorMessage}`
+            );
         }
     }
 
     async registerPasskey(authState: any): Promise<VerificationResult> {
-        try {
-            await this.paraClient.registerPasskey(authState);
-            
-            // After passkey registration, get user info
-            const userId = await this.getUserId();
-            const email = await this.getEmail();
-            const phone = await this.getPhone();
-            const sessionToken = await this.getSessionToken();
-            
-            return {
-                success: true,
-                userId: userId || undefined,
-                email: email || undefined,
-                phone: phone || undefined,
-                sessionToken: sessionToken || undefined,
-            };
-        } catch (error) {
-            console.error('Failed to register passkey:', error);
-            return {
-                success: false,
-            };
-        }
+        return this.passkeyService.registerPasskey(authState);
     }
 
     async loginWithPasskey(): Promise<VerificationResult> {
-        try {
-            await this.paraClient.loginWithPasskey();
-            
-            // After passkey login, get user info
-            const userId = await this.getUserId();
-            const email = await this.getEmail();
-            const phone = await this.getPhone();
-            const sessionToken = await this.getSessionToken();
-            
-            return {
-                success: true,
-                userId: userId || undefined,
-                email: email || undefined,
-                phone: phone || undefined,
-                sessionToken: sessionToken || undefined,
-            };
-        } catch (error) {
-            console.error('Failed to login with passkey:', error);
-            return {
-                success: false,
-            };
-        }
+        return this.passkeyService.loginWithPasskey();
     }
 
+    // Session management methods - delegate to SessionService
     async isSessionActive(): Promise<boolean> {
-        try {
-            // Para SDK doesn't have a direct isSessionActive method
-            // Check if we can get a session token
-            const sessionToken = await this.getSessionToken();
-            return sessionToken !== null;
-        } catch (error) {
-            console.error('Failed to check session status:', error);
-            return false;
-        }
+        return this.sessionService.isSessionActive();
     }
 
-    async getUserId(): Promise<string | null> {
-        try {
-            // Para SDK user ID retrieval - check Para SDK docs for exact method
-            // This is a placeholder - adjust based on actual Para SDK API
-            const user = await this.paraClient.getUser?.();
-            return user?.id || null;
-        } catch (error) {
-            console.error('Failed to get user ID:', error);
-            return null;
-        }
+    async keepSessionAlive(): Promise<boolean> {
+        return this.sessionService.keepSessionAlive();
     }
 
-    async getEmail(): Promise<string | null> {
-        try {
-            // Para SDK email retrieval - check Para SDK docs for exact method
-            // This is a placeholder - adjust based on actual Para SDK API
-            const user = await this.paraClient.getUser?.();
-            return user?.email || null;
-        } catch (error) {
-            console.error('Failed to get email:', error);
-            return null;
-        }
+    exportSession(options?: { excludeSigners?: boolean }): string {
+        return this.sessionService.exportSession(options);
     }
 
-    async getPhone(): Promise<string | null> {
-        try {
-            // Para SDK phone retrieval - check Para SDK docs for exact method
-            // This is a placeholder - adjust based on actual Para SDK API
-            const user = await this.paraClient.getUser?.();
-            return user?.phone || null;
-        } catch (error) {
-            console.error('Failed to get phone:', error);
-            return null;
-        }
+    async importSessionToBackend(): Promise<SessionImportResult> {
+        return this.sessionService.importSessionToBackend();
     }
 
-    async getSessionToken(): Promise<string | null> {
-        try {
-            // Para SDK session token retrieval - check Para SDK docs for exact method
-            // This is a placeholder - adjust based on actual Para SDK API
-            const session = await this.paraClient.getSession?.();
-            return session?.token || null;
-        } catch (error) {
-            console.error('Failed to get session token:', error);
-            return null;
-        }
+    // Browser flow methods - delegate to BrowserAuthService and SessionService
+    async touchSession(): Promise<void> {
+        return this.sessionService.touchSession();
+    }
+
+    async waitForLogin(): Promise<void> {
+        return this.browserAuth.waitForLogin();
+    }
+
+    async waitForSignup(): Promise<void> {
+        return this.browserAuth.waitForSignup();
+    }
+
+    async waitForWalletCreation(): Promise<void> {
+        return this.browserAuth.waitForWalletCreation();
     }
 
     async logout(): Promise<void> {

@@ -73,16 +73,16 @@ export function Amount({
                 locale,
                 useCurrencyFormat
                     ? {
-                        style: 'currency',
-                        currency,
-                        minimumFractionDigits: showCents ? 2 : 0,
-                        maximumFractionDigits: showCents ? 2 : 0,
-                    }
+                          style: 'currency',
+                          currency,
+                          minimumFractionDigits: showCents ? 2 : 0,
+                          maximumFractionDigits: showCents ? 2 : 0,
+                      }
                     : {
-                        style: 'decimal',
-                        minimumFractionDigits: showCents ? 2 : 0,
-                        maximumFractionDigits: showCents ? 2 : 0,
-                    }
+                          style: 'decimal',
+                          minimumFractionDigits: showCents ? 2 : 0,
+                          maximumFractionDigits: showCents ? 2 : 0,
+                      }
             ),
         [currency, locale, showCents, useCurrencyFormat]
     );
@@ -90,25 +90,36 @@ export function Amount({
     // Manual parsing since formatToParts() is not available in React Native
     const formatted = formatter.format(value);
     const currencyPart = symbolOverride ?? CurrencySymbol[currency];
-    
+
     const { integer, decimal } = useMemo(() => {
         // Remove currency symbol (handles both prefix "$123" and suffix "123€")
         const numberStr = useCurrencyFormat
-            ? formatted.replace(new RegExp(CurrencySymbol[currency].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '').trim()
+            ? formatted
+                  .replace(
+                      new RegExp(
+                          CurrencySymbol[currency].replace(
+                              /[.*+?^${}()|[\]\\]/g,
+                              '\\$&'
+                          ),
+                          'g'
+                      ),
+                      ''
+                  )
+                  .trim()
             : formatted;
-        
+
         // Find the last decimal separator (the one before the fractional digits)
         const lastDot = numberStr.lastIndexOf('.');
         const lastComma = numberStr.lastIndexOf(',');
         const decimalIndex = lastDot > lastComma ? lastDot : lastComma;
-        
+
         if (decimalIndex !== -1) {
             return {
                 integer: numberStr.substring(0, decimalIndex).trim(),
                 decimal: showCents ? numberStr.substring(decimalIndex) : '',
             };
         }
-        
+
         return {
             integer: numberStr.trim() || '0',
             decimal: showCents ? '.00' : '',
@@ -131,8 +142,8 @@ export function Amount({
                         variant === TextVariant.NumH2
                             ? 24
                             : variant === TextVariant.NumH3
-                                ? 20
-                                : 16
+                              ? 20
+                              : 16
                     }
                     color={color}
                     containerStyle={{ marginRight: 6 }}
@@ -169,4 +180,3 @@ const styles = StyleSheet.create({
 });
 
 export default Amount;
-

@@ -6,4 +6,3 @@ export enum ButtonVariant {
 }
 
 export type ButtonVariantKeys = `${ButtonVariant}`;
-

@@ -1,7 +1,13 @@
 import { Palette, Theme } from '@/constants/theme';
 import { useTheme, useThemeMode } from '@/hooks/theme';
 import React from 'react';
-import { Pressable, StyleSheet, Text, TextStyle, ViewStyle } from 'react-native';
+import {
+    Pressable,
+    StyleSheet,
+    Text,
+    TextStyle,
+    ViewStyle,
+} from 'react-native';
 import { ButtonVariant } from './button-variants';
 
 type Mode = keyof typeof Theme; // 'light' | 'dark'
@@ -28,14 +34,19 @@ function resolveVariantColors(
     if (disabled) {
         const bg = isDark ? '#2B2E33' : '#E9E6FF';
         const fg = isDark ? t.text.lessEmphasis : '#AFA7FF';
-        return { background: bgOverride ?? bg, foreground: colorOverride ? t.text[colorOverride] : fg };
+        return {
+            background: bgOverride ?? bg,
+            foreground: colorOverride ? t.text[colorOverride] : fg,
+        };
     }
 
     switch (variant) {
         case ButtonVariant.Primary:
             return {
                 background: bgOverride ?? Palette.primary.signalViolet,
-                foreground: colorOverride ? t.text[colorOverride] : t.text.onPrimaryBackground,
+                foreground: colorOverride
+                    ? t.text[colorOverride]
+                    : t.text.onPrimaryBackground,
             };
         case ButtonVariant.PrimaryContrast:
             // In dark mode use white pill with black text; in light use black pill with white text
@@ -45,20 +56,24 @@ function resolveVariantColors(
                 foreground: colorOverride
                     ? t.text[colorOverride]
                     : isDark
-                        ? t.neutral.black
-                        : t.neutral.white,
+                      ? t.neutral.black
+                      : t.neutral.white,
             };
         case ButtonVariant.Secondary:
             return {
                 background:
                     bgOverride ?? (isDark ? t.background.light : '#000000'),
-                foreground: colorOverride ? t.text[colorOverride] : t.text.normal,
+                foreground: colorOverride
+                    ? t.text[colorOverride]
+                    : t.text.normal,
             };
         case ButtonVariant.Tertiary:
         default:
             return {
                 background: bgOverride ?? 'transparent',
-                foreground: colorOverride ? t.text[colorOverride] : Palette.primary.signalViolet,
+                foreground: colorOverride
+                    ? t.text[colorOverride]
+                    : Palette.primary.signalViolet,
             };
     }
 }
@@ -84,18 +99,32 @@ export function AppButton({
         backgroundColor
     );
 
+    const handlePress = () => {
+        if (!disabled && onPress) {
+            onPress();
+        }
+    };
+
     return (
         <Pressable
-            onPress={onPress}
+            onPress={handlePress}
             disabled={disabled}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             style={({ pressed }) => [
                 styles.base,
-                { backgroundColor: background, opacity: disabled ? 0.7 : pressed ? 0.9 : 1 },
+                {
+                    backgroundColor: background,
+                    opacity: disabled ? 0.7 : pressed ? 0.9 : 1,
+                },
                 variant === ButtonVariant.Tertiary && styles.tertiary,
                 style as any,
             ]}
         >
-            <Text style={[styles.text, { color: foreground }, textStyle as any]}>{title}</Text>
+            <Text
+                style={[styles.text, { color: foreground }, textStyle as any]}
+            >
+                {title}
+            </Text>
         </Pressable>
     );
 }
@@ -122,4 +151,3 @@ const styles = StyleSheet.create({
 });
 
 export default AppButton;
-

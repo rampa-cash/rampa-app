@@ -59,7 +59,7 @@ export function IconButton({
     color,
     iconName,
     backgroundColor,
-    iconColor:iconColorOverride,
+    iconColor: iconColorOverride,
     style,
     textPosition,
     textStyle,
@@ -73,7 +73,14 @@ export function IconButton({
         background,
         foreground,
         color: iconColor,
-    } = resolveVariantColors(t, isDark, disabled, color, iconColorOverride, backgroundColor);
+    } = resolveVariantColors(
+        t,
+        isDark,
+        disabled,
+        color,
+        iconColorOverride,
+        backgroundColor
+    );
 
     const circleSize = iconSize * 2.5;
     const shapeStyle: ViewStyle =

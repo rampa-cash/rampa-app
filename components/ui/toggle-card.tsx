@@ -3,7 +3,7 @@ import { useTheme } from '@/hooks/theme';
 import React from 'react';
 import { Switch, ViewStyle } from 'react-native';
 import { ListCard } from './list-card';
- 
+
 type Mode = keyof typeof Theme;
 
 export type ToggleCardProps = {
@@ -23,7 +23,7 @@ export function ToggleCard({
     disabled,
     style,
 }: ToggleCardProps) {
-    const t = useTheme( );
+    const t = useTheme();
     return (
         <ListCard
             title={title}
@@ -36,7 +36,10 @@ export function ToggleCard({
                     value={value}
                     disabled={disabled}
                     onValueChange={onValueChange}
-                    trackColor={{ false: t.outline.outline2, true: Palette.primary.signalViolet }}
+                    trackColor={{
+                        false: t.outline.outline2,
+                        true: Palette.primary.signalViolet,
+                    }}
                     thumbColor={t.neutral.white}
                 />
             }

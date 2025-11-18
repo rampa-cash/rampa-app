@@ -7,11 +7,20 @@
 
 export interface VerificationResult {
     success: boolean;
-    userId?: string;
-    email?: string;
-    phone?: string;
-    sessionToken?: string;
     authState?: any; // Provider-specific auth state (e.g., for passkey registration)
+}
+
+export interface SessionImportResult {
+    sessionToken: string;
+    user: {
+        id: string;
+        email: string;
+        phone?: string;
+        authProvider?: string;
+        verificationStatus?: string;
+        isVerified?: boolean;
+    };
+    expiresAt: string;
 }
 
 export interface AuthState {
@@ -42,7 +51,15 @@ export interface AuthProvider {
     /**
      * Verify new account with verification code (for email or phone)
      */
-    verifyNewAccount(verificationCode: string, authState?: any): Promise<VerificationResult>;
+    verifyNewAccount(
+        verificationCode: string,
+        authState?: any
+    ): Promise<VerificationResult>;
+
+    /**
+     * Resend verification code (for email or phone)
+     */
+    resendVerificationCode(): Promise<void>;
 
     /**
      * Register passkey for new user (after verification)
@@ -60,24 +77,50 @@ export interface AuthProvider {
     isSessionActive(): Promise<boolean>;
 
     /**
-     * Get current user ID
+     * Extend an active session without requiring full reauthentication
      */
-    getUserId(): Promise<string | null>;
+    keepSessionAlive(): Promise<boolean>;
 
     /**
-     * Get current user email
+     * Export session state to send to server
+     * @param excludeSigners - If true, excludes signing capabilities for enhanced security
      */
-    getEmail(): Promise<string | null>;
+    exportSession(options?: { excludeSigners?: boolean }): string;
 
     /**
-     * Get current user phone number
+     * Import Para session to backend and get backend session token
+     * This should be called after registerPasskey() or loginWithPasskey()
+     *
+     * Flow:
+     * 1. Exports Para session using exportSession()
+     * 2. POSTs to /auth/session/import endpoint
+     * 3. Returns backend sessionToken, user, and expiresAt
      */
-    getPhone(): Promise<string | null>;
+    importSessionToBackend(): Promise<SessionImportResult>;
 
     /**
-     * Get current session token
+     * Restore/refresh session after browser-based authentication flows
+     * Should be called after waitForLogin() or waitForSignup()
      */
-    getSessionToken(): Promise<string | null>;
+    touchSession(): Promise<void>;
+
+    /**
+     * Wait for login to complete after browser-based authentication
+     * Used after opening portal URLs (passkeyUrl, passwordUrl, pinUrl) or loginUrl
+     */
+    waitForLogin(): Promise<void>;
+
+    /**
+     * Wait for signup to complete after browser-based authentication
+     * Used after opening loginUrl for new user signup
+     */
+    waitForSignup(): Promise<void>;
+
+    /**
+     * Wait for wallet creation to complete after password creation in browser
+     * Used after opening passwordUrl for password-based account creation
+     */
+    waitForWalletCreation(): Promise<void>;
 
     /**
      * Logout current user

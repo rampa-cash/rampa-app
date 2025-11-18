@@ -97,19 +97,29 @@ export class Logger {
         // Console logging for development
         if (__DEV__) {
             const logMessage = `[${level.toUpperCase()}] ${message}`;
+            // Only pass context if it exists and has properties
+            const hasContext = context && Object.keys(context).length > 0;
             switch (level) {
                 case LogLevel.DEBUG:
-                    console.debug(logMessage, context);
+                    hasContext
+                        ? console.debug(logMessage, context)
+                        : console.debug(logMessage);
                     break;
                 case LogLevel.INFO:
-                    console.info(logMessage, context);
+                    hasContext
+                        ? console.info(logMessage, context)
+                        : console.info(logMessage);
                     break;
                 case LogLevel.WARN:
-                    console.warn(logMessage, context);
+                    hasContext
+                        ? console.warn(logMessage, context)
+                        : console.warn(logMessage);
                     break;
                 case LogLevel.ERROR:
                 case LogLevel.CRITICAL:
-                    console.error(logMessage, context);
+                    hasContext
+                        ? console.error(logMessage, context)
+                        : console.error(logMessage);
                     break;
             }
         }

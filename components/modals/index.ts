@@ -5,4 +5,3 @@ export * from './AddFundsMethodModal';
 export * from './CardLockInfoModal';
 export * from './CountrySearchModal';
 export * from './ConfirmationModal';
-

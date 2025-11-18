@@ -5,7 +5,12 @@
  * Does not require actual Para SDK or external services.
  */
 
-import { AuthProvider, AuthState, VerificationResult } from '../../ports/AuthProvider';
+import {
+    AuthProvider,
+    AuthState,
+    SessionImportResult,
+    VerificationResult,
+} from '../../ports/AuthProvider';
 
 export class MockAuthProvider implements AuthProvider {
     private mockUserId: string | null = null;
@@ -24,7 +29,11 @@ export class MockAuthProvider implements AuthProvider {
         if (email === 'existing@example.com') {
             return { stage: 'login', needsVerification: false };
         }
-        return { stage: 'verify', needsVerification: true, authState: { email } };
+        return {
+            stage: 'verify',
+            needsVerification: true,
+            authState: { email },
+        };
     }
 
     async signUpOrLogInWithPhone(phoneNumber: string): Promise<AuthState> {
@@ -32,15 +41,28 @@ export class MockAuthProvider implements AuthProvider {
         if (phoneNumber === '+1234567890') {
             return { stage: 'login', needsVerification: false };
         }
-        return { stage: 'verify', needsVerification: true, authState: { phone: phoneNumber } };
+        return {
+            stage: 'verify',
+            needsVerification: true,
+            authState: { phone: phoneNumber },
+        };
     }
 
-    async signUpOrLogInWithOAuth(provider: 'google' | 'apple'): Promise<AuthState> {
+    async signUpOrLogInWithOAuth(
+        provider: 'google' | 'apple'
+    ): Promise<AuthState> {
         // Mock: OAuth always succeeds
-        return { stage: 'login', needsVerification: false, authState: { provider } };
+        return {
+            stage: 'login',
+            needsVerification: false,
+            authState: { provider },
+        };
     }
 
-    async verifyNewAccount(verificationCode: string, authState?: any): Promise<VerificationResult> {
+    async verifyNewAccount(
+        verificationCode: string,
+        authState?: any
+    ): Promise<VerificationResult> {
         // Mock: accept any code except '000000' for testing
         if (verificationCode === '000000') {
             return { success: false };
@@ -53,34 +75,24 @@ export class MockAuthProvider implements AuthProvider {
         };
     }
 
+    async resendVerificationCode(): Promise<void> {
+        // Mock: resend always succeeds
+        // In real implementation, this would trigger Para SDK to resend the code
+    }
+
     async registerPasskey(authState: any): Promise<VerificationResult> {
         // Mock: passkey registration always succeeds
-        this.mockUserId = 'mock-user-id';
-        this.mockEmail = authState?.email || 'user@example.com';
-        this.mockPhone = authState?.phone || null;
-        this.mockSessionToken = 'mock-session-token';
-
+        // Note: Session import will be called separately after this
         return {
             success: true,
-            userId: this.mockUserId,
-            email: this.mockEmail,
-            phone: this.mockPhone,
-            sessionToken: this.mockSessionToken,
         };
     }
 
     async loginWithPasskey(): Promise<VerificationResult> {
         // Mock: passkey login always succeeds
-        this.mockUserId = 'mock-user-id';
-        this.mockEmail = 'existing@example.com';
-        this.mockSessionToken = 'mock-session-token';
-
+        // Note: Session import will be called separately after this
         return {
             success: true,
-            userId: this.mockUserId,
-            email: this.mockEmail,
-            phone: this.mockPhone,
-            sessionToken: this.mockSessionToken,
         };
     }
 
@@ -88,20 +100,63 @@ export class MockAuthProvider implements AuthProvider {
         return this.mockSessionToken !== null;
     }
 
-    async getUserId(): Promise<string | null> {
-        return this.mockUserId;
+    async keepSessionAlive(): Promise<boolean> {
+        // Mock: extend session if active
+        if (this.mockSessionToken) {
+            return true;
+        }
+        return false;
     }
 
-    async getEmail(): Promise<string | null> {
-        return this.mockEmail;
+    exportSession(options?: { excludeSigners?: boolean }): string {
+        // Mock: return a mock session export
+        return JSON.stringify({
+            token: this.mockSessionToken,
+            userId: this.mockUserId,
+            excludeSigners: options?.excludeSigners || false,
+        });
     }
 
-    async getPhone(): Promise<string | null> {
-        return this.mockPhone;
+    async importSessionToBackend(): Promise<SessionImportResult> {
+        // Mock: simulate session import to backend
+        // In real implementation, this would POST to /auth/session/import
+        this.mockUserId = this.mockUserId || 'mock-user-id';
+        this.mockEmail = this.mockEmail || 'user@example.com';
+        this.mockSessionToken =
+            this.mockSessionToken || 'mock-backend-session-token';
+
+        return {
+            sessionToken: this.mockSessionToken,
+            user: {
+                id: this.mockUserId,
+                email: this.mockEmail,
+                phone: this.mockPhone || undefined,
+                authProvider: 'para',
+                verificationStatus: 'verified',
+                isVerified: true,
+            },
+            expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
+        };
     }
 
-    async getSessionToken(): Promise<string | null> {
-        return this.mockSessionToken;
+    async touchSession(): Promise<void> {
+        // Mock: touch session always succeeds
+        // In real implementation, this would restore/refresh the session
+    }
+
+    async waitForLogin(): Promise<void> {
+        // Mock: wait for login always succeeds
+        // In real implementation, this would wait for browser-based login to complete
+    }
+
+    async waitForSignup(): Promise<void> {
+        // Mock: wait for signup always succeeds
+        // In real implementation, this would wait for browser-based signup to complete
+    }
+
+    async waitForWalletCreation(): Promise<void> {
+        // Mock: wait for wallet creation always succeeds
+        // In real implementation, this would wait for password creation in browser to complete
     }
 
     async logout(): Promise<void> {
@@ -113,7 +168,12 @@ export class MockAuthProvider implements AuthProvider {
     }
 
     // Test helpers
-    setMockUser(userId: string, email: string, sessionToken: string, phone?: string): void {
+    setMockUser(
+        userId: string,
+        email: string,
+        sessionToken: string,
+        phone?: string
+    ): void {
         this.mockUserId = userId;
         this.mockEmail = email;
         this.mockPhone = phone || null;

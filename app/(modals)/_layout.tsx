@@ -24,7 +24,7 @@ export default function ModalLayout() {
                 options={{
                     title: 'Receive Money',
                     presentation: 'modal',
-                     headerShown: false,
+                    headerShown: false,
                 }}
             />
             <Stack.Screen
@@ -32,7 +32,7 @@ export default function ModalLayout() {
                 options={{
                     title: 'Cash Out',
                     presentation: 'modal',
-                     headerShown: false,
+                    headerShown: false,
                 }}
             />
             <Stack.Screen
@@ -40,7 +40,7 @@ export default function ModalLayout() {
                 options={{
                     title: 'User Details',
                     presentation: 'modal',
-                     headerShown: false,
+                    headerShown: false,
                 }}
             />
         </Stack>

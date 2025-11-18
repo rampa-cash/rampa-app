@@ -77,7 +77,11 @@ export default function UserDetailsScreen() {
                     onPress={() => router.back()}
                     style={styles.closeButton}
                 >
-                    <MaterialIcons name="close" size={24} color={Colors[theme].text} />
+                    <MaterialIcons
+                        name="close"
+                        size={24}
+                        color={Colors[theme].text}
+                    />
                 </TouchableOpacity>
                 <Text style={styles.title}>Profile</Text>
                 <View style={styles.placeholder} />
@@ -152,9 +156,18 @@ export default function UserDetailsScreen() {
                             />
                         </TouchableOpacity>
                     ))}
-                     <View style={[styles.menuItem, { justifyContent: 'space-between' }]}>
+                    <View
+                        style={[
+                            styles.menuItem,
+                            { justifyContent: 'space-between' },
+                        ]}
+                    >
                         <View style={styles.menuItemLeft}>
-                            <MaterialIcons name="brightness-6" size={24} color={Colors[theme].icon} />
+                            <MaterialIcons
+                                name="brightness-6"
+                                size={24}
+                                color={Colors[theme].icon}
+                            />
                             <Text style={styles.menuItemText}>Dark Mode</Text>
                         </View>
                         <Toggle
@@ -202,142 +215,143 @@ export default function UserDetailsScreen() {
     );
 }
 
-const getStyles = (theme: 'light' | 'dark') => StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: Colors[theme].background,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 20,
-        backgroundColor: Colors[theme].background,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-    },
-    closeButton: {
-        padding: 4,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: Colors[theme].text,
-    },
-    placeholder: {
-        width: 32,
-    },
-    content: {
-        flex: 1,
-        padding: 20,
-    },
-    profileSection: {
-        backgroundColor: Colors[theme].background,
-        padding: 24,
-        borderRadius: 12,
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    avatarContainer: {
-        marginBottom: 16,
-    },
-    userName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: Colors[theme].text,
-        marginBottom: 4,
-    },
-    userEmail: {
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 12,
-    },
-    kycStatus: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#f0f8ff',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 16,
-    },
-    kycText: {
-        fontSize: 14,
-        fontWeight: '600',
-        marginLeft: 4,
-    },
-    menuSection: {
-        backgroundColor: Colors[theme].background,
-        borderRadius: 12,
-        marginBottom: 20,
-    },
-    menuItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
-    },
-    menuItemLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-    },
-    menuItemText: {
-        fontSize: 16,
-        color: Colors[theme].text,
-        marginLeft: 12,
-    },
-    statsSection: {
-        backgroundColor: Colors[theme].background,
-        padding: 20,
-        borderRadius: 12,
-        marginBottom: 20,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: Colors[theme].text,
-        marginBottom: 16,
-    },
-    statsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-    },
-    statItem: {
-        width: '48%',
-        alignItems: 'center',
-        padding: 16,
-        backgroundColor: '#f9f9f9',
-        borderRadius: 8,
-        marginBottom: 12,
-    },
-    statValue: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#007AFF',
-        marginBottom: 4,
-    },
-    statLabel: {
-        fontSize: 12,
-        color: '#666',
-        textAlign: 'center',
-    },
-    logoutButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: Colors[theme].background,
-        padding: 16,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#F44336',
-    },
-    logoutText: {
-        color: '#F44336',
-        fontSize: 16,
-        fontWeight: '600',
-        marginLeft: 8,
-    },
-});
+const getStyles = (theme: 'light' | 'dark') =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: Colors[theme].background,
+        },
+        header: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: 20,
+            backgroundColor: Colors[theme].background,
+            borderBottomWidth: 1,
+            borderBottomColor: '#eee',
+        },
+        closeButton: {
+            padding: 4,
+        },
+        title: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            color: Colors[theme].text,
+        },
+        placeholder: {
+            width: 32,
+        },
+        content: {
+            flex: 1,
+            padding: 20,
+        },
+        profileSection: {
+            backgroundColor: Colors[theme].background,
+            padding: 24,
+            borderRadius: 12,
+            alignItems: 'center',
+            marginBottom: 20,
+        },
+        avatarContainer: {
+            marginBottom: 16,
+        },
+        userName: {
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: Colors[theme].text,
+            marginBottom: 4,
+        },
+        userEmail: {
+            fontSize: 16,
+            color: '#666',
+            marginBottom: 12,
+        },
+        kycStatus: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#f0f8ff',
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 16,
+        },
+        kycText: {
+            fontSize: 14,
+            fontWeight: '600',
+            marginLeft: 4,
+        },
+        menuSection: {
+            backgroundColor: Colors[theme].background,
+            borderRadius: 12,
+            marginBottom: 20,
+        },
+        menuItem: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: '#f0f0f0',
+        },
+        menuItemLeft: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            flex: 1,
+        },
+        menuItemText: {
+            fontSize: 16,
+            color: Colors[theme].text,
+            marginLeft: 12,
+        },
+        statsSection: {
+            backgroundColor: Colors[theme].background,
+            padding: 20,
+            borderRadius: 12,
+            marginBottom: 20,
+        },
+        sectionTitle: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            color: Colors[theme].text,
+            marginBottom: 16,
+        },
+        statsGrid: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+        },
+        statItem: {
+            width: '48%',
+            alignItems: 'center',
+            padding: 16,
+            backgroundColor: '#f9f9f9',
+            borderRadius: 8,
+            marginBottom: 12,
+        },
+        statValue: {
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: '#007AFF',
+            marginBottom: 4,
+        },
+        statLabel: {
+            fontSize: 12,
+            color: '#666',
+            textAlign: 'center',
+        },
+        logoutButton: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: Colors[theme].background,
+            padding: 16,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: '#F44336',
+        },
+        logoutText: {
+            color: '#F44336',
+            fontSize: 16,
+            fontWeight: '600',
+            marginLeft: 8,
+        },
+    });
