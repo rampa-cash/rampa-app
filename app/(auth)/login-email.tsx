@@ -1,6 +1,6 @@
 import { Header } from '@/components/login/Header';
 import AppButton from '@/components/ui/buttons/button';
-import { AppInput } from '@/components/ui/input';
+import AppInput from '@/components/ui/input';
 import ScreenContainer from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';

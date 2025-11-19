@@ -24,6 +24,8 @@ export default function TabLayout() {
                     tabBarButton: HapticTab,
                     tabBarStyle: {
                         minHeight: 80,
+                        backgroundColor: '#fcfcfd', // fondo del tab bar + stepper
+
                     },
                     tabBarIconStyle: {
                         height: '100%',
@@ -53,14 +55,14 @@ export default function TabLayout() {
                 />
 
                 <Tabs.Screen
-                    name="wallet"
+                    name="card"
                     options={{
-                        title: 'Wallet',
+                        title: 'Card',
                         tabBarIcon: ({ color, focused }) => (
                             <Icon
                                 name={
                                     focused
-                                        ? IconName.Property1Card
+                                        ? IconName.Property1Wallet
                                         : IconName.Property1CardOutline
                                 }
                                 size={24}
@@ -82,18 +84,18 @@ export default function TabLayout() {
                                     focused
                                         ? color
                                         : isDark
-                                          ? neutral.graphiteGrey
-                                          : 'transparent'
+                                            ? neutral.graphiteGrey
+                                            : 'transparent'
                                 }
                                 label="Send"
                                 shape="circle"
-                                borderColor={icon.normal}
+                                borderColor={icon.lessEmphasis}
                                 color={
                                     isDark
                                         ? icon.normal
                                         : focused
-                                          ? 'white'
-                                          : icon.normal
+                                            ? 'white'
+                                            : icon.normal
                                 }
                             />
                         ),

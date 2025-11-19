@@ -50,7 +50,7 @@ export default function AddFundsScreen() {
 
             <View style={styles.hero}>
                 <AppText variant={TextVariant.H1}>Add funds</AppText>
-                <AppText variant={TextVariant.Secondary} color="lessEmphasis">
+                <AppText variant={TextVariant.BodyMedium} color="normal2">
                     Top up your wallet instantly using card, bank, or
                     stablecoins.
                 </AppText>
@@ -85,7 +85,7 @@ export default function AddFundsScreen() {
                                         }
                                         containerStyle={styles.iconInner}
                                         color={
-                                            isDark ? t.icon.variant : undefined
+                                            isDark ? t.icon.variant : t.icon.normal
                                         }
                                     />
                                 }

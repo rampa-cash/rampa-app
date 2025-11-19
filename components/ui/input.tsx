@@ -25,6 +25,7 @@ export type AppInputProps = Omit<
     helperText?: string;
     error?: boolean | string;
     variant?: InputVariant;
+    backgroundColor?: string;
     left?: React.ReactNode;
     right?: React.ReactNode;
     containerStyle?: ViewStyle | ViewStyle[];
@@ -39,13 +40,15 @@ function resolveColors(
     variant: InputVariant,
     focused: boolean,
     hasError: boolean,
-    disabled?: boolean
+    disabled?: boolean,
+    backgroundColor?: string
 ) {
     const baseText = disabled ? t.text.lessEmphasis : t.text.normal;
     const placeholder = t.text.lessEmphasis;
 
     // Background selection per variant/state
     const bg = (() => {
+        if (backgroundColor) return backgroundColor;
         if (disabled) return t.background.inactive;
         switch (variant) {
             case InputVariant.Filled:
@@ -71,8 +74,8 @@ function resolveColors(
     const labelColor = hasError
         ? t.text.error
         : focused
-          ? Palette.primary.signalViolet
-          : t.text.lessEmphasis;
+            ? Palette.primary.signalViolet
+            : t.text.lessEmphasis;
 
     // Helper color
     const helperColor = hasError ? t.text.error : t.text.lessEmphasis;
@@ -102,6 +105,7 @@ export function AppInput({
     onFocus,
     onBlur,
     editable,
+    backgroundColor,
     ...rest
 }: AppInputProps) {
     const t = useTheme();
@@ -118,9 +122,10 @@ export function AppInput({
                 variant,
                 focused,
                 hasError,
-                disabled || editable === false
+                disabled || editable === false,
+                backgroundColor
             ),
-        [t, isDark, variant, focused, hasError, disabled, editable]
+        [t, isDark, variant, focused, hasError, disabled, editable, backgroundColor]
     );
 
     const showToggle = Boolean(secureToggle && secureTextEntry);
@@ -138,7 +143,7 @@ export function AppInput({
     };
 
     return (
-        <View style={containerStyle as any}>
+        <View style={[backgroundColor ? { backgroundColor } : null, containerStyle as any]}>
             {label ? (
                 <AppText
                     variant={TextVariant.SecondaryMedium}
@@ -168,13 +173,14 @@ export function AppInput({
                         styles.input,
                         { color: scheme.text },
                         inputStyle as any,
-                    ]}
+                     ]}
                     placeholderTextColor={scheme.placeholder}
                     editable={disabled ? false : editable}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                     secureTextEntry={effectiveSecure}
                     {...rest}
+
                 />
 
                 {showToggle ? (

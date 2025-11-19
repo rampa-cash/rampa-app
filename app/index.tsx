@@ -1,3 +1,5 @@
+import { StorageKeys } from '@/constants/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../src/domain/auth/authStore';
@@ -37,7 +39,33 @@ export default function Index() {
             setIsValidating(false);
         }
     }, []); // Only run on mount
+    const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
+    const [shouldShowOnboarding, setShouldShowOnboarding] = useState(false);
 
+    useEffect(() => {
+        const checkOnboarding = async () => {
+            try {
+                const seenFlag = await AsyncStorage.getItem(
+                    StorageKeys.onboardingSeen
+                );
+                setShouldShowOnboarding(!seenFlag);
+            } catch {
+                setShouldShowOnboarding(false);
+            } finally {
+                setHasCheckedOnboarding(true);
+            }
+        };
+
+        checkOnboarding();
+    }, []);
+
+    if (!hasCheckedOnboarding) {
+        return null;
+    }
+
+    if (!isAuthenticated && shouldShowOnboarding) {
+        return <Redirect href="/onboarding" />;
+    }
     // Show nothing while validating session
     if (isValidating) {
         return null; // Or a loading spinner

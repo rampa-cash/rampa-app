@@ -28,6 +28,6 @@ export default function CustomTabBar(
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#fff', // fondo del tab bar + stepper
+        backgroundColor: '#fcfcfd', // fondo del tab bar + stepper
     },
 });

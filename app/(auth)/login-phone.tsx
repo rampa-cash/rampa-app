@@ -1,6 +1,7 @@
+import ConfirmContactModal from '@/components/login/ConfirmContactModal';
 import {
-    CountryItem,
-    CountrySearchModal,
+  CountryItem,
+  CountrySearchModal,
 } from '@/components/modals/CountrySearchModal';
 import AppButton from '@/components/ui/buttons/button';
 import { IconButton } from '@/components/ui/buttons/IconButton';
@@ -10,21 +11,14 @@ import { AppInput } from '@/components/ui/input';
 import ScreenContainer from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
+import { COUNTRIES } from '@/constants/countries';
+import { useSignup } from '@/hooks/SignupProvider';
 import { useTheme } from '@/hooks/theme';
 import { useAuth } from '@/src/domain/auth/useAuth';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const COUNTRY_OPTIONS: CountryItem[] = [
-    { code: 'US', dial: '+1', name: 'United States', emoji: '🇺🇸' },
-    { code: 'CA', dial: '+1', name: 'Canada', emoji: '🇨🇦' },
-    { code: 'ES', dial: '+34', name: 'Spain', emoji: '🇪🇸' },
-    { code: 'GB', dial: '+44', name: 'United Kingdom', emoji: '🇬🇧' },
-    { code: 'DE', dial: '+49', name: 'Germany', emoji: '🇩🇪' },
-    { code: 'CO', dial: '+57', name: 'Colombia', emoji: '🇨🇴' },
-];
 
 const MIN_PHONE_LENGTH = 7;
 
@@ -37,15 +31,15 @@ export default function LoginPhoneScreen() {
     const [phone, setPhone] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [selectedCountry, setSelectedCountry] = useState<CountryItem>(
-        COUNTRY_OPTIONS[0]
+        COUNTRIES[0]
     );
     const [countryQuery, setCountryQuery] = useState('');
     const [countryModalVisible, setCountryModalVisible] = useState(false);
 
     const filteredCountries = useMemo(() => {
         const normalized = countryQuery.trim().toLowerCase();
-        if (!normalized) return COUNTRY_OPTIONS;
-        return COUNTRY_OPTIONS.filter(c => {
+        if (!normalized) return COUNTRIES;
+        return COUNTRIES.filter(c => {
             const target = `${c.name} ${c.dial} ${c.code}`.toLowerCase();
             return target.includes(normalized);
         });
@@ -57,7 +51,7 @@ export default function LoginPhoneScreen() {
     };
 
     const handleSelectCountry = (code: string) => {
-        const match = COUNTRY_OPTIONS.find(c => c.code === code);
+        const match = COUNTRIES.find(c => c.code === code);
         if (match) {
             setSelectedCountry(match);
         }
@@ -115,7 +109,7 @@ export default function LoginPhoneScreen() {
             // Format phone number to E.164 format: +{country code}{number}
             const formattedPhone = formatPhoneNumber(
                 phone,
-                selectedCountry.dial
+                selectedCountry.dial!
             );
 
             console.log('[LoginPhone] Attempting login with formatted phone', {
@@ -140,13 +134,21 @@ export default function LoginPhoneScreen() {
             ) {
                 // Navigate to verification screen with phone parameter
                 router.push(
-                    `/(auth)/verify-phone?phone=${encodeURIComponent(formatPhoneNumber(phone, selectedCountry.dial))}` as any
+                    `/(auth)/verify-phone?phone=${encodeURIComponent(formatPhoneNumber(phone, selectedCountry.dial!))}` as any
                 );
             } else {
                 setError(errorMessage);
             }
         }
     };
+
+    const [confirmVisible, setConfirmVisible] = useState(false);
+    const { setContact } = useSignup();
+
+    const formattedPhone = useMemo(
+        () => `${selectedCountry.dial}${phone.trim()}`,
+        [phone, selectedCountry.dial]
+    );
 
     return (
         <>
@@ -182,7 +184,7 @@ export default function LoginPhoneScreen() {
                         variant={TextVariant.Secondary}
                         color="lessEmphasis"
                     >
-                        We'll send you a confirmation code there
+                        We&apos;ll send you a confirmation code there
                     </AppText>
                 </View>
 
@@ -209,12 +211,22 @@ export default function LoginPhoneScreen() {
                                 },
                             ]}
                         >
-                            <AppText
-                                variant={TextVariant.Body}
-                                style={styles.countryEmoji}
-                            >
-                                {selectedCountry.emoji ?? '🌐'}
-                            </AppText>
+                            <View style={styles.countryFlagWrapper}>
+                                {selectedCountry.flag ? (
+                                    <Image
+                                        source={{ uri: selectedCountry.flag }}
+                                        style={styles.countryFlagImage}
+                                        resizeMode="center"
+                                    />
+                                ) : (
+                                    <AppText
+                                        variant={TextVariant.Body}
+                                        style={styles.countryEmoji}
+                                    >
+                                        {selectedCountry.emoji ?? 'dYO?'}
+                                    </AppText>
+                                )}
+                            </View>
                             <AppText
                                 variant={TextVariant.BodyMedium}
                                 style={styles.countryDial}
@@ -231,44 +243,38 @@ export default function LoginPhoneScreen() {
                         <AppInput
                             placeholder="Enter your phone number"
                             value={phone}
-                            onChangeText={text => {
-                                setPhone(text);
-                                if (error) setError(null);
-                            }}
+                            onChangeText={setPhone}
                             keyboardType="phone-pad"
                             returnKeyType="done"
                             containerStyle={styles.phoneInput}
                             inputStyle={styles.phoneInputText}
-                            error={error || undefined}
-                            disabled={isLoading}
                         />
                     </View>
                 </View>
 
                 <View style={styles.flexSpacer} />
 
-                <View style={{ paddingBottom: insets.bottom }}>
-                    <AppButton
-                        title={
-                            isLoading ? 'Loading...' : 'Get confirmation code'
-                        }
-                        onPress={() => {
-                            console.log(
-                                '[PhoneLogin] Button pressed - phone:',
-                                phone,
-                                'length:',
-                                phone.length,
-                                'canContinue:',
-                                canContinue,
-                                'isLoading:',
-                                isLoading
-                            );
-                            handleContinue();
-                        }}
-                        disabled={!canContinue || isLoading}
-                    />
-                </View>
+                <AppButton
+                    title="Get confirmation code"
+                    onPress={() => setConfirmVisible(true)}
+                    disabled={!canContinue}
+                />
             </ScreenContainer>
+
+            <ConfirmContactModal
+                visible={confirmVisible}
+                contact={formattedPhone}
+                message="Is this phone number correct? We'll send you a confirmation code there"
+                onCancel={() => setConfirmVisible(false)}
+                onConfirm={() => {
+                    setConfirmVisible(false);
+                    setContact('phone', formattedPhone);
+                    router.push({
+                        pathname: '/(auth)/verify-code',
+                        params: { method: 'phone', contact: formattedPhone },
+                    } as any);
+                }}
+            />
 
             <Modal
                 visible={countryModalVisible}
@@ -314,7 +320,6 @@ const styles = StyleSheet.create({
         lineHeight: 36,
     },
     card: {
-        padding: 20,
         borderRadius: 20,
         gap: 16,
     },
@@ -326,11 +331,22 @@ const styles = StyleSheet.create({
     countryPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 14,
+        paddingHorizontal: 9,
         paddingVertical: 10,
         borderRadius: 16,
         borderWidth: 1,
         gap: 6,
+    },
+    countryFlagWrapper: {
+        width: 32,
+        height: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    countryFlagImage: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
     },
     countryEmoji: {
         fontSize: 20,

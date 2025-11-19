@@ -129,12 +129,13 @@ export function VirtualCard({
 
 const styles = StyleSheet.create({
     container: {
-        width: '100%',
+         
     },
     card: {
         borderRadius: 16,
         padding: 16,
-        height: 180,
+        height: 224,
+        width:358,
         overflow: 'hidden',
     },
 });

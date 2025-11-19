@@ -7,9 +7,10 @@ import {
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import 'react-native-reanimated';
 import SplashScreen from '../components/ui/splash-screen';
+import { SignupProvider } from '../hooks/SignupProvider';
 import { ThemeProvider } from '../hooks/ThemeProvider';
 import { WalletProvider } from '../hooks/WalletProvider';
 import { queryClient } from '../src/lib/queryClient';
@@ -36,21 +37,36 @@ function AppLayout() {
         initProviders();
     }, []);
 
-    const { theme } = useTheme();
+    const themeTokens = useTheme();
+    const navTheme = useMemo(() => {
+        const base = themeTokens.theme === 'dark' ? DarkTheme : DefaultTheme;
+        return {
+            ...base,
+            colors: {
+                ...base.colors,
+                background: themeTokens.background.base,
+                card: themeTokens.background.onBase2,
+                primary: themeTokens.primary.signalViolet,
+                text: themeTokens.text.normal,
+                border: themeTokens.outline.outline1,
+                notification: themeTokens.primary.flowAqua,
+            },
+        };
+    }, [themeTokens]);
 
     if (booting) {
         return (
             <NavThemeProvider
-                value={theme === 'dark' ? DarkTheme : DefaultTheme}
+                value={navTheme}
             >
                 <SplashScreen />
-                <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+                <StatusBar style={themeTokens.theme === 'dark' ? 'light' : 'dark'} />
             </NavThemeProvider>
         );
     }
 
     return (
-        <NavThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+        <NavThemeProvider value={navTheme}>
             <Stack>
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -58,8 +74,10 @@ function AppLayout() {
                     name="(modals)"
                     options={{ presentation: 'modal', headerShown: false }}
                 />
+                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                <Stack.Screen name="(transactions)" options={{ headerShown: false }} />
             </Stack>
-            <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+            <StatusBar style={themeTokens.theme === 'dark' ? 'light' : 'dark'} />
         </NavThemeProvider>
     );
 }
@@ -67,11 +85,13 @@ function AppLayout() {
 function RootLayout() {
     return (
         <ThemeProvider>
-            <WalletProvider>
-                <QueryClientProvider client={queryClient}>
-                    <AppLayout />
-                </QueryClientProvider>
-            </WalletProvider>
+            <SignupProvider>
+                <WalletProvider>
+                    <QueryClientProvider client={queryClient}>
+                        <AppLayout />
+                    </QueryClientProvider>
+                </WalletProvider>
+            </SignupProvider>
         </ThemeProvider>
     );
 }
