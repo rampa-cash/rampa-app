@@ -87,8 +87,8 @@ export function Amount({
         [currency, locale, showCents, useCurrencyFormat]
     );
 
-    // Manual parsing since formatToParts() is not available in React Native
     const formatted = formatter.format(value);
+
     const currencyPart = symbolOverride ?? CurrencySymbol[currency];
 
     const { integer, decimal } = useMemo(() => {

@@ -20,6 +20,22 @@ export default function ModalLayout() {
                 }}
             />
             <Stack.Screen
+                name="fund-card"
+                options={{
+                    title: 'Fund Card',
+                    presentation: 'modal',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="fund-card-success"
+                options={{
+                    title: 'Fund Card Success',
+                    presentation: 'modal',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
                 name="receive-money"
                 options={{
                     title: 'Receive Money',

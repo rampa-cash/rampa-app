@@ -2,8 +2,10 @@ import { AddFundsMethodModal } from '@/components/modals/AddFundsMethodModal';
 import { AppButton } from '@/components/ui/buttons/button';
 import { ButtonVariant } from '@/components/ui/buttons/button-variants';
 import { IconButton } from '@/components/ui/buttons/IconButton';
+import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import { AppInput } from '@/components/ui/input';
+import { AmountInput } from '@/components/ui/amount-input';
+import ListCard from '@/components/ui/list-card';
 import { ScreenContainer } from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
@@ -56,10 +58,6 @@ export default function AddFundsDetailsScreen() {
         [handleSelectFromModal, selectedMethod.id]
     );
 
-    const handleQuickAmount = (value: number) => {
-        setAmount(value.toFixed(2));
-    };
-
     const parsedAmount = Number.parseFloat(amount.replace(',', '.'));
     const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount > 0;
 
@@ -83,102 +81,57 @@ export default function AddFundsDetailsScreen() {
                         onPress={() => router.back()}
                     />
                 </View>
-
                 <View style={styles.section}>
                     <AppText
                         variant={TextVariant.SecondaryMedium}
-                        color="lessEmphasis"
+                        color="normal"
                         style={styles.sectionLabel}
                     >
                         Select a method
                     </AppText>
 
-                    <View
+                    <ListCard
                         style={[
                             styles.methodCard,
                             {
                                 borderColor: t.outline.outline1,
-                                backgroundColor: t.background.onBase,
                             },
                         ]}
-                    >
-                        <View>
-                            <AppText
-                                variant={TextVariant.Caption}
-                                color="lessEmphasis"
-                            >
-                                Method
-                            </AppText>
-                            <AppText variant={TextVariant.BodyMedium}>
-                                {selectedMethod.title}
-                            </AppText>
-                        </View>
-                        <AppButton
+                        title='Method'
+
+                        description={selectedMethod.title}
+                        left={<Icon name={selectedMethod.icon}
+                            size={18}
+                            bgColor={
+                                t.isDark
+                                    ? t.background.dim
+                                    : t.background.base
+                            }
+                            style={{
+                                padding: 14,
+                                borderRadius: 28,
+                            }}
+                            color={
+                                t.isDark ? t.icon.variant : t.icon.normal
+                            } />}
+                        right={<AppButton
                             title="Change"
+                            color={'normal2'}
                             variant={ButtonVariant.Tertiary}
                             onPress={() => setMethodModalVisible(true)}
-                        />
-                    </View>
+                        />}
+                    />
+
                 </View>
 
                 <View style={styles.section}>
-                    <AppText
-                        variant={TextVariant.SecondaryMedium}
-                        color="lessEmphasis"
-                        style={styles.sectionLabel}
-                    >
-                        Amount to add
-                    </AppText>
-                    <AppInput
-                        placeholder="0.00"
-                        keyboardType="decimal-pad"
+                    <AmountInput
+                        label="Amount to add"
                         value={amount}
-                        onChangeText={setAmount}
-                        left={
-                            <AppText
-                                variant={TextVariant.BodyMedium}
-                                style={{ color: t.text.normal }}
-                            >
-                                {currencySymbol}
-                            </AppText>
-                        }
+                        onChange={setAmount}
+                        currencySymbol={currencySymbol}
+                        quickOptions={QUICK_AMOUNTS}
                     />
-
-                    <View style={styles.quickRow}>
-                        {QUICK_AMOUNTS.map(value => {
-                            const isActive =
-                                Number.parseFloat(amount) === value;
-                            return (
-                                <Pressable
-                                    key={value}
-                                    onPress={() => handleQuickAmount(value)}
-                                    style={[
-                                        styles.quickChip,
-                                        {
-                                            borderColor: isActive
-                                                ? t.primary.signalViolet
-                                                : t.outline.outline2,
-                                            backgroundColor: isActive
-                                                ? t.background.secondary
-                                                : 'transparent',
-                                        },
-                                    ]}
-                                >
-                                    <AppText
-                                        variant={TextVariant.BodyMedium}
-                                        style={{
-                                            color: isActive
-                                                ? t.primary.signalViolet
-                                                : t.text.normal,
-                                        }}
-                                    >
-                                        {currencySymbol}
-                                        {value}
-                                    </AppText>
-                                </Pressable>
-                            );
-                        })}
-                    </View>
                 </View>
 
                 <View style={styles.flexSpacer} />
@@ -186,7 +139,7 @@ export default function AddFundsDetailsScreen() {
                 <AppButton
                     title="Add Fund"
                     disabled={!isAmountValid}
-                    onPress={() => {}}
+                    onPress={() => { }}
                 />
             </ScreenContainer>
 
@@ -239,16 +192,6 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         borderWidth: 1,
     },
-    quickRow: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    quickChip: {
-        paddingVertical: 10,
-        paddingHorizontal: 18,
-        borderRadius: 999,
-        borderWidth: 1,
-    },
     flexSpacer: {
         flex: 1,
     },
@@ -261,5 +204,6 @@ const styles = StyleSheet.create({
     modalSheet: {
         borderRadius: 24,
         overflow: 'hidden',
+
     },
 });

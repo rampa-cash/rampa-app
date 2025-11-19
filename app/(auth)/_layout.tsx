@@ -37,6 +37,13 @@ export default function AuthLayout() {
                 }}
             />
             <Stack.Screen
+                name="verify-code"
+                options={{
+                    title: 'Verify code',
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
                 name="legal-name"
                 options={{
                     title: 'Legal name',

@@ -9,6 +9,7 @@ import {
 
 import { Gradient } from '@/constants/theme';
 import { useTheme, useThemeMode } from '@/hooks/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export type ScreenContainerProps = {
     children: React.ReactNode;
@@ -39,14 +40,6 @@ export function ScreenContainer({
         return t.background.base;
     })();
 
-    // Optional gradient support; safe to run when module absent
-    let LinearGradientImpl: any = null;
-    if (gradient) {
-        try {
-            LinearGradientImpl = require('expo-linear-gradient').LinearGradient;
-        } catch {}
-    }
-
     const paddingStyle: ViewStyle | undefined = padded
         ? { padding: typeof padded === 'number' ? padded : 16 }
         : undefined;
@@ -60,10 +53,9 @@ export function ScreenContainer({
         style as any,
     ];
 
-    if (LinearGradientImpl) {
-        const Grad = LinearGradientImpl as React.ComponentType<any>;
+    if (gradient) {
         return (
-            <Grad
+            <LinearGradient
                 colors={[gradient![0], gradient![1]]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -73,18 +65,15 @@ export function ScreenContainer({
                     <ScrollView
                         contentContainerStyle={contentContainerStyle}
                         style={{ flex: 1 }}
-                        keyboardShouldPersistTaps="handled"
-                        keyboardDismissMode="on-drag"
                     >
                         {children}
                     </ScrollView>
                 ) : (
                     children
                 )}
-            </Grad>
+            </LinearGradient>
         );
     }
-
     return (
         <Container
             style={baseStyle}

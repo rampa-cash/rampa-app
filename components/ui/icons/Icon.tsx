@@ -62,7 +62,7 @@ export default function Icon({
     const t = useTheme();
     const themed = tone ? t.icon[tone] : t.icon.lessEmphasis;
     const tint = color ?? themed;
-    console.log({ color, name });
+    console.log({ color, name, themed });
 
     const finalLabelColor = labelColor ?? tint;
     const baseSize = label ? size * 2.5 : size * 2;

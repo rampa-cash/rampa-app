@@ -4,13 +4,14 @@ import React from 'react';
 import {
     Pressable,
     StyleSheet,
-    Text,
     TextStyle,
     View,
-    ViewStyle,
+    ViewStyle
 } from 'react-native';
 import Icon from '../icons/Icon';
 import { IconName } from '../icons/icon-names';
+import { AppText } from '../text';
+import { TextVariant } from '../text-variants';
 
 export type ButtonProps = {
     title?: string;
@@ -18,7 +19,7 @@ export type ButtonProps = {
     onPress?: () => void;
     disabled?: boolean;
     color?: keyof typeof Theme.light.text; // Optional text color override
-    iconColor?: keyof typeof Theme.light.icon; // Optional text color override
+    iconColor?: keyof typeof Theme.light.icon | string; // Optional icon color override
     backgroundColor?: string; // Optional background override
     style?: ViewStyle | ViewStyle[];
     textPosition?: 'left' | 'right' | 'top' | 'bottom' | 'outside';
@@ -26,6 +27,7 @@ export type ButtonProps = {
     iconSize?: number;
     shape?: 'circle' | 'rounded';
     bordered?: boolean;
+    textVariant?: TextVariant
 };
 
 function resolveVariantColors(
@@ -33,7 +35,7 @@ function resolveVariantColors(
     isDark: boolean,
     disabled?: boolean,
     colorOverride?: keyof typeof Theme.light.text,
-    colorIconOverride?: keyof typeof Theme.light.icon,
+    colorIconOverride?: keyof typeof Theme.light.icon | string,
     bgOverride?: string
 ) {
     if (disabled) {
@@ -45,9 +47,16 @@ function resolveVariantColors(
         };
     }
 
+    const resolvedIconColor =
+        typeof colorIconOverride === 'string'
+            ? colorIconOverride
+            : colorIconOverride
+                ? t.icon[colorIconOverride]
+                : t.icon.variant;
+
     return {
         background: bgOverride ?? (isDark ? t.background.dim : '#FAF9F6'),
-        color: colorIconOverride ? t.icon[colorIconOverride] : t.icon.variant,
+        color: resolvedIconColor,
         foreground: colorOverride ? t.text[colorOverride] : t.text.normal,
     };
 }
@@ -65,7 +74,7 @@ export function IconButton({
     textStyle,
     iconSize = 24,
     shape = 'rounded',
-    bordered,
+    bordered, textVariant
 }: ButtonProps) {
     const t = useTheme();
     const { isDark, mode } = useThemeMode();
@@ -86,16 +95,17 @@ export function IconButton({
     const shapeStyle: ViewStyle =
         shape === 'circle'
             ? {
-                  minWidth: circleSize,
-                  minHeight: circleSize,
-                  borderRadius: circleSize,
-                  paddingVertical: 10, // Override base styles
-                  paddingHorizontal: 10, // Override base styles
-              }
+                minWidth: circleSize,
+                minHeight: circleSize,
+                borderRadius: circleSize,
+                paddingVertical: 10, // Override base styles
+                paddingHorizontal: 10, // Override base styles
+            }
             : {};
 
     const text = (
-        <Text
+        <AppText
+            variant={textVariant}
             style={[
                 styles.text,
                 {
@@ -106,11 +116,11 @@ export function IconButton({
             ]}
         >
             {title}
-        </Text>
+        </AppText>
     );
 
     return (
-        <View style={[styles.container, { borderWidth: bordered ? 1 : 0 }]}>
+        <View style={[styles.container,]}>
             <Pressable
                 onPress={onPress}
                 disabled={disabled}
@@ -123,11 +133,12 @@ export function IconButton({
                         opacity: disabled ? 0.7 : pressed ? 0.9 : 1,
                     },
                     style as any,
+                    { borderWidth: bordered ? 1 : 0 }
                 ]}
             >
                 {textPosition === 'left' && title && text}
                 {iconName && (
-                    <Icon name={iconName} size={iconSize} color={iconColor} />
+                    <Icon name={iconName} size={iconSize} color={iconColor as any} />
                 )}
                 {textPosition === 'right' && title && text}
             </Pressable>
@@ -150,7 +161,7 @@ const styles = StyleSheet.create({
 
     text: {
         fontSize: 16,
-        fontWeight: '400',
+        fontWeight: '500',
     },
     container: {
         alignItems: 'center',

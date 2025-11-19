@@ -1,69 +1,236 @@
-import { BalanceCarousel } from '@/components/ui/balance-carousel';
+import {
+    AccountCompletionModal,
+    type CompletionStep,
+} from '@/components/modals/AccountCompletionModal';
+import {
+    ContactSearchModal,
+} from '@/components/modals/ContactSearchModal';
+import { AmountSize, AmountTone } from '@/components/ui/amount-variants';
+import { AppButton } from '@/components/ui/buttons/button';
 import { IconButton } from '@/components/ui/buttons/IconButton';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
-import { InvestCard } from '@/components/ui/invest-card';
 import { ScreenContainer } from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
+import { TextVariant } from '@/components/ui/text-variants';
 import { Palette } from '@/constants/theme';
+import { useSignup } from '@/hooks/SignupProvider';
+import { useTheme, useThemeMode } from '@/hooks/theme';
 import { useWallet, type WalletCurrency } from '@/hooks/WalletProvider';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-    FlatList,
+    Modal,
+    Pressable,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuthStore } from '../../src/domain/auth/authStore';
-import { transactionApiClient } from '../../src/domain/transactions';
+
+import { ContactItem } from '@/components/contacts/ContactListItem';
+import { TransactionList } from '@/components/transactions/TransactionList';
+import Amount from '@/components/ui/amount';
+import { useAuthStore } from '@/src/domain/auth';
+import { MOCK_CONTACTS } from '@/src/domain/contacts/mock';
+import { transactionApiClient } from '@/src/domain/transactions';
+
+type BalanceCardProps = {
+    balances: { type: WalletCurrency; value: number }[];
+    onAddFunds: () => void;
+    onReceiveMoney: () => void;
+    onCashOut: () => void;
+};
+
+function BalanceCard({
+    balances,
+    onAddFunds,
+    onReceiveMoney,
+    onCashOut,
+}: BalanceCardProps) {
+    const t = useTheme();
+    const { isDark } = useThemeMode();
+    const styles = useMemo(
+        () => createBalanceCardStyles(t, isDark),
+        [t, isDark]
+    );
+
+    const usdBalance = useMemo(
+        () => balances.find(b => b.type === 'USDC')?.value ?? 0,
+        [balances]
+    );
+    const eurBalance = useMemo(
+        () => balances.find(b => b.type === 'EURC')?.value,
+        [balances]
+    );
+    const euroEquivalent = useMemo(
+        () =>
+            typeof eurBalance === 'number'
+                ? eurBalance
+                : Number((usdBalance * 0.93).toFixed(2)),
+        [eurBalance, usdBalance]
+    );
+
+    return (
+        <View style={styles.wrapper}>
+            <LinearGradient
+                colors={['#23D3D5', '#9512F9']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradient}
+            >
+                <View style={styles.inner}>
+                    <View style={styles.header}>
+                        <AppText
+                            variant={TextVariant.SecondaryMedium}
+                            color="normal2"
+                            style={styles.balanceLabel}
+                        >
+                            Balance
+                        </AppText>
+                        <Pressable style={styles.infoButton} hitSlop={8}>
+                            <IconButton
+                                iconName={IconName.Property1Help}
+                                iconSize={14}
+                                style={{ padding: 0 }}
+                                bordered
+                                shape="circle"
+                            />
+                        </Pressable>
+                    </View>
+
+                    <View style={styles.amountBlock}>
+                        <Amount
+                            value={usdBalance}
+                            currency="USD"
+                            size={AmountSize.Lg}
+                            tone={AmountTone.Default}
+                            showCents={false}
+                        />
+                        <View style={styles.equivalentRow}>
+                            <Amount
+                                value={euroEquivalent}
+                                currency="EUR"
+                                size={AmountSize.Md}
+                                tone={AmountTone.Accent}
+                                showCents={false}
+                                textStyle={{ fontWeight: '600' }}
+                            />
+                            <Icon
+                                name={IconName.Property1ArrowDown}
+                                size={14}
+                                color={Palette.primary.flowAqua}
+                            />
+                        </View>
+                    </View>
+
+                    <View style={styles.actionsRow}>
+                        <IconButton
+                            iconName={IconName.Property1Plus}
+                            title="Add Funds"
+                            textPosition="outside"
+                            textVariant={TextVariant.Secondary}
+                            iconSize={16}
+                            bordered
+                            onPress={onAddFunds}
+                        />
+                        <IconButton
+                            iconName={IconName.Property1ArrowReceive}
+                            title="Receive Money"
+                            textPosition="outside"
+                            textVariant={TextVariant.Secondary}
+                            iconSize={16}
+                            onPress={onReceiveMoney}
+                            bordered
+                        />
+                        <IconButton
+                            iconName={IconName.Property1ArrowSend}
+                            title="Cash Out"
+                            textPosition="outside"
+                            textVariant={TextVariant.Secondary}
+                            iconSize={16}
+                            bordered
+                            onPress={onCashOut}
+                        />
+                    </View>
+                </View>
+            </LinearGradient>
+        </View>
+    );
+}
 
 export default function HomeScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { setCurrency } = useWallet();
+    const t = useTheme();
     const isAuthenticated = useAuthStore(state => state.isAuthenticated);
     const sessionToken = useAuthStore(state => state.sessionToken);
+    const { isDark } = useThemeMode();
+    const styles = useMemo(() => createStyles(t, isDark), [t, isDark]);
+    const [searchVisible, setSearchVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const { firstName, lastName } = useSignup();
+    const params = useLocalSearchParams();
+    const shouldPromptSetup = useMemo(
+        () => !(firstName && lastName),
+        [firstName, lastName]
+    );
+    const [setupModalVisible, setSetupModalVisible] = useState(false);
+    const profileCompleted = useMemo(
+        () => Boolean(firstName && lastName),
+        [firstName, lastName]
+    );
+    const identityCompleted = useMemo(
+        () => params?.identityCompleted === 'true',
+        [params]
+    );
 
-    const assetsMock = [
-        {
-            id: 'btc',
-            symbol: 'EURC',
-            address: 'Today, 10:35 AM',
-            price: '€61.245',
-            changePositive: true,
-        },
-        {
-            id: 'eth',
-            symbol: 'EURC',
-            address: 'Today, 10:35 AM',
-            price: '€3.245',
-            changePositive: false,
-        },
-        {
-            id: 'btc1',
-            symbol: 'EURC',
-            address: 'Today, 10:35 AM',
-            price: '€61.245',
-            changePositive: true,
-        },
-        {
-            id: 'eth1',
-            symbol: 'EURC',
-            address: 'Today, 10:35 AM',
-            price: '€3.245',
-            changePositive: false,
-        },
-    ];
+    const completionSteps = useMemo<CompletionStep[]>(() => {
+        const goToProfile = () => {
+            setSetupModalVisible(false);
+            router.push('/(auth)/legal-name' as any);
+        };
+
+        return [
+            {
+                id: 'create',
+                title: 'Create your account',
+                status: 'done',
+            },
+            {
+                id: 'profile',
+                title: 'Complete your profile',
+                status: profileCompleted ? 'done' : 'current',
+                onPress: profileCompleted ? undefined : goToProfile,
+                actionLabel: profileCompleted ? undefined : 'Continue',
+            },
+            {
+                id: 'verify',
+                title: 'Verify your identity',
+                status: identityCompleted
+                    ? 'done'
+                    : profileCompleted
+                      ? 'current'
+                      : 'pending',
+                onPress: identityCompleted ? undefined : undefined,
+                actionLabel: identityCompleted
+                    ? undefined
+                    : profileCompleted
+                      ? 'Continue'
+                      : undefined,
+                actionDisabled: true, // No action yet for identity verification
+            },
+        ];
+    }, [profileCompleted, identityCompleted, router]);
 
     const balances = useMemo<{ type: WalletCurrency; value: number }[]>(
         () => [
-            { type: 'EURC', value: 0 },
-            { type: 'USDC', value: 0 },
+            { type: 'USDC', value: 120 },
+            { type: 'EURC', value: 100 },
             { type: 'SOL', value: 0 },
         ],
         []
@@ -79,6 +246,21 @@ export default function HomeScreen() {
         queryFn: () => transactionApiClient.getTransactions({ limit: 5 }),
         enabled: isAuthenticated && !!sessionToken, // Only run query when authenticated
     });
+
+    const items: ContactItem[] = useMemo(() => {
+        const list = MOCK_CONTACTS.map(c => ({
+            id: c.id,
+            name: c.name,
+            phone: c.phone || c.email || c.blockchainAddress || '',
+        }));
+        if (!searchQuery.trim()) return list;
+        const q = searchQuery.toLowerCase();
+        return list.filter(
+            i =>
+                i.name.toLowerCase().includes(q) ||
+                i.phone.toLowerCase().includes(q)
+        );
+    }, [searchQuery]);
 
     const handleAddMoney = () => {
         router.push('/(modals)/add-funds' as any);
@@ -96,15 +278,12 @@ export default function HomeScreen() {
         router.push('/(modals)/user-details' as any);
     };
 
-    const handleCarouselChange = useCallback(
-        (_index: number, item: { type: WalletCurrency }) => {
-            setCurrency(item.type);
-        },
-        [setCurrency]
-    );
-
     return (
-        <ScreenContainer padded style={styles.container}>
+        <ScreenContainer
+            padded
+            style={styles.container}
+            gradient={isDark ? ['#29183D', '#000'] : undefined}
+        >
             <View style={[styles.header, { paddingTop: insets.top }]}>
                 <TouchableOpacity
                     onPress={handleUserDetails}
@@ -113,48 +292,25 @@ export default function HomeScreen() {
                     <MaterialIcons
                         name="account-circle"
                         size={42}
-                        color="#007AFF"
+                        color={t.primary.signalViolet}
                     />
                 </TouchableOpacity>
                 <IconButton
                     iconName={IconName.Property1Search}
                     shape="circle"
                     iconSize={16}
+                    onPress={() => setSearchVisible(true)}
                 />
             </View>
 
-            <View style={{ paddingHorizontal: 20 }}>
-                <BalanceCarousel
-                    balances={balances as any}
-                    onChangeIndex={handleCarouselChange}
-                />
-            </View>
+            <BalanceCard
+                balances={balances as any}
+                onAddFunds={handleAddMoney}
+                onReceiveMoney={handleReceiveMoney}
+                onCashOut={handleCashOut}
+            />
 
-            <View style={styles.actionsContainer}>
-                <IconButton
-                    iconName={IconName.Property1Plus}
-                    title="Add Founds"
-                    textPosition="outside"
-                    iconSize={16}
-                    onPress={handleAddMoney}
-                />
-                <IconButton
-                    iconName={IconName.Property1ArrowReceive}
-                    title="Receive Money"
-                    textPosition="outside"
-                    iconSize={16}
-                    onPress={handleReceiveMoney}
-                />
-                <IconButton
-                    iconName={IconName.Property1ArrowSend}
-                    title="Cash Out"
-                    textPosition="outside"
-                    iconSize={16}
-                    onPress={handleCashOut}
-                />
-            </View>
-
-            <View style={styles.transactionsSection}>
+            <View style={[styles.transactionsSection, { flex: 1 }]}>
                 <View style={styles.titleSection}>
                     <AppText style={styles.sectionTitle}>
                         Recent Transactions
@@ -165,173 +321,237 @@ export default function HomeScreen() {
                         backgroundColor="transparent"
                         title="SEE MORE"
                         textPosition="left"
+                        color="lessEmphasis"
                         textStyle={[
                             styles.loadingText,
                             { fontSize: 12, padding: 2 },
                         ]}
                         style={{ padding: 0 }}
+                        onPress={() => router.push('/transaction-list' as any)}
                     />
                 </View>
-                {transactionsLoading ? (
-                    <AppText style={styles.loadingText}>
-                        Loading transactions...
-                    </AppText>
-                ) : transactions?.data?.length ? (
-                    transactions.data.map(transaction => (
-                        <View
-                            key={transaction.id}
-                            style={styles.transactionItem}
-                        >
-                            <View style={styles.transactionInfo}>
-                                <Text style={styles.transactionAmount}>
-                                    {transaction.amount} {transaction.currency}
-                                </Text>
-                                <Text style={styles.transactionStatus}>
-                                    {transaction.status}
-                                </Text>
-                            </View>
-                            <Text style={styles.transactionDate}>
-                                {new Date(
-                                    transaction.createdAt
-                                ).toLocaleDateString()}
-                            </Text>
-                        </View>
-                    ))
-                ) : (
-                    <FlatList
-                        renderItem={({ item: a }) => (
-                            <InvestCard
-                                key={a.id}
-                                symbol={a.symbol}
-                                address={a.address}
-                                price={a.price}
-                                changePositive={a.changePositive}
-                                style={{ marginBottom: 8 }}
-                                left={
-                                    <Icon
-                                        name={IconName.Property1CurrencyDollar}
-                                        size={34}
-                                        color={Palette.secondary.openBlue}
-                                    />
-                                }
-                                addressPrefix={
-                                    <Icon
-                                        name={IconName.Property1Variant25}
-                                        size={14}
-                                    />
-                                }
-                            />
-                        )}
-                        data={assetsMock}
-                    ></FlatList>
-                )}
+                <TransactionList
+                    data={(transactions?.data ?? []).slice(0, 5)}
+                    loading={transactionsLoading}
+                />
             </View>
+
+            {shouldPromptSetup ? (
+                <View
+                    style={[
+                        styles.setupReminder,
+                        { bottom: insets.bottom + 90 },
+                    ]}
+                >
+                    <AppButton
+                        title="Complete your setup"
+                        onPress={() => setSetupModalVisible(true)}
+                    />
+                </View>
+            ) : null}
+
+            <Modal
+                transparent
+                visible={setupModalVisible}
+                animationType="slide"
+                onRequestClose={() => setSetupModalVisible(false)}
+            >
+                <View
+                    style={[
+                        styles.bottomModalBackdrop,
+                        { paddingBottom: insets.bottom },
+                    ]}
+                >
+                    <Pressable
+                        style={StyleSheet.absoluteFill}
+                        onPress={() => setSetupModalVisible(false)}
+                    />
+                    <View
+                        style={[
+                            styles.bottomSheet,
+                            { backgroundColor: t.background.onBase },
+                        ]}
+                    >
+                        <View
+                            style={[
+                                styles.bottomSheetHandle,
+                                { backgroundColor: t.outline.outline2 },
+                            ]}
+                        />
+                        <AccountCompletionModal steps={completionSteps} />
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal
+                transparent
+                visible={searchVisible}
+                animationType="fade"
+                onRequestClose={() => setSearchVisible(false)}
+            >
+                <View style={styles.modalBackdrop}>
+                    <Pressable
+                        style={StyleSheet.absoluteFill}
+                        onPress={() => setSearchVisible(false)}
+                    />
+                    <View style={styles.modalCenter}>
+                        <ContactSearchModal
+                            title="Search for contact to send"
+                            query={searchQuery}
+                            onChangeQuery={setSearchQuery}
+                            onCancel={() => setSearchVisible(false)}
+                            contacts={items}
+                            onSelect={id => {
+                                setSearchVisible(false);
+                                router.push({
+                                    pathname: '/(modals)/send-amount',
+                                    params: { contactId: id },
+                                } as never);
+                            }}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </ScreenContainer>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        alignContent: 'center',
-        padding: 20,
-    },
-    greeting: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    profileButton: {
-        padding: 4,
-    },
-    balanceCard: {
-        backgroundColor: '#007AFF',
-        margin: 20,
-        padding: 24,
-        borderRadius: 12,
-        alignItems: 'center',
-    },
-    balanceLabel: {
-        color: '#fff',
-        fontSize: 16,
-        marginBottom: 8,
-    },
-    balanceAmount: {
-        color: '#fff',
-        fontSize: 32,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    balanceSubtext: {
-        color: '#fff',
-        fontSize: 14,
-        opacity: 0.8,
-    },
-    actionsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        paddingHorizontal: 20,
-        marginVertical: 20,
-    },
+const createStyles = (t: ReturnType<typeof useTheme>, isDark: boolean) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            position: 'relative',
+            backgroundColor: t.background.base,
+        },
+        header: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            alignContent: 'center',
+            padding: 20,
+        },
+        profileButton: {
+            padding: 4,
+        },
+        transactionsSection: {
+            marginTop: 20,
+            borderRadius: 12,
+        },
+        titleSection: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+        },
+        sectionTitle: {
+            fontSize: 18,
+            fontWeight: '600',
+            color: t.text.normal,
+        },
+        loadingText: {
+            textAlign: 'center',
+            padding: 20,
+        },
+        modalBackdrop: {
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 16,
+        },
+        modalCenter: {
+            width: '92%',
+            maxWidth: 460,
+        },
+        setupReminder: {
+            position: 'absolute',
+            left: 16,
+            right: 16,
+            zIndex: 5,
+        },
+        bottomModalBackdrop: {
+            flex: 1,
+            justifyContent: 'flex-end',
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            padding: 12,
+        },
+        bottomSheet: {
+            borderTopLeftRadius: 18,
+            borderTopRightRadius: 18,
+            padding: 16,
+            gap: 12,
+        },
+        bottomSheetHandle: {
+            alignSelf: 'center',
+            width: 46,
+            height: 4,
+            borderRadius: 2,
+            marginBottom: 6,
+        },
+    });
 
-    actionText: {
-        marginTop: 8,
-        fontSize: 12,
-        color: '#333',
-        textAlign: 'center',
-    },
-    transactionsSection: {
-        marginTop: 20,
-        borderRadius: 12,
-    },
-    titleSection: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 400,
-    },
-    transactionItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
-    },
-    transactionInfo: {
-        flex: 1,
-    },
-    transactionAmount: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-    },
-    transactionStatus: {
-        fontSize: 14,
-        color: '#666',
-        marginTop: 2,
-    },
-    transactionDate: {
-        fontSize: 12,
-        color: '#999',
-    },
-    loadingText: {
-        textAlign: 'center',
-        color: '#666',
-        padding: 20,
-    },
-    emptyText: {
-        textAlign: 'center',
-        color: '#666',
-        padding: 20,
-    },
-});
+const createBalanceCardStyles = (
+    t: ReturnType<typeof useTheme>,
+    isDark: boolean
+) =>
+    StyleSheet.create({
+        wrapper: {
+            marginHorizontal: 4,
+            marginBottom: 20,
+        },
+        gradient: {
+            borderRadius: 18,
+            padding: 1,
+        },
+        inner: {
+            borderRadius: 16,
+            padding: 20,
+            backgroundColor: isDark ? '#311A4E' : t.background.onBase,
+            borderWidth: 1,
+            borderColor: isDark ? 'rgba(255,255,255,0.08)' : t.outline.outline1,
+        },
+        header: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            alignContent: 'center',
+        },
+        balanceLabel: {
+            letterSpacing: 1,
+            textTransform: 'uppercase',
+        },
+        infoButton: {
+            width: 26,
+            height: 26,
+            borderRadius: 13,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: isDark ? 'rgba(255,255,255,0.16)' : t.outline.outline1,
+            backgroundColor: isDark
+                ? 'rgba(255,255,255,0.06)'
+                : t.background.onBase2,
+        },
+        amountBlock: {
+            marginTop: 10,
+            gap: 6,
+        },
+        equivalentRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+        },
+        actionsRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            gap: 12,
+            marginTop: 18,
+        },
+        actionButton: {
+            flex: 1,
+            paddingHorizontal: 14,
+            minHeight: 52,
+            borderWidth: 1,
+            borderColor: isDark ? t.outline.outline1 : t.outline.outline2,
+        },
+    });

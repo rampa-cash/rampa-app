@@ -19,7 +19,7 @@ export type ListCardProps = {
 
 function surface(t: typeof Theme.light, isDark: boolean) {
     return {
-        bg: isDark ? t.background.onBase2 : t.background.onBase2,
+        bg: isDark ? t.background.onBase2 : t.background.secondary,
         border: isDark ? t.outline.outline2 : t.outline.outline1,
         title: t.text.normal,
         desc: t.text.lessEmphasis,
@@ -47,12 +47,12 @@ export function ListCard({
         <Container
             onPress={onPress as any}
             disabled={disabled}
-            style={({ pressed }: any) => [
+            style={[
                 styles.card,
                 {
                     backgroundColor: c.bg,
                     borderColor: c.border,
-                    opacity: disabled ? 0.6 : pressed ? 0.9 : 1,
+                    opacity: disabled ? 0.6 : 1,
                 },
                 style as any,
             ]}

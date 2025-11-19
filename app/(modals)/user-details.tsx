@@ -1,357 +1,438 @@
-import { Colors } from '@/constants/theme';
-import { useTheme } from '@/hooks/theme';
+import { AppButton } from '@/components/ui/buttons/button';
+import Icon from '@/components/ui/icons/Icon';
+import { IconName } from '@/components/ui/icons/icon-names';
+import { ListCard } from '@/components/ui/list-card';
+import { ScreenContainer } from '@/components/ui/screen-container';
+import { AppText } from '@/components/ui/text';
+import { TextVariant } from '@/components/ui/text-variants';
+import { Toggle } from '@/components/ui/toggle';
+import { Palette } from '@/constants/theme';
+import { useTheme, useThemeMode } from '@/hooks/theme';
+import { useAuth } from '@/src/domain/auth';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import Toggle from '../../components/ui/toggle';
-import { useAuth } from '../../src/domain/auth';
+import React, { useMemo, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function UserDetailsScreen() {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
+    const t = useTheme();
+    const { isDark } = useThemeMode();
     const { user, logout } = useAuth();
-    const { theme, toggleTheme } = useTheme();
 
-    const handleLogout = () => {
-        logout();
-        router.replace('/(auth)/login' as any);
-    };
+    const [notificationsEnabled, setNotificationsEnabled] = useState(
+        user?.preferences.notifications.pushEnabled ?? true
+    );
 
-    const menuItems = [
+    const fullName = useMemo(() => {
+        const first = user?.firstName ?? 'Guest';
+        const last = user?.lastName ?? '';
+        return `${first} ${last}`.trim();
+    }, [user?.firstName, user?.lastName]);
+
+    const initials = useMemo(() => {
+        const name = `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim();
+        return name ? name.charAt(0).toUpperCase() : 'U';
+    }, [user?.firstName, user?.lastName]);
+
+    const badgeColor =
+        user?.kycStatus === 'verified' ? t.text.success : t.text.warning;
+
+    const surface = isDark ? t.background.onBase2 : t.background.onBase;
+    const borderColor = isDark ? t.outline.outline2 : t.outline.outline1;
+    const iconBackground = isDark ? t.background.inactive : t.background.onBase;
+
+    const contactItems = [
         {
-            id: 'profile',
-            name: 'Edit Profile',
-            icon: 'person',
-            action: () => console.log('Edit Profile'),
+            id: 'email',
+            title: 'Email',
+            description: user?.email ?? 'Add your email',
+            icon: IconName.Property1Message,
         },
         {
-            id: 'security',
-            name: 'Security Settings',
-            icon: 'security',
-            action: () => console.log('Security'),
-        },
-        {
-            id: 'notifications',
-            name: 'Notifications',
-            icon: 'notifications',
-            action: () => console.log('Notifications'),
-        },
-        {
-            id: 'contacts',
-            name: 'Manage Contacts',
-            icon: 'contacts',
-            action: () => console.log('Contacts'),
-        },
-        {
-            id: 'preferences',
-            name: 'Preferences',
-            icon: 'settings',
-            action: () => console.log('Preferences'),
-        },
-        {
-            id: 'help',
-            name: 'Help & Support',
-            icon: 'help',
-            action: () => console.log('Help'),
-        },
-        {
-            id: 'about',
-            name: 'About',
-            icon: 'info',
-            action: () => console.log('About'),
+            id: 'phone',
+            title: 'Phone',
+            description: user?.phone ?? 'Add your phone',
+            icon: IconName.Property1Phone,
         },
     ];
 
-    const styles = getStyles(theme);
+    const handleLogout = async () => {
+        await logout();
+        router.replace('/(auth)/login' as any);
+    };
+
+    const handleBack = () => {
+        router.back();
+    };
+
+    const sectionPadding = {
+        paddingTop: insets.top + 12,
+        paddingBottom: insets.bottom + 24,
+    };
 
     return (
-        <View style={styles.container}>
+        <ScreenContainer
+            scroll
+            padded
+            contentContainerStyle={[styles.content, sectionPadding]}
+        >
             <View style={styles.header}>
-                <TouchableOpacity
-                    onPress={() => router.back()}
-                    style={styles.closeButton}
+                <Pressable
+                    onPress={handleBack}
+                    style={[
+                        styles.circleButton,
+                        {
+                            borderColor,
+                            backgroundColor: iconBackground,
+                        },
+                    ]}
                 >
                     <MaterialIcons
-                        name="close"
-                        size={24}
-                        color={Colors[theme].text}
+                        name="arrow-back"
+                        size={20}
+                        color={t.icon.variant}
                     />
-                </TouchableOpacity>
-                <Text style={styles.title}>Profile</Text>
-                <View style={styles.placeholder} />
+                </Pressable>
+
+                <AppText
+                    variant={TextVariant.SecondaryMedium}
+                    style={[styles.headerTitle, { color: t.text.normal }]}
+                >
+                    My Account
+                </AppText>
+
+                <View style={styles.headerSpacer} />
             </View>
 
-            <ScrollView style={styles.content}>
-                <View style={styles.profileSection}>
-                    <View style={styles.avatarContainer}>
-                        <MaterialIcons
-                            name="account-circle"
-                            size={80}
-                            color="#007AFF"
-                        />
-                    </View>
-                    <Text style={styles.userName}>
-                        {user?.firstName} {user?.lastName}
-                    </Text>
-                    <Text style={styles.userEmail}>{user?.email}</Text>
-                    <View style={styles.kycStatus}>
-                        <MaterialIcons
-                            name={
-                                user?.kycStatus === 'verified'
-                                    ? 'verified'
-                                    : 'pending'
-                            }
-                            size={16}
-                            color={
-                                user?.kycStatus === 'verified'
-                                    ? '#4CAF50'
-                                    : '#FF9800'
-                            }
-                        />
-                        <Text
-                            style={[
-                                styles.kycText,
-                                {
-                                    color:
-                                        user?.kycStatus === 'verified'
-                                            ? '#4CAF50'
-                                            : '#FF9800',
-                                },
-                            ]}
-                        >
-                            {user?.kycStatus === 'verified'
-                                ? 'Verified'
-                                : 'Pending Verification'}
-                        </Text>
-                    </View>
-                </View>
-
-                <View style={styles.menuSection}>
-                    {menuItems.map(item => (
-                        <TouchableOpacity
-                            key={item.id}
-                            style={styles.menuItem}
-                            onPress={item.action}
-                        >
-                            <View style={styles.menuItemLeft}>
-                                <MaterialIcons
-                                    name={item.icon as any}
-                                    size={24}
-                                    color={Colors[theme].icon}
-                                />
-                                <Text style={styles.menuItemText}>
-                                    {item.name}
-                                </Text>
-                            </View>
-                            <MaterialIcons
-                                name="chevron-right"
-                                size={20}
-                                color="#ccc"
-                            />
-                        </TouchableOpacity>
-                    ))}
-                    <View
-                        style={[
-                            styles.menuItem,
-                            { justifyContent: 'space-between' },
-                        ]}
-                    >
-                        <View style={styles.menuItemLeft}>
-                            <MaterialIcons
-                                name="brightness-6"
-                                size={24}
-                                color={Colors[theme].icon}
-                            />
-                            <Text style={styles.menuItemText}>Dark Mode</Text>
-                        </View>
-                        <Toggle
-                            value={theme === 'dark'}
-                            onValueChange={toggleTheme}
-                        />
-                    </View>
-                </View>
-
-                <View style={styles.statsSection}>
-                    <Text style={styles.sectionTitle}>Account Statistics</Text>
-                    <View style={styles.statsGrid}>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statValue}>0</Text>
-                            <Text style={styles.statLabel}>Transactions</Text>
-                        </View>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statValue}>0</Text>
-                            <Text style={styles.statLabel}>Contacts</Text>
-                        </View>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statValue}>0</Text>
-                            <Text style={styles.statLabel}>
-                                Learning Points
-                            </Text>
-                        </View>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statValue}>0</Text>
-                            <Text style={styles.statLabel}>
-                                Courses Completed
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-
-                <TouchableOpacity
-                    style={styles.logoutButton}
-                    onPress={handleLogout}
+            <View
+                style={[
+                    styles.profileCard,
+                    { backgroundColor: surface, borderColor },
+                ]}
+            >
+                <View
+                    style={[
+                        styles.avatar,
+                        {
+                            backgroundColor: isDark
+                                ? t.background.dim
+                                : t.background.light,
+                            borderColor,
+                        },
+                    ]}
                 >
-                    <MaterialIcons name="logout" size={20} color="#F44336" />
-                    <Text style={styles.logoutText}>Logout</Text>
-                </TouchableOpacity>
-            </ScrollView>
-        </View>
+                    <AppText
+                        variant={TextVariant.H2}
+                        style={{ color: t.text.info }}
+                    >
+                        {initials}
+                    </AppText>
+                </View>
+                <AppText
+                    variant={TextVariant.H2}
+                    style={[styles.name, { color: t.text.normal }]}
+                >
+                    {fullName}
+                </AppText>
+                <AppText
+                    variant={TextVariant.Secondary}
+                    style={{ color: t.text.lessEmphasis }}
+                >
+                    {user?.email ?? 'Complete your profile details'}
+                </AppText>
+
+                <View
+                    style={[
+                        styles.badge,
+                        {
+                            backgroundColor: isDark
+                                ? t.background.inactive
+                                : t.background.secondary,
+                        },
+                    ]}
+                >
+                    <MaterialIcons
+                        name={
+                            user?.kycStatus === 'verified'
+                                ? 'verified'
+                                : 'hourglass-top'
+                        }
+                        size={14}
+                        color={badgeColor}
+                    />
+                    <AppText
+                        variant={TextVariant.Caption}
+                        style={[styles.badgeText, { color: badgeColor }]}
+                    >
+                        {user?.kycStatus === 'verified'
+                            ? 'Verified account'
+                            : 'Pending verification'}
+                    </AppText>
+                </View>
+            </View>
+
+            <View style={styles.section}>
+                {contactItems.map(item => (
+                    <ListCard
+                        key={item.id}
+                        title={item.title}
+                        description={item.description}
+                        left={
+                            <Icon
+                                name={item.icon}
+                                size={18}
+                                bgColor={iconBackground}
+                                containerStyle={styles.iconBackground}
+                                color={isDark ? t.icon.variant : undefined}
+                            />
+                        }
+                        style={[
+                            styles.card,
+                            { backgroundColor: surface, borderColor },
+                        ]}
+                    />
+                ))}
+            </View>
+
+            <ListCard
+                title="Referrals"
+                description="Invite & earn rewards"
+                left={
+                    <Icon
+                        name={IconName.Property1Variant25}
+                        size={18}
+                        bgColor={iconBackground}
+                        containerStyle={styles.iconBackground}
+                        color={Palette.primary.signalViolet}
+                    />
+                }
+                style={[
+                    styles.card,
+                    { backgroundColor: surface, borderColor },
+                ]}
+                onPress={() => { }}
+            />
+
+            <View style={styles.section}>
+                <ListCard
+                    title="Support"
+                    left={
+                        <Icon
+                            name={IconName.Property1Help}
+                            size={18}
+                            bgColor={iconBackground}
+                            containerStyle={styles.iconBackground}
+                            color={isDark ? t.icon.variant : undefined}
+                        />
+                    }
+                    style={[
+                        styles.card,
+                        { backgroundColor: surface, borderColor },
+                    ]}
+                    onPress={() => { }}
+                />
+
+                <ListCard
+                    title="Notification"
+                    left={
+                        <Icon
+                            name={IconName.Property1Notification}
+                            size={18}
+                            bgColor={iconBackground}
+                            containerStyle={styles.iconBackground}
+                            color={Palette.primary.signalViolet}
+                        />
+                    }
+                    right={
+                        <Toggle
+                            value={notificationsEnabled}
+                            onValueChange={setNotificationsEnabled}
+                        />
+                    }
+                    showChevron={false}
+                    style={[
+                        styles.card,
+                        { backgroundColor: surface, borderColor },
+                    ]}
+                />
+
+                <ListCard
+                    title="Dark Theme"
+                    left={
+                        <Icon
+                            name={IconName.Property1Theme}
+                            size={18}
+                            bgColor={iconBackground}
+                            containerStyle={styles.iconBackground}
+                            color={Palette.primary.signalViolet}
+                        />
+                    }
+                    right={<Toggle value={isDark} onValueChange={t.toggleTheme} />}
+                    showChevron={false}
+                    style={[
+                        styles.card,
+                        { backgroundColor: surface, borderColor },
+                    ]}
+                />
+
+                <ListCard
+                    title="Terms & Privacy"
+                    left={
+                        <Icon
+                            name={IconName.Property1Doc}
+                            size={18}
+                            bgColor={iconBackground}
+                            containerStyle={styles.iconBackground}
+                            color={isDark ? t.icon.variant : undefined}
+                        />
+                    }
+                    style={[
+                        styles.card,
+                        { backgroundColor: surface, borderColor },
+                    ]}
+                    onPress={() => { }}
+                />
+
+                <ListCard
+                    title="About Rampa"
+                    left={
+                        <Icon
+                            name={IconName.Property1RampaOutline}
+                            size={18}
+                            bgColor={iconBackground}
+                            containerStyle={styles.iconBackground}
+                            color={Palette.primary.signalViolet}
+                        />
+                    }
+                    style={[
+                        styles.card,
+                        { backgroundColor: surface, borderColor },
+                    ]}
+                    onPress={() => { }}
+                />
+
+                <ListCard
+                    title="Delete my account"
+                    left={
+                        <Icon
+                            name={IconName.Property1Delete}
+                            size={18}
+                            bgColor={isDark ? t.background.error : '#FDECEC'}
+                            containerStyle={styles.iconBackground}
+                            color={t.text.error}
+                        />
+                    }
+                    style={[
+                        styles.card,
+                        {
+                            backgroundColor: surface,
+                            borderColor,
+                        },
+                    ]}
+                    onPress={() => { }}
+                />
+            </View>
+
+            <AppButton
+                title="Logout"
+                onPress={handleLogout}
+                backgroundColor="#F4466D"
+                color="onPrimaryBackground"
+                style={styles.logoutButton}
+            />
+
+            <View style={styles.footer}>
+                <AppText
+                    variant={TextVariant.Secondary}
+                    align="center"
+                    style={{ color: t.text.lessEmphasis }}
+                >
+                    support@rampa.cash
+                </AppText>
+                <AppText
+                    variant={TextVariant.Caption}
+                    align="center"
+                    style={{ color: t.text.lessEmphasis }}
+                >
+                    App version 1.0.0 (beta)
+                </AppText>
+            </View>
+        </ScreenContainer>
     );
 }
 
-const getStyles = (theme: 'light' | 'dark') =>
-    StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: Colors[theme].background,
-        },
-        header: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: 20,
-            backgroundColor: Colors[theme].background,
-            borderBottomWidth: 1,
-            borderBottomColor: '#eee',
-        },
-        closeButton: {
-            padding: 4,
-        },
-        title: {
-            fontSize: 18,
-            fontWeight: 'bold',
-            color: Colors[theme].text,
-        },
-        placeholder: {
-            width: 32,
-        },
-        content: {
-            flex: 1,
-            padding: 20,
-        },
-        profileSection: {
-            backgroundColor: Colors[theme].background,
-            padding: 24,
-            borderRadius: 12,
-            alignItems: 'center',
-            marginBottom: 20,
-        },
-        avatarContainer: {
-            marginBottom: 16,
-        },
-        userName: {
-            fontSize: 24,
-            fontWeight: 'bold',
-            color: Colors[theme].text,
-            marginBottom: 4,
-        },
-        userEmail: {
-            fontSize: 16,
-            color: '#666',
-            marginBottom: 12,
-        },
-        kycStatus: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: '#f0f8ff',
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: 16,
-        },
-        kycText: {
-            fontSize: 14,
-            fontWeight: '600',
-            marginLeft: 4,
-        },
-        menuSection: {
-            backgroundColor: Colors[theme].background,
-            borderRadius: 12,
-            marginBottom: 20,
-        },
-        menuItem: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: '#f0f0f0',
-        },
-        menuItemLeft: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            flex: 1,
-        },
-        menuItemText: {
-            fontSize: 16,
-            color: Colors[theme].text,
-            marginLeft: 12,
-        },
-        statsSection: {
-            backgroundColor: Colors[theme].background,
-            padding: 20,
-            borderRadius: 12,
-            marginBottom: 20,
-        },
-        sectionTitle: {
-            fontSize: 18,
-            fontWeight: 'bold',
-            color: Colors[theme].text,
-            marginBottom: 16,
-        },
-        statsGrid: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-        },
-        statItem: {
-            width: '48%',
-            alignItems: 'center',
-            padding: 16,
-            backgroundColor: '#f9f9f9',
-            borderRadius: 8,
-            marginBottom: 12,
-        },
-        statValue: {
-            fontSize: 24,
-            fontWeight: 'bold',
-            color: '#007AFF',
-            marginBottom: 4,
-        },
-        statLabel: {
-            fontSize: 12,
-            color: '#666',
-            textAlign: 'center',
-        },
-        logoutButton: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: Colors[theme].background,
-            padding: 16,
-            borderRadius: 8,
-            borderWidth: 1,
-            borderColor: '#F44336',
-        },
-        logoutText: {
-            color: '#F44336',
-            fontSize: 16,
-            fontWeight: '600',
-            marginLeft: 8,
-        },
-    });
+const styles = StyleSheet.create({
+    content: {
+        gap: 16,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    circleButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+    },
+    headerTitle: {
+        textAlign: 'center',
+    },
+    headerSpacer: {
+        width: 36,
+    },
+    profileCard: {
+        alignItems: 'center',
+        padding: 20,
+        borderRadius: 16,
+        borderWidth: 1,
+        gap: 8,
+    },
+    avatar: {
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+    },
+    name: {
+        marginTop: 4,
+    },
+    badge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 12,
+        marginTop: 6,
+    },
+    badgeText: {
+        marginLeft: 6,
+    },
+    section: {
+        gap: 10,
+    },
+    card: {
+        borderWidth: 1,
+        flexDirection: 'row',
+        backgroundColor: "red"
+    },
+    iconBackground: {
+        padding: 10,
+        borderRadius: 16,
+    },
+    logoutButton: {
+        marginTop: 4,
+    },
+    footer: {
+        gap: 2,
+        marginTop: 4,
+    },
+});
