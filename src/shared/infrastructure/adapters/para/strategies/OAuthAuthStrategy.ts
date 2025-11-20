@@ -79,8 +79,22 @@ export class OAuthAuthStrategy extends BaseAuthStrategy {
                         throw new Error('Password login cancelled');
                     }
 
-                    // Wait for login to complete and restore session
-                    await this.browserAuth.waitForLogin();
+                    // Wait for login to complete and check if wallet creation is needed
+                    const waitForLoginResult = await this.browserAuth.waitForLogin();
+                    
+                    // Check if wallet creation is needed (from Para example pattern)
+                    if (
+                        waitForLoginResult &&
+                        typeof waitForLoginResult === 'object' &&
+                        'needsWallet' in waitForLoginResult &&
+                        waitForLoginResult.needsWallet
+                    ) {
+                        console.log(
+                            '[OAuthAuthStrategy] Wallet creation needed after login - waiting for wallet creation'
+                        );
+                        await this.browserAuth.waitForWalletCreation();
+                    }
+                    
                     await this.sessionService.touchSession();
                 }
                 // If no passwordUrl, user has passkey-based security (handled in completeOAuth)
@@ -91,12 +105,62 @@ export class OAuthAuthStrategy extends BaseAuthStrategy {
                     authState: verifiedAuthState,
                 };
             } else if (verifiedAuthState.stage === 'signup') {
-                // New user - will need to register passkey (handled in completeOAuth)
-                return {
-                    stage: 'verify', // Map 'signup' to 'verify' for consistency
-                    needsVerification: false,
-                    authState: verifiedAuthState,
-                };
+                // New user - wait for signup to complete and setup user
+                // Based on Para example: https://github.com/getpara/examples-hub/blob/2.0.0-alpha/mobile/with-expo/src/components/OAuthAuth.tsx
+                // The example calls waitForSignup() then userSetupAfterLogin() (not waitForWalletCreation)
+                console.log(
+                    '[OAuthAuthStrategy] New user signup - waiting for signup to complete'
+                );
+                
+                try {
+                    await this.browserAuth.waitForSignup();
+                    
+                    // userSetupAfterLogin() is required to hydrate session after signup
+                    // This is what actually creates/sets up the wallet for new OAuth users
+                    // Based on Para example finalizeSignup() pattern
+                    console.log(
+                        '[OAuthAuthStrategy] Setting up user after signup (hydrating session)'
+                    );
+                    await this.browserAuth.userSetupAfterLogin();
+                    
+                    await this.sessionService.touchSession();
+                    
+                    // Import session to get user and sessionToken (similar to phone/email one-click signup)
+                    const sessionImport =
+                        await this.sessionService.importSessionToBackend();
+                    
+                    console.log(
+                        '[OAuthAuthStrategy] OAuth signup completed successfully',
+                        {
+                            userId: sessionImport.user.id,
+                        }
+                    );
+                    
+                    // Return complete auth state with user and sessionToken
+                    return {
+                        stage: 'login',
+                        needsVerification: false,
+                        authState: null,
+                        user: sessionImport.user as any,
+                        sessionToken: sessionImport.sessionToken,
+                    } as any;
+                } catch (error: any) {
+                    // If waitForSignup or userSetupAfterLogin fails, fall back to passkey registration
+                    // This allows the flow to continue with passkey registration in completeOAuth
+                    console.warn(
+                        '[OAuthAuthStrategy] Error during signup/user setup, will fall back to passkey registration',
+                        {
+                            error: error?.message,
+                        }
+                    );
+                    
+                    // Return signup stage so completeOAuth can handle passkey registration
+                    return {
+                        stage: 'verify', // Map 'signup' to 'verify' for consistency
+                        needsVerification: false,
+                        authState: verifiedAuthState,
+                    };
+                }
             }
 
             throw new Error(

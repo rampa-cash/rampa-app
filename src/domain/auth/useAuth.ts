@@ -427,6 +427,24 @@ export function useAuth(): AuthState & AuthActions {
                 const result =
                     await authService.signUpOrLogInWithOAuth(provider);
 
+                // Check if OAuth signup already completed (user and sessionToken already provided)
+                // This happens when OAuthAuthStrategy handles signup and wallet creation internally
+                const resultWithUser = result as any;
+                if (
+                    resultWithUser.user &&
+                    resultWithUser.sessionToken
+                ) {
+                    logger.info('OAuth signup completed with wallet creation', {
+                        userId: resultWithUser.user.id,
+                        provider,
+                    });
+                    storeLogin(
+                        resultWithUser.user,
+                        resultWithUser.sessionToken
+                    );
+                    return;
+                }
+
                 // Complete OAuth flow (register or login with passkey)
                 logger.info(`Completing ${provider} OAuth flow`, {
                     stage: result.stage,
@@ -686,7 +704,8 @@ export function useAuth(): AuthState & AuthActions {
      * Uses keepSessionAlive() to extend active session, then validates with backend
      */
     const refreshSession = useCallback(async (): Promise<void> => {
-        if (!isAuthenticated) {
+        if (!isAuthenticated || !sessionToken) {
+            // If not authenticated or no session token, don't try to refresh
             return;
         }
 
@@ -744,7 +763,7 @@ export function useAuth(): AuthState & AuthActions {
         } finally {
             setIsLoading(false);
         }
-    }, [isAuthenticated, authService, storeLogin, storeLogout]);
+    }, [isAuthenticated, sessionToken, authService, storeLogin, storeLogout]);
 
     // Track app state for background/foreground handling
     const appState = useRef<AppStateStatus>(AppState.currentState);
@@ -753,13 +772,24 @@ export function useAuth(): AuthState & AuthActions {
      * Handle app state changes (background/foreground)
      */
     useEffect(() => {
+        // Skip initial mount - only handle actual state changes
+        let isInitialMount = true;
+        
         const subscription = AppState.addEventListener(
             'change',
             nextAppState => {
+                // Skip the first state change (initial mount)
+                if (isInitialMount) {
+                    isInitialMount = false;
+                    appState.current = nextAppState;
+                    return;
+                }
+                
                 if (
                     appState.current.match(/inactive|background/) &&
                     nextAppState === 'active' &&
-                    isAuthenticated
+                    isAuthenticated &&
+                    sessionToken
                 ) {
                     // App has come to the foreground - refresh session
                     logger.info('App came to foreground, refreshing session');
@@ -782,7 +812,7 @@ export function useAuth(): AuthState & AuthActions {
         return () => {
             subscription.remove();
         };
-    }, [isAuthenticated, refreshSession]);
+    }, [isAuthenticated, sessionToken, refreshSession]);
 
     /**
      * Auto-refresh session periodically (every 30 minutes)

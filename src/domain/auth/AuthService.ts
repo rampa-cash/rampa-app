@@ -244,6 +244,29 @@ export class AuthService {
      */
     async completeOAuth(authState: any): Promise<VerificationResult> {
         try {
+            // Check if OAuth signup already completed (user and sessionToken already provided)
+            // This happens when OAuthAuthStrategy handles signup and wallet creation internally
+            if (
+                authState &&
+                typeof authState === 'object' &&
+                'user' in authState &&
+                'sessionToken' in authState &&
+                authState.user &&
+                authState.sessionToken
+            ) {
+                console.log(
+                    '[AuthService] OAuth signup already completed with wallet creation',
+                    {
+                        userId: authState.user.id,
+                    }
+                );
+                return {
+                    success: true,
+                    sessionToken: authState.sessionToken,
+                    user: authState.user as User,
+                };
+            }
+
             // For OAuth, handle different stages:
             // - 'signup' or 'verify': New user - register passkey
             // - 'login': Existing user - login with passkey
@@ -272,6 +295,8 @@ export class AuthService {
                 authState?.stage === 'signup'
             ) {
                 // New user - register passkey
+                // Note: If wallet creation was already handled in OAuthAuthStrategy,
+                // this should still work as passkey registration happens after wallet creation
                 const result =
                     await this.authProvider.registerPasskey(authState);
                 if (!result.success) {
@@ -368,6 +393,12 @@ export class AuthService {
                 if (statusCode === 401 || statusCode === 403) {
                     throw new Error(
                         'Session expired or invalid - please login again'
+                    );
+                }
+                // Handle 404 as session not found (user doesn't exist or session invalid)
+                if (statusCode === 404) {
+                    throw new Error(
+                        'Session not found - please login again'
                     );
                 }
                 throw new Error(

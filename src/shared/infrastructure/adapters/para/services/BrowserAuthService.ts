@@ -38,10 +38,13 @@ export class BrowserAuthService {
 
     /**
      * Wait for login to complete after browser-based authentication
+     * Returns result that may indicate if wallet creation is needed
      */
-    async waitForLogin(): Promise<void> {
+    async waitForLogin(): Promise<{ needsWallet?: boolean } | void> {
         try {
-            await this.paraClient.waitForLogin({});
+            const result = await this.paraClient.waitForLogin({});
+            // Para SDK may return an object with needsWallet flag
+            return result as { needsWallet?: boolean } | void;
         } catch (error) {
             console.error(
                 '[BrowserAuthService] Failed to wait for login:',
@@ -75,6 +78,24 @@ export class BrowserAuthService {
         } catch (error) {
             console.error(
                 '[BrowserAuthService] Failed to wait for wallet creation:',
+                error
+            );
+            throw error;
+        }
+    }
+
+    /**
+     * Setup user after login/signup (required to hydrate session after signup)
+     * This is a protected method on ParaCore but required for OAuth signup flow
+     * Based on Para example: https://github.com/getpara/examples-hub/blob/2.0.0-alpha/mobile/with-expo/src/components/OAuthAuth.tsx
+     */
+    async userSetupAfterLogin(): Promise<void> {
+        try {
+            // @ts-expect-error: userSetupAfterLogin is protected on ParaCore but required to hydrate session after signup
+            await this.paraClient.userSetupAfterLogin();
+        } catch (error) {
+            console.error(
+                '[BrowserAuthService] Failed to setup user after login:',
                 error
             );
             throw error;
