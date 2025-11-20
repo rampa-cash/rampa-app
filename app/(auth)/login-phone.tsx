@@ -1,7 +1,6 @@
-import ConfirmContactModal from '@/components/login/ConfirmContactModal';
 import {
-  CountryItem,
-  CountrySearchModal,
+    CountryItem,
+    CountrySearchModal,
 } from '@/components/modals/CountrySearchModal';
 import AppButton from '@/components/ui/buttons/button';
 import { IconButton } from '@/components/ui/buttons/IconButton';
@@ -12,7 +11,6 @@ import ScreenContainer from '@/components/ui/screen-container';
 import { AppText } from '@/components/ui/text';
 import { TextVariant } from '@/components/ui/text-variants';
 import { COUNTRIES } from '@/constants/countries';
-import { useSignup } from '@/hooks/SignupProvider';
 import { useTheme } from '@/hooks/theme';
 import { useAuth } from '@/src/domain/auth/useAuth';
 import { useRouter } from 'expo-router';
@@ -97,6 +95,13 @@ export default function LoginPhoneScreen() {
     };
 
     const handleContinue = async () => {
+        console.log('[LoginPhone] handleContinue called', {
+            canContinue,
+            isLoading,
+            phoneLength: phone.trim().length,
+            phone: phone,
+        });
+        
         if (!phone.trim() || phone.trim().length < MIN_PHONE_LENGTH) {
             setError('Please enter a valid phone number');
             return;
@@ -142,14 +147,6 @@ export default function LoginPhoneScreen() {
         }
     };
 
-    const [confirmVisible, setConfirmVisible] = useState(false);
-    const { setContact } = useSignup();
-
-    const formattedPhone = useMemo(
-        () => `${selectedCountry.dial}${phone.trim()}`,
-        [phone, selectedCountry.dial]
-    );
-
     return (
         <>
             <ScreenContainer
@@ -157,7 +154,10 @@ export default function LoginPhoneScreen() {
                 padded
                 contentContainerStyle={[
                     styles.container,
-                    { paddingBottom: insets.bottom + 24 },
+                    { 
+                        paddingBottom: insets.bottom + 24,
+                        flexGrow: 1,
+                    },
                 ]}
             >
                 <View style={[styles.nav, { paddingTop: insets.top }]}>
@@ -256,25 +256,10 @@ export default function LoginPhoneScreen() {
 
                 <AppButton
                     title="Get confirmation code"
-                    onPress={() => setConfirmVisible(true)}
-                    disabled={!canContinue}
+                    onPress={handleContinue}
+                    disabled={!canContinue || isLoading}
                 />
             </ScreenContainer>
-
-            <ConfirmContactModal
-                visible={confirmVisible}
-                contact={formattedPhone}
-                message="Is this phone number correct? We'll send you a confirmation code there"
-                onCancel={() => setConfirmVisible(false)}
-                onConfirm={() => {
-                    setConfirmVisible(false);
-                    setContact('phone', formattedPhone);
-                    router.push({
-                        pathname: '/(auth)/verify-code',
-                        params: { method: 'phone', contact: formattedPhone },
-                    } as any);
-                }}
-            />
 
             <Modal
                 visible={countryModalVisible}
