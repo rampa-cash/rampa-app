@@ -167,6 +167,7 @@ export default function HomeScreen() {
     const t = useTheme();
     const isAuthenticated = useAuthStore(state => state.isAuthenticated);
     const sessionToken = useAuthStore(state => state.sessionToken);
+    const isSessionValidated = useAuthStore(state => state.isSessionValidated);
     const { isDark } = useThemeMode();
     const styles = useMemo(() => createStyles(t, isDark), [t, isDark]);
     const [searchVisible, setSearchVisible] = useState(false);
@@ -238,11 +239,12 @@ export default function HomeScreen() {
         setCurrency(balances[0].type);
     }, [balances, setCurrency]);
 
-    // Only fetch transactions when user is authenticated and has a valid session token
+    // Only fetch transactions when user is authenticated, has a valid session token, and session has been validated
+    // This prevents queries from running before session validation completes on app launch
     const { data: transactions, isLoading: transactionsLoading } = useQuery({
         queryKey: ['transactions'],
         queryFn: () => transactionApiClient.getTransactions({ limit: 5 }),
-        enabled: isAuthenticated && !!sessionToken, // Only run query when authenticated
+        enabled: isAuthenticated && !!sessionToken && isSessionValidated, // Only run query when authenticated and session is validated
     });
 
     const items: ContactItem[] = useMemo(() => {

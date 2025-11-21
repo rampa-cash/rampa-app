@@ -734,6 +734,8 @@ export function useAuth(): AuthState & AuthActions {
             const { user, sessionToken } =
                 await authService.validateSessionWithBackend();
             storeLogin(user, sessionToken);
+            // Session is now validated - set flag
+            useAuthStore.getState().setSessionValidated(true);
 
             logger.info('Session refreshed successfully', { userId: user.id });
         } catch (error) {

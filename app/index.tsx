@@ -14,12 +14,16 @@ import { useAuth } from '../src/domain/auth/useAuth';
  */
 export default function Index() {
     const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+    const sessionToken = useAuthStore(state => state.sessionToken);
     const { refreshSession } = useAuth();
-    const [isValidating, setIsValidating] = useState(isAuthenticated);
+    const [isValidating, setIsValidating] = useState(
+        isAuthenticated && !!sessionToken
+    );
 
     useEffect(() => {
-        // Validate session on app launch if user appears to be authenticated
-        if (isAuthenticated) {
+        // Validate session on app launch if user appears to be authenticated AND has a session token
+        // This prevents calling /auth/me when there's stale persisted data without a valid session
+        if (isAuthenticated && sessionToken) {
             const validateSession = async () => {
                 try {
                     await refreshSession();
@@ -36,6 +40,10 @@ export default function Index() {
 
             validateSession();
         } else {
+            // If authenticated but no session token, clear the stale state
+            if (isAuthenticated && !sessionToken) {
+                useAuthStore.getState().logout();
+            }
             setIsValidating(false);
         }
     }, []); // Only run on mount
