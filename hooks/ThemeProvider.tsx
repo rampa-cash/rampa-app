@@ -67,7 +67,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             setTheme: setThemeSafe,
         };
     }, [theme]);
- 
+
     return (
         <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
     );

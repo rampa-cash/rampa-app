@@ -209,11 +209,8 @@ export default function UserDetailsScreen() {
                         color={Palette.primary.signalViolet}
                     />
                 }
-                style={[
-                    styles.card,
-                    { backgroundColor: surface, borderColor },
-                ]}
-                onPress={() => { }}
+                style={[styles.card, { backgroundColor: surface, borderColor }]}
+                onPress={() => {}}
             />
 
             <View style={styles.section}>
@@ -232,7 +229,7 @@ export default function UserDetailsScreen() {
                         styles.card,
                         { backgroundColor: surface, borderColor },
                     ]}
-                    onPress={() => { }}
+                    onPress={() => {}}
                 />
 
                 <ListCard
@@ -270,7 +267,9 @@ export default function UserDetailsScreen() {
                             color={Palette.primary.signalViolet}
                         />
                     }
-                    right={<Toggle value={isDark} onValueChange={t.toggleTheme} />}
+                    right={
+                        <Toggle value={isDark} onValueChange={t.toggleTheme} />
+                    }
                     showChevron={false}
                     style={[
                         styles.card,
@@ -293,7 +292,7 @@ export default function UserDetailsScreen() {
                         styles.card,
                         { backgroundColor: surface, borderColor },
                     ]}
-                    onPress={() => { }}
+                    onPress={() => {}}
                 />
 
                 <ListCard
@@ -311,7 +310,7 @@ export default function UserDetailsScreen() {
                         styles.card,
                         { backgroundColor: surface, borderColor },
                     ]}
-                    onPress={() => { }}
+                    onPress={() => {}}
                 />
 
                 <ListCard
@@ -332,7 +331,7 @@ export default function UserDetailsScreen() {
                             borderColor,
                         },
                     ]}
-                    onPress={() => { }}
+                    onPress={() => {}}
                 />
             </View>
 
@@ -422,7 +421,7 @@ const styles = StyleSheet.create({
     card: {
         borderWidth: 1,
         flexDirection: 'row',
-        backgroundColor: "red"
+        backgroundColor: 'red',
     },
     iconBackground: {
         padding: 10,

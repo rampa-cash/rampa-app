@@ -97,31 +97,35 @@ export default function AddFundsDetailsScreen() {
                                 borderColor: t.outline.outline1,
                             },
                         ]}
-                        title='Method'
-
+                        title="Method"
                         description={selectedMethod.title}
-                        left={<Icon name={selectedMethod.icon}
-                            size={18}
-                            bgColor={
-                                t.isDark
-                                    ? t.background.dim
-                                    : t.background.base
-                            }
-                            style={{
-                                padding: 14,
-                                borderRadius: 28,
-                            }}
-                            color={
-                                t.isDark ? t.icon.variant : t.icon.normal
-                            } />}
-                        right={<AppButton
-                            title="Change"
-                            color={'normal2'}
-                            variant={ButtonVariant.Tertiary}
-                            onPress={() => setMethodModalVisible(true)}
-                        />}
+                        left={
+                            <Icon
+                                name={selectedMethod.icon}
+                                size={18}
+                                bgColor={
+                                    t.isDark
+                                        ? t.background.dim
+                                        : t.background.base
+                                }
+                                style={{
+                                    padding: 14,
+                                    borderRadius: 28,
+                                }}
+                                color={
+                                    t.isDark ? t.icon.variant : t.icon.normal
+                                }
+                            />
+                        }
+                        right={
+                            <AppButton
+                                title="Change"
+                                color={'normal2'}
+                                variant={ButtonVariant.Tertiary}
+                                onPress={() => setMethodModalVisible(true)}
+                            />
+                        }
                     />
-
                 </View>
 
                 <View style={styles.section}>
@@ -139,7 +143,7 @@ export default function AddFundsDetailsScreen() {
                 <AppButton
                     title="Add Fund"
                     disabled={!isAmountValid}
-                    onPress={() => { }}
+                    onPress={() => {}}
                 />
             </ScreenContainer>
 
@@ -204,6 +208,5 @@ const styles = StyleSheet.create({
     modalSheet: {
         borderRadius: 24,
         overflow: 'hidden',
-
     },
 });

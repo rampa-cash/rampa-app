@@ -74,8 +74,8 @@ function resolveColors(
     const labelColor = hasError
         ? t.text.error
         : focused
-            ? Palette.primary.signalViolet
-            : t.text.lessEmphasis;
+          ? Palette.primary.signalViolet
+          : t.text.lessEmphasis;
 
     // Helper color
     const helperColor = hasError ? t.text.error : t.text.lessEmphasis;
@@ -125,7 +125,16 @@ export function AppInput({
                 disabled || editable === false,
                 backgroundColor
             ),
-        [t, isDark, variant, focused, hasError, disabled, editable, backgroundColor]
+        [
+            t,
+            isDark,
+            variant,
+            focused,
+            hasError,
+            disabled,
+            editable,
+            backgroundColor,
+        ]
     );
 
     const showToggle = Boolean(secureToggle && secureTextEntry);
@@ -143,7 +152,12 @@ export function AppInput({
     };
 
     return (
-        <View style={[backgroundColor ? { backgroundColor } : null, containerStyle as any]}>
+        <View
+            style={[
+                backgroundColor ? { backgroundColor } : null,
+                containerStyle as any,
+            ]}
+        >
             {label ? (
                 <AppText
                     variant={TextVariant.SecondaryMedium}
@@ -173,14 +187,13 @@ export function AppInput({
                         styles.input,
                         { color: scheme.text },
                         inputStyle as any,
-                     ]}
+                    ]}
                     placeholderTextColor={scheme.placeholder}
                     editable={disabled ? false : editable}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                     secureTextEntry={effectiveSecure}
                     {...rest}
-
                 />
 
                 {showToggle ? (

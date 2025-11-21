@@ -5,8 +5,8 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
-  CountrySearchModal,
-  type CountryItem,
+    CountrySearchModal,
+    type CountryItem,
 } from '@/components/modals/CountrySearchModal';
 import AppButton from '@/components/ui/buttons/button';
 import { ButtonVariant } from '@/components/ui/buttons/button-variants';
@@ -106,7 +106,13 @@ export default function CashOutScreen() {
                         Withdraw your balance to a bank account
                     </AppText>
                 </View>
-                <View style={{justifyContent:'center',alignContent:'center',alignItems:'center'}}> 
+                <View
+                    style={{
+                        justifyContent: 'center',
+                        alignContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
                     <UsdAmountInput
                         value={amount}
                         onChange={setAmount}

@@ -430,10 +430,7 @@ export function useAuth(): AuthState & AuthActions {
                 // Check if OAuth signup already completed (user and sessionToken already provided)
                 // This happens when OAuthAuthStrategy handles signup and wallet creation internally
                 const resultWithUser = result as any;
-                if (
-                    resultWithUser.user &&
-                    resultWithUser.sessionToken
-                ) {
+                if (resultWithUser.user && resultWithUser.sessionToken) {
                     logger.info('OAuth signup completed with wallet creation', {
                         userId: resultWithUser.user.id,
                         provider,
@@ -774,7 +771,7 @@ export function useAuth(): AuthState & AuthActions {
     useEffect(() => {
         // Skip initial mount - only handle actual state changes
         let isInitialMount = true;
-        
+
         const subscription = AppState.addEventListener(
             'change',
             nextAppState => {
@@ -784,7 +781,7 @@ export function useAuth(): AuthState & AuthActions {
                     appState.current = nextAppState;
                     return;
                 }
-                
+
                 if (
                     appState.current.match(/inactive|background/) &&
                     nextAppState === 'active' &&

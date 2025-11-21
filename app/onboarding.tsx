@@ -33,7 +33,8 @@ const slides: Slide[] = [
     {
         id: '1',
         title: 'Send money home in seconds, no banks, no borders.',
-        description: 'Track every transfer with real-time updates and trusted partners.',
+        description:
+            'Track every transfer with real-time updates and trusted partners.',
         image: {
             uri: 'https://images.unsplash.com/photo-1528892952291-009c663ce843?auto=format&fit=crop&w=640&q=80',
         },
@@ -41,7 +42,8 @@ const slides: Slide[] = [
     {
         id: '2',
         title: 'Move funds confidently wherever you are.',
-        description: 'Designed for busy people who need speed, transparency and support.',
+        description:
+            'Designed for busy people who need speed, transparency and support.',
         image: {
             uri: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=640&q=80',
         },
@@ -49,7 +51,8 @@ const slides: Slide[] = [
     {
         id: '3',
         title: 'Your community, connected through Rampa.',
-        description: 'Enjoy better rates, reliable payouts, and friendly help whenever you need it.',
+        description:
+            'Enjoy better rates, reliable payouts, and friendly help whenever you need it.',
         image: {
             uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=640&q=80',
         },
@@ -142,7 +145,6 @@ export default function OnboardingScreen() {
             }}
         >
             <View style={styles.header}>
-                
                 <View style={styles.stepper}>
                     {slides.map((slide, index) => (
                         <View
@@ -154,8 +156,8 @@ export default function OnboardingScreen() {
                                         index === currentIndex
                                             ? Palette.primary.flowAqua
                                             : isDark
-                                                ? t.background.light
-                                                : t.background.inactive,
+                                              ? t.background.light
+                                              : t.background.inactive,
                                 },
                             ]}
                         />
@@ -174,7 +176,6 @@ export default function OnboardingScreen() {
                         Meet Rampa
                     </AppText>
                 </View>
-
             </View>
 
             <View style={styles.carouselWrapper} onLayout={handleLayout}>

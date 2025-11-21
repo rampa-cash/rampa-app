@@ -129,7 +129,10 @@ export class ContactService {
             const response = await contactApiClient.searchContacts(query);
             return response.data;
         } catch (error) {
-            logger.warn?.('Falling back to mock search', { error, query } as any);
+            logger.warn?.('Falling back to mock search', {
+                error,
+                query,
+            } as any);
             return mockSearchContacts(query);
         }
     }

@@ -93,17 +93,23 @@ export default function CardScreen() {
                     title="Withdraw"
                     textPosition="outside"
                     iconSize={16}
-                    onPress={() => router.push('/(modals)/fund-card?mode=withdraw' as never)}
+                    onPress={() =>
+                        router.push(
+                            '/(modals)/fund-card?mode=withdraw' as never
+                        )
+                    }
                 />
                 <IconButton
                     iconName={IconName.Property1EyeOpen}
                     title="Show Details"
                     textPosition="outside"
                     iconSize={16}
-                    backgroundColor={showDetails ? Palette.primary.flowAqua : undefined}
+                    backgroundColor={
+                        showDetails ? Palette.primary.flowAqua : undefined
+                    }
                     color={showDetails ? 'onPrimaryBackground' : undefined}
                     iconColor={showDetails ? '#ffffff' : undefined}
-                    onPress={() => setShowDetails((prev) => !prev)}
+                    onPress={() => setShowDetails(prev => !prev)}
                 />
             </View>
 
@@ -119,7 +125,9 @@ export default function CardScreen() {
                             color={isDark ? t.icon.variant : undefined}
                         />
                     }
-                    onPress={() => router.push('/(transactions)/transaction-list' as never)}
+                    onPress={() =>
+                        router.push('/(transactions)/transaction-list' as never)
+                    }
                 />
 
                 <ListCard
@@ -159,7 +167,7 @@ export default function CardScreen() {
                             color={isDark ? t.icon.variant : undefined}
                         />
                     }
-                    onPress={() => { }}
+                    onPress={() => {}}
                 />
             </View>
 
@@ -169,7 +177,10 @@ export default function CardScreen() {
                 visible={showLockModal}
                 onRequestClose={() => setShowLockModal(false)}
             >
-                <Pressable style={styles.modalBackdrop} onPress={() => setShowLockModal(false)}>
+                <Pressable
+                    style={styles.modalBackdrop}
+                    onPress={() => setShowLockModal(false)}
+                >
                     <Pressable
                         style={[
                             styles.modalCard,
@@ -178,7 +189,7 @@ export default function CardScreen() {
                                 borderColor: t.outline.outline1,
                             },
                         ]}
-                        onPress={(e) => e.stopPropagation()}
+                        onPress={e => e.stopPropagation()}
                     >
                         <View
                             style={[
@@ -232,10 +243,10 @@ export default function CardScreen() {
                                     }}
                                 >
                                     You can temporarily block withdrawals, card
-                                    payments, and online purchases. This feature lets
-                                    you control your card and safeguard against
-                                    unauthorized transactions. Unlock it whenever you
-                                    need.
+                                    payments, and online purchases. This feature
+                                    lets you control your card and safeguard
+                                    against unauthorized transactions. Unlock it
+                                    whenever you need.
                                 </AppText>
                             </View>
                             <AppButton

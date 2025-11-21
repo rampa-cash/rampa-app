@@ -56,11 +56,11 @@ function AppLayout() {
 
     if (booting) {
         return (
-            <NavThemeProvider
-                value={navTheme}
-            >
+            <NavThemeProvider value={navTheme}>
                 <SplashScreen />
-                <StatusBar style={themeTokens.theme === 'dark' ? 'light' : 'dark'} />
+                <StatusBar
+                    style={themeTokens.theme === 'dark' ? 'light' : 'dark'}
+                />
             </NavThemeProvider>
         );
     }
@@ -74,10 +74,18 @@ function AppLayout() {
                     name="(modals)"
                     options={{ presentation: 'modal', headerShown: false }}
                 />
-                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-                <Stack.Screen name="(transactions)" options={{ headerShown: false }} />
+                <Stack.Screen
+                    name="onboarding"
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="(transactions)"
+                    options={{ headerShown: false }}
+                />
             </Stack>
-            <StatusBar style={themeTokens.theme === 'dark' ? 'light' : 'dark'} />
+            <StatusBar
+                style={themeTokens.theme === 'dark' ? 'light' : 'dark'}
+            />
         </NavThemeProvider>
     );
 }

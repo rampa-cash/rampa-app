@@ -1,5 +1,8 @@
 import ContactSearchModal from '@/components/modals/ContactSearchModal';
-import { ContactListItem, type ContactItem } from '@/components/contacts/ContactListItem';
+import {
+    ContactListItem,
+    type ContactItem,
+} from '@/components/contacts/ContactListItem';
 import { IconButton } from '@/components/ui/buttons/IconButton';
 import Icon from '@/components/ui/icons/Icon';
 import { IconName } from '@/components/ui/icons/icon-names';
@@ -13,7 +16,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+    FlatList,
+    Modal,
+    Pressable,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SendScreen() {
@@ -39,20 +49,32 @@ export default function SendScreen() {
         if (!searchQuery.trim()) return list;
         const q = searchQuery.toLowerCase();
         return list.filter(
-            i => i.name.toLowerCase().includes(q) || i.phone.toLowerCase().includes(q)
+            i =>
+                i.name.toLowerCase().includes(q) ||
+                i.phone.toLowerCase().includes(q)
         );
     }, [contacts, searchQuery]);
 
     const handleSelect = (id: string) => {
         setSearchVisible(false);
-        router.push({ pathname: '/(modals)/send-amount', params: { contactId: id } } as never);
+        router.push({
+            pathname: '/(modals)/send-amount',
+            params: { contactId: id },
+        } as never);
     };
 
     return (
         <ScreenContainer padded style={styles.container}>
             <View style={[styles.header, { paddingTop: insets.top }]}>
-                <TouchableOpacity onPress={() => router.push('/(modals)/user-details' as any)} style={styles.profileButton}>
-                    <MaterialIcons name="account-circle" size={42} color="#007AFF" />
+                <TouchableOpacity
+                    onPress={() => router.push('/(modals)/user-details' as any)}
+                    style={styles.profileButton}
+                >
+                    <MaterialIcons
+                        name="account-circle"
+                        size={42}
+                        color="#007AFF"
+                    />
                 </TouchableOpacity>
                 <IconButton
                     iconName={IconName.Property1Search}
@@ -69,7 +91,10 @@ export default function SendScreen() {
                 </AppText>
 
                 <View style={{ marginTop: 24 }}>
-                    <AppText variant={TextVariant.SecondaryMedium} color="lessEmphasis">
+                    <AppText
+                        variant={TextVariant.SecondaryMedium}
+                        color="lessEmphasis"
+                    >
                         Choose who you're sending to
                     </AppText>
                     <Pressable onPress={() => setSearchVisible(true)}>
@@ -77,13 +102,25 @@ export default function SendScreen() {
                             editable={false}
                             placeholder="Search for contact to send"
                             variant={InputVariant.Filled}
-                            left={<Icon name={IconName.Property1Search} size={18} />}
+                            left={
+                                <Icon
+                                    name={IconName.Property1Search}
+                                    size={18}
+                                />
+                            }
                             containerStyle={{ marginTop: 8 }}
                         />
                     </Pressable>
                 </View>
 
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 6,
+                        marginTop: 8,
+                    }}
+                >
                     <MaterialIcons name="info" size={14} color="#777" />
                     <AppText variant={TextVariant.Caption} color="lessEmphasis">
                         If we want to put some comment in here
@@ -91,7 +128,9 @@ export default function SendScreen() {
                 </View>
 
                 <View style={{ marginTop: 20 }}>
-                    <AppText variant={TextVariant.SecondaryMedium}>Top Receivers</AppText>
+                    <AppText variant={TextVariant.SecondaryMedium}>
+                        Top Receivers
+                    </AppText>
                     <FlatList
                         data={topReceivers}
                         keyExtractor={i => i.id}
@@ -101,7 +140,12 @@ export default function SendScreen() {
                                 contact={item}
                                 onPress={handleSelect}
                                 showInvite={false}
-                                rightAccessory={<Icon name={IconName.Property1ArrowRight} size={16} />}
+                                rightAccessory={
+                                    <Icon
+                                        name={IconName.Property1ArrowRight}
+                                        size={16}
+                                    />
+                                }
                             />
                         )}
                     />
@@ -115,7 +159,10 @@ export default function SendScreen() {
                 onRequestClose={() => setSearchVisible(false)}
             >
                 <View style={styles.modalBackdrop}>
-                    <Pressable style={StyleSheet.absoluteFill} onPress={() => setSearchVisible(false)} />
+                    <Pressable
+                        style={StyleSheet.absoluteFill}
+                        onPress={() => setSearchVisible(false)}
+                    />
                     <View style={styles.modalCenter}>
                         <ContactSearchModal
                             title="Search for contact to send"

@@ -40,7 +40,10 @@ export function AmountInput({
 }: AmountInputProps) {
     const t = useTheme();
 
-    const parsed = useMemo(() => Number.parseFloat(value.replace(',', '.')), [value]);
+    const parsed = useMemo(
+        () => Number.parseFloat(value.replace(',', '.')),
+        [value]
+    );
 
     const handleChange = (text: string) => {
         onChange(sanitize(text));
@@ -73,7 +76,11 @@ export function AmountInput({
                 left={
                     <AppText
                         variant={TextVariant.NumH3}
-                        style={{ color: t.text.normal, fontSize: 24, marginRight: 2 }}
+                        style={{
+                            color: t.text.normal,
+                            fontSize: 24,
+                            marginRight: 2,
+                        }}
                     >
                         {currencySymbol}
                     </AppText>
@@ -91,15 +98,21 @@ export function AmountInput({
                                 style={[
                                     styles.quickChip,
                                     {
-                                        borderColor: isActive ? t.primary.signalViolet : t.outline.outline2,
-                                        backgroundColor: isActive ? t.background.secondary : 'transparent',
+                                        borderColor: isActive
+                                            ? t.primary.signalViolet
+                                            : t.outline.outline2,
+                                        backgroundColor: isActive
+                                            ? t.background.secondary
+                                            : 'transparent',
                                     },
                                 ]}
                             >
                                 <AppText
                                     variant={TextVariant.BodyMedium}
                                     style={{
-                                        color: isActive ? t.primary.signalViolet : t.text.normal,
+                                        color: isActive
+                                            ? t.primary.signalViolet
+                                            : t.text.normal,
                                     }}
                                 >
                                     {currencySymbol}

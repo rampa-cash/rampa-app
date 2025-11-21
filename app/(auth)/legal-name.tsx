@@ -108,7 +108,6 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     body: {
-
         justifyContent: 'space-between',
         gap: 32,
     },

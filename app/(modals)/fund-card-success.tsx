@@ -16,8 +16,15 @@ import { Palette } from '@/constants/theme';
 export default function FundCardSuccessScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
-    const { amount = '0', currency = 'EUR', mode = 'fund' } =
-        useLocalSearchParams<{ amount?: string; currency?: 'USD' | 'EUR' | 'SOL'; mode?: 'fund' | 'withdraw' }>();
+    const {
+        amount = '0',
+        currency = 'EUR',
+        mode = 'fund',
+    } = useLocalSearchParams<{
+        amount?: string;
+        currency?: 'USD' | 'EUR' | 'SOL';
+        mode?: 'fund' | 'withdraw';
+    }>();
 
     const numericAmount = Number.parseFloat(String(amount));
     const effectiveAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
@@ -65,8 +72,11 @@ export default function FundCardSuccessScreen() {
                         : 'Card was successfully funded'}
                 </AppText>
 
-                <Pressable onPress={() => { }}>
-                    <AppText variant={TextVariant.Body} style={{ marginTop: 12 }}>
+                <Pressable onPress={() => {}}>
+                    <AppText
+                        variant={TextVariant.Body}
+                        style={{ marginTop: 12 }}
+                    >
                         View transaction
                     </AppText>
                 </Pressable>

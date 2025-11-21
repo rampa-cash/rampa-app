@@ -94,11 +94,22 @@ export class AuthService {
                 await this.authProvider.signUpOrLogInWithOAuth(provider);
             this.currentAuthState = authState.authState;
 
-            return {
+            // Preserve user and sessionToken if present (from browser flow)
+            const result: AuthResult = {
                 stage: authState.stage,
                 needsVerification: authState.needsVerification,
                 authState: authState.authState,
             };
+
+            // If browser flow completed, preserve user and sessionToken
+            // This matches the behavior of email/phone login flows
+            const authStateWithUser = authState as any;
+            if (authStateWithUser.user && authStateWithUser.sessionToken) {
+                (result as any).user = authStateWithUser.user;
+                (result as any).sessionToken = authStateWithUser.sessionToken;
+            }
+
+            return result;
         } catch (error) {
             // Don't log here - let useAuth handle logging with proper context
             throw error;
@@ -397,9 +408,7 @@ export class AuthService {
                 }
                 // Handle 404 as session not found (user doesn't exist or session invalid)
                 if (statusCode === 404) {
-                    throw new Error(
-                        'Session not found - please login again'
-                    );
+                    throw new Error('Session not found - please login again');
                 }
                 throw new Error(
                     `Failed to retrieve user information: ${error?.message || 'Unknown error'}`

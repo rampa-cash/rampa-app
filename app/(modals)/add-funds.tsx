@@ -85,7 +85,9 @@ export default function AddFundsScreen() {
                                         }
                                         containerStyle={styles.iconInner}
                                         color={
-                                            isDark ? t.icon.variant : t.icon.normal
+                                            isDark
+                                                ? t.icon.variant
+                                                : t.icon.normal
                                         }
                                     />
                                 }

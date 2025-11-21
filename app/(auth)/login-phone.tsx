@@ -101,7 +101,7 @@ export default function LoginPhoneScreen() {
             phoneLength: phone.trim().length,
             phone: phone,
         });
-        
+
         if (!phone.trim() || phone.trim().length < MIN_PHONE_LENGTH) {
             setError('Please enter a valid phone number');
             return;
@@ -154,7 +154,7 @@ export default function LoginPhoneScreen() {
                 padded
                 contentContainerStyle={[
                     styles.container,
-                    { 
+                    {
                         paddingBottom: insets.bottom + 24,
                         flexGrow: 1,
                     },

@@ -6,7 +6,7 @@ import {
     StyleSheet,
     TextStyle,
     View,
-    ViewStyle
+    ViewStyle,
 } from 'react-native';
 import Icon from '../icons/Icon';
 import { IconName } from '../icons/icon-names';
@@ -27,7 +27,7 @@ export type ButtonProps = {
     iconSize?: number;
     shape?: 'circle' | 'rounded';
     bordered?: boolean;
-    textVariant?: TextVariant
+    textVariant?: TextVariant;
 };
 
 function resolveVariantColors(
@@ -51,8 +51,8 @@ function resolveVariantColors(
         typeof colorIconOverride === 'string'
             ? colorIconOverride
             : colorIconOverride
-                ? t.icon[colorIconOverride]
-                : t.icon.variant;
+              ? t.icon[colorIconOverride]
+              : t.icon.variant;
 
     return {
         background: bgOverride ?? (isDark ? t.background.dim : '#FAF9F6'),
@@ -74,7 +74,8 @@ export function IconButton({
     textStyle,
     iconSize = 24,
     shape = 'rounded',
-    bordered, textVariant
+    bordered,
+    textVariant,
 }: ButtonProps) {
     const t = useTheme();
     const { isDark, mode } = useThemeMode();
@@ -95,12 +96,12 @@ export function IconButton({
     const shapeStyle: ViewStyle =
         shape === 'circle'
             ? {
-                minWidth: circleSize,
-                minHeight: circleSize,
-                borderRadius: circleSize,
-                paddingVertical: 10, // Override base styles
-                paddingHorizontal: 10, // Override base styles
-            }
+                  minWidth: circleSize,
+                  minHeight: circleSize,
+                  borderRadius: circleSize,
+                  paddingVertical: 10, // Override base styles
+                  paddingHorizontal: 10, // Override base styles
+              }
             : {};
 
     const text = (
@@ -120,7 +121,7 @@ export function IconButton({
     );
 
     return (
-        <View style={[styles.container,]}>
+        <View style={[styles.container]}>
             <Pressable
                 onPress={onPress}
                 disabled={disabled}
@@ -133,12 +134,16 @@ export function IconButton({
                         opacity: disabled ? 0.7 : pressed ? 0.9 : 1,
                     },
                     style as any,
-                    { borderWidth: bordered ? 1 : 0 }
+                    { borderWidth: bordered ? 1 : 0 },
                 ]}
             >
                 {textPosition === 'left' && title && text}
                 {iconName && (
-                    <Icon name={iconName} size={iconSize} color={iconColor as any} />
+                    <Icon
+                        name={iconName}
+                        size={iconSize}
+                        color={iconColor as any}
+                    />
                 )}
                 {textPosition === 'right' && title && text}
             </Pressable>

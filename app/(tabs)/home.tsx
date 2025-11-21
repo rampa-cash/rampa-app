@@ -2,9 +2,7 @@ import {
     AccountCompletionModal,
     type CompletionStep,
 } from '@/components/modals/AccountCompletionModal';
-import {
-    ContactSearchModal,
-} from '@/components/modals/ContactSearchModal';
+import { ContactSearchModal } from '@/components/modals/ContactSearchModal';
 import { AmountSize, AmountTone } from '@/components/ui/amount-variants';
 import { AppButton } from '@/components/ui/buttons/button';
 import { IconButton } from '@/components/ui/buttons/IconButton';

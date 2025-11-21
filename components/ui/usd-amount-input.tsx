@@ -1,10 +1,10 @@
 import React, { useMemo, useRef } from 'react';
 import {
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-  ViewStyle,
+    Pressable,
+    StyleSheet,
+    TextInput,
+    View,
+    ViewStyle,
 } from 'react-native';
 
 import { useTheme } from '@/hooks/theme';

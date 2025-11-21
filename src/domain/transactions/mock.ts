@@ -130,10 +130,15 @@ export const mockTransactions: Transaction[] = [
     },
 ];
 
-export async function getMockTransactions(params?: { limit?: number; offset?: number }) {
+export async function getMockTransactions(params?: {
+    limit?: number;
+    offset?: number;
+}) {
     const { limit, offset = 0 } = params || {};
-    const slice = mockTransactions.slice(offset, limit ? offset + limit : undefined);
+    const slice = mockTransactions.slice(
+        offset,
+        limit ? offset + limit : undefined
+    );
     const res: ApiResponse<Transaction[]> = { data: slice, success: true };
     return Promise.resolve(res);
 }
-

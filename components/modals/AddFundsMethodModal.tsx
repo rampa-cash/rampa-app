@@ -30,8 +30,13 @@ export function AddFundsMethodModal({
     const t = useTheme();
     const isDark = useThemeMode();
     return (
-        <ModalScaffold >
-            <AppText variant={TextVariant.H2} style={{ gap: 10, marginTop: 20, padding: 10 }}>{title}</AppText>
+        <ModalScaffold>
+            <AppText
+                variant={TextVariant.H2}
+                style={{ gap: 10, marginTop: 20, padding: 10 }}
+            >
+                {title}
+            </AppText>
             <View style={{ gap: 10, marginTop: 12, marginBottom: 20 }}>
                 {methods.map(m => (
                     <ListCard
@@ -44,10 +49,17 @@ export function AddFundsMethodModal({
                             <Icon
                                 bgColor={t.background.base}
                                 size={16}
-                                style={{ color: isDark.isDark ? t.icon.variant : t.icon.normal }}
+                                style={{
+                                    color: isDark.isDark
+                                        ? t.icon.variant
+                                        : t.icon.normal,
+                                }}
                                 name={m.icon}
-                                shape='circle'
-                                containerStyle={{ padding: 22, borderRadius: 22 }}
+                                shape="circle"
+                                containerStyle={{
+                                    padding: 22,
+                                    borderRadius: 22,
+                                }}
                                 bordered
                                 borderColor={t.outline.outline2}
                             />

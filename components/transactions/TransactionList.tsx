@@ -26,7 +26,11 @@ function formatAmount(amount: number, currency: Transaction['currency']) {
 function formatWhen(date: Date | string) {
     const d = new Date(date);
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
     const startOfYesterday = new Date(startOfToday);
     startOfYesterday.setDate(startOfYesterday.getDate() - 1);
 
@@ -83,7 +87,7 @@ export function TransactionList({
     return (
         <FlatList
             data={items}
-            keyExtractor={(t) => t.id}
+            keyExtractor={t => t.id}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={[
                 { paddingHorizontal: 16, paddingBottom: 20 },
@@ -92,8 +96,12 @@ export function TransactionList({
             renderItem={({ item }) => {
                 const amountText = formatAmount(item.amount, item.currency);
                 const isPositive = item.amount >= 0;
-                const cardBg = isDark ? t.background.onBase2 : t.background.onBase;
-                const cardBorder = isDark ? t.outline.outline2 : t.outline.outline1;
+                const cardBg = isDark
+                    ? t.background.onBase2
+                    : t.background.onBase;
+                const cardBorder = isDark
+                    ? t.outline.outline2
+                    : t.outline.outline1;
 
                 return (
                     <View
@@ -110,7 +118,9 @@ export function TransactionList({
                             style={[
                                 styles.leftIcon,
                                 {
-                                    backgroundColor: isDark ? t.background.onBase : '#F7F8FA',
+                                    backgroundColor: isDark
+                                        ? t.background.onBase
+                                        : '#F7F8FA',
                                     borderColor: cardBorder,
                                 },
                             ]}
@@ -125,7 +135,10 @@ export function TransactionList({
                         <View style={{ flex: 1, gap: 4 }}>
                             <AppText
                                 variant={TextVariant.BodyMedium}
-                                style={{ color: t.text.normal, fontWeight: '700' }}
+                                style={{
+                                    color: t.text.normal,
+                                    fontWeight: '700',
+                                }}
                             >
                                 {(item.notes || 'Transfer').toUpperCase()}
                             </AppText>
@@ -147,7 +160,9 @@ export function TransactionList({
                         <AppText
                             variant={TextVariant.BodyMedium}
                             style={{
-                                color: isPositive ? t.text.success : t.text.error,
+                                color: isPositive
+                                    ? t.text.success
+                                    : t.text.error,
                                 fontWeight: '700',
                             }}
                         >

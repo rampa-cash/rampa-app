@@ -25,7 +25,6 @@ export default function TabLayout() {
                     tabBarStyle: {
                         minHeight: 80,
                         backgroundColor: '#fcfcfd', // fondo del tab bar + stepper
-
                     },
                     tabBarIconStyle: {
                         height: '100%',
@@ -84,8 +83,8 @@ export default function TabLayout() {
                                     focused
                                         ? color
                                         : isDark
-                                            ? neutral.graphiteGrey
-                                            : 'transparent'
+                                          ? neutral.graphiteGrey
+                                          : 'transparent'
                                 }
                                 label="Send"
                                 shape="circle"
@@ -94,8 +93,8 @@ export default function TabLayout() {
                                     isDark
                                         ? icon.normal
                                         : focused
-                                            ? 'white'
-                                            : icon.normal
+                                          ? 'white'
+                                          : icon.normal
                                 }
                             />
                         ),

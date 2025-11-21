@@ -46,6 +46,7 @@ Before setting up the project, ensure you have the following installed:
 - **Android Emulator** (optional, for testing)
 
 > For detailed environment setup instructions, see:
+>
 > - [iOS Environment Setup](https://docs.expo.dev/get-started/set-up-your-environment/?platform=ios&device=simulated&mode=development-build&buildEnv=local)
 > - [Android Environment Setup](https://docs.expo.dev/get-started/set-up-your-environment/?platform=android&device=simulated&mode=development-build&buildEnv=local)
 
@@ -54,68 +55,74 @@ Before setting up the project, ensure you have the following installed:
 ### iOS Setup (macOS only)
 
 1. **Install Xcode**
-   - Download from the Mac App Store
-   - Open Xcode and accept the license agreement
-   - Install additional components when prompted
+    - Download from the Mac App Store
+    - Open Xcode and accept the license agreement
+    - Install additional components when prompted
 
 2. **Install CocoaPods**
-   ```bash
-   sudo gem install cocoapods
-   ```
+
+    ```bash
+    sudo gem install cocoapods
+    ```
 
 3. **Install iOS Dependencies**
-   ```bash
-   cd ios
-   pod install
-   cd ..
-   ```
+
+    ```bash
+    cd ios
+    pod install
+    cd ..
+    ```
 
 4. **Verify Setup**
-   ```bash
-   npx expo run:ios
-   ```
+    ```bash
+    npx expo run:ios
+    ```
 
 ### Android Setup
 
 1. **Install Android Studio**
-   - Download from [developer.android.com/studio](https://developer.android.com/studio)
-   - During installation, ensure "Android SDK", "Android SDK Platform", and "Android Virtual Device" are selected
+    - Download from [developer.android.com/studio](https://developer.android.com/studio)
+    - During installation, ensure "Android SDK", "Android SDK Platform", and "Android Virtual Device" are selected
 
 2. **Configure Android SDK**
-   - Open Android Studio
-   - Go to **Preferences** → **Appearance & Behavior** → **System Settings** → **Android SDK**
-   - Install Android SDK Platform 33 (or latest)
-   - Install Android SDK Build-Tools
+    - Open Android Studio
+    - Go to **Preferences** → **Appearance & Behavior** → **System Settings** → **Android SDK**
+    - Install Android SDK Platform 33 (or latest)
+    - Install Android SDK Build-Tools
 
 3. **Set Environment Variables**
-   
-   Add to your `~/.zshrc` or `~/.bash_profile`:
-   ```bash
-   export ANDROID_HOME=$HOME/Library/Android/sdk
-   export PATH=$PATH:$ANDROID_HOME/emulator
-   export PATH=$PATH:$ANDROID_HOME/platform-tools
-   export PATH=$PATH:$ANDROID_HOME/tools
-   export PATH=$PATH:$ANDROID_HOME/tools/bin
-   ```
+
+    Add to your `~/.zshrc` or `~/.bash_profile`:
+
+    ```bash
+    export ANDROID_HOME=$HOME/Library/Android/sdk
+    export PATH=$PATH:$ANDROID_HOME/emulator
+    export PATH=$PATH:$ANDROID_HOME/platform-tools
+    export PATH=$PATH:$ANDROID_HOME/tools
+    export PATH=$PATH:$ANDROID_HOME/tools/bin
+    ```
 
 4. **Verify Setup**
-   ```bash
-   # Check Android SDK
-   adb version
-   
-   # Run on Android
-   npx expo run:android
-   ```
+
+    ```bash
+    # Check Android SDK
+    adb version
+
+    # Run on Android
+    npx expo run:android
+    ```
 
 ## 📦 Installation
 
 1. **Clone the repository**
+
     ```bash
     git clone git@github.com:rampa-cash/rampa-app.git
     cd rampa-app
     ```
 
 2. **Install dependencies**
+
     ```bash
     npm install
     ```
@@ -123,15 +130,16 @@ Before setting up the project, ensure you have the following installed:
 3. **Configure environment variables**
 
     Create a `.env` file in the root directory:
+
     ```env
     EXPO_PUBLIC_PARA_API_KEY=your_para_api_key
     EXPO_PUBLIC_API_URL=https://staging-api.rampacash.com/v1
     ```
 
 4. **Install iOS dependencies** (macOS only)
-   ```bash
-   cd ios && pod install && cd ..
-   ```
+    ```bash
+    cd ios && pod install && cd ..
+    ```
 
 ## 🏃 Running the App
 
@@ -166,8 +174,8 @@ npx expo run:android
 
 1. Ensure your device and computer are on the same Wi-Fi network
 2. Scan the QR code displayed in the terminal with:
-   - **iOS**: Camera app (opens in Expo Go)
-   - **Android**: Expo Go app
+    - **iOS**: Camera app (opens in Expo Go)
+    - **Android**: Expo Go app
 
 #### Troubleshooting Connection Issues
 
@@ -186,16 +194,16 @@ npx expo start --tunnel
 
 Expo CLI is automatically available via `npx`. Common commands:
 
-| Command | Description |
-|---------|-------------|
-| `npx expo start` | Start the development server |
-| `npx expo start --tunnel` | Start with tunnel connection |
-| `npx expo start --clear` | Start with cleared cache |
-| `npx expo run:ios` | Build and run on iOS simulator |
-| `npx expo run:android` | Build and run on Android emulator |
-| `npx expo prebuild` | Generate native Android and iOS directories |
-| `npx expo install <package>` | Install a library with compatible versions |
-| `npx expo lint` | Run ESLint on project files |
+| Command                      | Description                                 |
+| ---------------------------- | ------------------------------------------- |
+| `npx expo start`             | Start the development server                |
+| `npx expo start --tunnel`    | Start with tunnel connection                |
+| `npx expo start --clear`     | Start with cleared cache                    |
+| `npx expo run:ios`           | Build and run on iOS simulator              |
+| `npx expo run:android`       | Build and run on Android emulator           |
+| `npx expo prebuild`          | Generate native Android and iOS directories |
+| `npx expo install <package>` | Install a library with compatible versions  |
+| `npx expo lint`              | Run ESLint on project files                 |
 
 > For more Expo CLI commands, see [Expo Tools Documentation](https://docs.expo.dev/develop/tools/)
 
@@ -292,10 +300,13 @@ npm run test:e2e
 The project uses EAS Build for creating production builds.
 
     ```bash
+
 # Build for staging
+
     eas build --platform all --profile staging
 
 # Build for production
+
     eas build --platform all --profile production
     ```
 
@@ -306,11 +317,13 @@ Configuration is in `eas.json`. See [EAS Build Documentation](https://docs.expo.
 ### Common Issues
 
 **Metro bundler cache issues:**
+
 ```bash
 npx expo start --clear
 ```
 
 **iOS build issues:**
+
 ```bash
 cd ios
 pod deintegrate
@@ -319,6 +332,7 @@ cd ..
 ```
 
 **Android build issues:**
+
 ```bash
 cd android
 ./gradlew clean
@@ -326,6 +340,7 @@ cd ..
 ```
 
 **TypeScript errors:**
+
 ```bash
 npm run type-check
 ```
