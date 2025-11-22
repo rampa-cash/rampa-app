@@ -21,6 +21,13 @@ export class BaseApiClient {
     }
 
     /**
+     * Get the base URL being used by this client
+     */
+    getBaseURL(): string {
+        return this.baseURL;
+    }
+
+    /**
      * Make an HTTP request to the API
      */
     protected async request<T>(
@@ -71,5 +78,67 @@ export class BaseApiClient {
         });
 
         return queryParams.toString();
+    }
+
+    /**
+     * Check backend health status
+     * GET /health
+     *
+     * @returns Health status information
+     */
+    async checkHealth(): Promise<{
+        status: string;
+        timestamp: string;
+        uptime: number;
+        memory: {
+            rss: number;
+            heapTotal: number;
+            heapUsed: number;
+            external: number;
+            arrayBuffers: number;
+        };
+        version: string;
+    }> {
+        const timeout = 10000; // 10 seconds for health check
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        try {
+            const response = await fetch(`${this.baseURL}/health`, {
+                method: 'GET',
+                signal: controller.signal,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(
+                    `Health check failed: ${response.status} ${response.statusText}`
+                );
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error: any) {
+            clearTimeout(timeoutId);
+
+            if (error.name === 'AbortError') {
+                throw new Error(`Health check timeout after ${timeout}ms`);
+            }
+
+            if (
+                error.message?.includes('Network request failed') ||
+                error.message?.includes('Failed to fetch')
+            ) {
+                throw new Error(
+                    `Health check failed: Unable to reach ${this.baseURL}/health. Please check your internet connection.`
+                );
+            }
+
+            throw error;
+        }
     }
 }
