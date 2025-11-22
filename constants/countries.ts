@@ -33,7 +33,7 @@ export const COUNTRIES: Country[] = [
     { name: 'Sweden', dial: '+46', code: 'SE', emoji: '🇸🇪' },
     { name: 'Norway', dial: '+47', code: 'NO', emoji: '🇳🇴' },
     { name: 'Poland', dial: '+48', code: 'PL', emoji: '🇵🇱' },
-    { name: -'Germany', dial: '+49', code: 'DE', emoji: '🇩🇪' },
+    { name: 'Germany', dial: '+49', code: 'DE', emoji: '🇩🇪' },
     { name: 'Peru', dial: '+51', code: 'PE', emoji: '🇵🇪' },
     { name: 'Mexico', dial: '+52', code: 'MX', emoji: '🇲🇽' },
     { name: 'Cuba', dial: '+53', code: 'CU', emoji: '🇨🇺' },
